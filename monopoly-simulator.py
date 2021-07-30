@@ -54,12 +54,12 @@ showRemPlayers = True
 writeLog = False  # write log with game events (log.txt file)
 
 # Various raw data to output (to data.txt file)
-#writeData = "none"
+# writeData = "none"
 # writeData = "popularCells" # Cells to land
 # writeData = "lastTurn" # Length of the game
 writeData = "losersNames"  # Who lost
 # writeData = "netWorth" # history of a game
-#writeData = "remainingPlayers"
+# writeData = "remainingPlayers"
 
 
 class Log:
@@ -82,8 +82,8 @@ class Log:
             self.fs.write("\t"*level+text+"\n")
 
 
-# Player class
 class Player:
+    """Player class"""
 
     def __init__(self, name):
         self.name = name
@@ -364,8 +364,8 @@ class Player:
                         board.recalculateAfterPropertyChange()
         return tradeHappened
 
-    # Look for and perform a three-way trade
     def threeWayTrade(self, board):
+        """Look for and perform a three-way trade"""
         tradeHappened = False
         for wanted1 in self.plotsWanted[::-1]:
             ownerOfWanted1 = board.b[wanted1].owner
@@ -415,8 +415,8 @@ class Player:
                             board.recalculateAfterPropertyChange()
 
 
-# Generic Cell Class, base for other classes
 class Cell:
+    """Generic Cell Class, base for other classes"""
 
     def __init__(self, name):
         self.name = name
@@ -426,16 +426,16 @@ class Cell:
         pass
 
 
-# Pay Luxury Tax cell (#38)
 class LuxuryTax(Cell):
+    """Pay Luxury Tax cell (#38)"""
 
     def action(self, player):
         player.takeMoney(settingsLuxuryTax)
         log.write(player.name+" pays Luxury Tax $"+str(settingsLuxuryTax), 3)
 
 
-# Pay Property Tax cell (200 or 10%) (#4)
 class PropertyTax(Cell):
+    """Pay Property Tax cell (200 or 10%) (#4)"""
 
     def action(self, player, board):
         toPay = min(settingsPropertyTax, player.netWorth(board)//10)
@@ -443,8 +443,8 @@ class PropertyTax(Cell):
         player.takeMoney(toPay)
 
 
-# Go to Jail (#30)
 class GoToJail(Cell):
+    """Go to Jail (#30)"""
 
     def action(self, player):
         player.moveTo(10)
@@ -452,8 +452,8 @@ class GoToJail(Cell):
         log.write(player.name+" goes to jail from Go To Jail ", 3)
 
 
-# Chance cards
 class Chance(Cell):
+    """Chance cards"""
 
     def action(self, player, board):
 
@@ -598,8 +598,8 @@ class Chance(Cell):
             board.chanceCards.append(chanceCard)
 
 
-# Community Chest cards
 class Community(Cell):
+    """Community Chest cards"""
 
     def action(self, player, board):
 
@@ -711,8 +711,8 @@ class Community(Cell):
             board.communityCards.append(communityCard)
 
 
-# Property Class (for Properties, Rails, Utilities)
 class Property(Cell):
+    """Property Class (for Properties, Rails, Utilities)"""
 
     def __init__(self, name, cost_base, rent_base, cost_house, rent_house, group):
         self.name = name
@@ -726,8 +726,8 @@ class Property(Cell):
         self.isMonopoly = False
         self.hasHouses = 0
 
-    # Player ended on a property
     def action(self, player, rent, board):
+        """Player ended on a property"""
 
         # it's their property or mortgaged - do nothing
         if self.owner == player or self.isMortgaged:
@@ -758,7 +758,7 @@ class Property(Cell):
 
     # mortgage the plot to the player / or sell the house
     def mortgage(self, player, board):
-        # Sell hotel
+        """Sell hotel"""
         if self.hasHouses == 5:
             player.addMoney(self.cost_house * 5 // 2)
             self.hasHouses = 0
@@ -782,7 +782,7 @@ class Property(Cell):
     # unmortgage thr plot
 
     def unmortgage(self, player):
-        #print (player.hasMortgages)
+        # print (player.hasMortgages)
         for mortgage in player.hasMortgages:
             if mortgage[0] == self:
                 thisMortgage = mortgage
@@ -795,18 +795,20 @@ class Property(Cell):
 class Board:
 
     def __init__(self, players):
+        """
+        Board is a data for plots
+
+        name: does not really matter, just convenience
+        base_cost: used when buying plot, mortgage
+        base_rent: used for rent and monopoly rent
+         (for utilities and rail - in calculateRent method)
+        house_cost: price of one house (or a hotel)
+        house_rent: list of rent price with 1,2,3,4 houses and a hotel
+        group: used to determine monopoly
+        """
 
         # I know it is messy, but I need this for players to pay each other
         self.players = players
-
-        # data for plots:
-        # name: does not really matter, just convenience
-        # base_cost: used when buying plot, mortgage
-        # base_rent: used for rent and monopoly rent
-        #  (for utilities and rail - in calculateRent method)
-        # house_cost: price of one house (or a hotel)
-        # house_rent: list of rent price with 1,2,3,4 houses and a hotel
-        # group: used to determine monopoly
 
         self.b = []
         # 0-4
@@ -1044,7 +1046,7 @@ class Board:
             #    print (toBuildStuff)
 
         # if len(toBuildStuff)>5:
-            #print (toBuildStuff)
+            # print (toBuildStuff)
         return toBuildStuff
 
     def choosePropertyToBuild(self, player, availiableMoney):
@@ -1193,11 +1195,11 @@ class Board:
                       )
             else:
                 pass
-                #print (i, type(self.b[i]))
+                # print (i, type(self.b[i]))
 
 
-# Check if there are more then 1 player left in the game
 def isGameOver(players):
+    """Check if there are more then 1 player left in the game"""
     alive = 0
     for player in players:
         if not player.isBankrupt:
@@ -1214,7 +1216,7 @@ def oneGame():
 
     # create players
     players = []
-    #names = ["pl"+str(i) for i in range(nPlayers)]
+    # names = ["pl"+str(i) for i in range(nPlayers)]
     names = ["pl"+str(i) for i in range(nPlayers-1)]+["exp"]
     if shufflePlayers:
         random.shuffle(names)
@@ -1278,8 +1280,8 @@ def oneGame():
     return results
 
 
-# run multiple game somulations
 def runSimulation():
+    """run multiple game somulations"""
     results = []
     for i in range(nSimulations):
 
@@ -1301,8 +1303,8 @@ def runSimulation():
     return results
 
 
-# Analize results
 def analyzeResults(results):
+    """Analize results"""
 
     remainingPlayers = [0, ]*nPlayers
     for result in results:
