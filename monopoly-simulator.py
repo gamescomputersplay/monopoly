@@ -1,4 +1,4 @@
-#mnp
+# mnp
 
 # tra3
 # graphs
@@ -14,7 +14,7 @@ import progressbar
 nPlayers = 4
 nMoves = 1000
 nSimulations = 1000
-seed = "" # "" for none
+seed = ""  # "" for none
 shufflePlayers = True
 
 # some game rules
@@ -25,39 +25,40 @@ settingsPropertyTax = 200
 settingJailFine = 50
 settingHouseLimit = 32
 settingHotelLimit = 12
-settingsAllowUnEqualDevelopment = False # default = False
+settingsAllowUnEqualDevelopment = False  # default = False
 
 # players behaviour settings
-behaveUnspendableCash = 0 # Money I want to will have left after buying stuff
-behaveUnmortgageCoeff = 3 # repay mortgage if you have times this cash
-behaveDoTrade = True # willing to trade property
-behaveDoThreeWayTrade = True # willing to trade property three-way
+behaveUnspendableCash = 0  # Money I want to will have left after buying stuff
+behaveUnmortgageCoeff = 3  # repay mortgage if you have times this cash
+behaveDoTrade = True  # willing to trade property
+behaveDoThreeWayTrade = True  # willing to trade property three-way
 behaveBuildCheapest = False
 behaveBuildRandom = False
 
 # experimental settings
 # for a player named exp:
-expRefuseTrade = False # refuse to trade property
-expRefuseProperty = "" # refuse to buy this group
-expHouseBuildLimit = 100 # limit houses built
-expUnspendableCash = 0 # unspendable money
+expRefuseTrade = False  # refuse to trade property
+expRefuseProperty = ""  # refuse to buy this group
+expHouseBuildLimit = 100  # limit houses built
+expUnspendableCash = 0  # unspendable money
 expBuildCheapest = False
 expBuildExpensive = False
 expBuildThree = False
 
 # reporting settings
-progressAsterix = nSimulations // 100 if nSimulations // 100>0 else 1 # output * every N simulations
-showMap = False # only for 1 game: show final board map
-showResult = True # only for 1 game: show final money score
+# output * every N simulations
+progressAsterix = nSimulations // 100 if nSimulations // 100 > 0 else 1
+showMap = False  # only for 1 game: show final board map
+showResult = True  # only for 1 game: show final money score
 showRemPlayers = True
-writeLog= False # write log with game events (log.txt file)
+writeLog = False  # write log with game events (log.txt file)
 
-## Various raw data to output (to data.txt file)
+# Various raw data to output (to data.txt file)
 #writeData = "none"
-#writeData = "popularCells" # Cells to land
-#writeData = "lastTurn" # Length of the game
-writeData = "losersNames" # Who lost
-#writeData = "netWorth" # history of a game
+# writeData = "popularCells" # Cells to land
+# writeData = "lastTurn" # Length of the game
+writeData = "losersNames"  # Who lost
+# writeData = "netWorth" # history of a game
 #writeData = "remainingPlayers"
 
 
@@ -79,15 +80,11 @@ class Log:
             if level < 2:
                 self.fs.write("\n"*(2-level))
             self.fs.write("\t"*level+text+"\n")
-        
-
-
-
 
 
 # Player class
 class Player:
-    
+
     def __init__(self, name):
         self.name = name
         self.position = 0
@@ -102,15 +99,15 @@ class Player:
         self.plotsWanted = []
         self.plotsOffered = []
         self.plotsToBuild = []
-        self.cashLimit = expUnspendableCash if name=="exp" else behaveUnspendableCash
+        self.cashLimit = expUnspendableCash if name == "exp" else behaveUnspendableCash
 
     def __str__(self):
-        return "Player: "+self.name+ \
-               ". Position: "+str(self.position)+ \
+        return "Player: "+self.name + \
+               ". Position: "+str(self.position) + \
                ". Money: $"+str(self.money)
-    
+
     # some getters and setters
-    
+
     def getMoney(self):
         return self.money
 
@@ -120,7 +117,7 @@ class Player:
     # add money (salary, receive rent etc)
     def addMoney(self, amount):
         self.money += amount
-        
+
     # subtract money (pay reny, buy property etc)
     def takeMoney(self, amount):
         self.money -= amount
@@ -130,8 +127,8 @@ class Player:
         self.position = position
         log.write(self.name+" moves to cell "+str(position), 3)
 
+    # make a move procedure
 
-    # make a move procedure        
     def makeAMove(self, board):
 
         goAgain = False
@@ -141,9 +138,9 @@ class Player:
             return
 
         # to track the popular cells to land
-        if writeData=="popularCells":
+        if writeData == "popularCells":
             log.write(str(self.position), data=True)
-            
+
         log.write("Player "+self.name+" goes:", 2)
 
         # non-board actions: Trade, unmortgage, build
@@ -156,73 +153,75 @@ class Player:
             pass
 
         # Calculate property player wants to get and ready to give away
-        if expRefuseTrade and self.name=="exp":
-            pass # Experiement: do not trade
+        if expRefuseTrade and self.name == "exp":
+            pass  # Experiement: do not trade
         elif behaveDoTrade:
             #  Make a trade
-            if not self.twoWayTrade(board) and nPlayers>=3 and behaveDoThreeWayTrade:
+            if not self.twoWayTrade(board) and nPlayers >= 3 and behaveDoThreeWayTrade:
                 self.threeWayTrade(board)
-        
 
         # roll dice
-        dice1 = random.randint(1,6)
-        dice2 = random.randint(1,6)
-        log.write(self.name+" rolls "+str(dice1)+" and "+str(dice2)+" = "+str(dice1+dice2), 3)
-        
-        #doubles
+        dice1 = random.randint(1, 6)
+        dice2 = random.randint(1, 6)
+        log.write(self.name+" rolls "+str(dice1)+" and " +
+                  str(dice2)+" = "+str(dice1+dice2), 3)
+
+        # doubles
         if dice1 == dice2 and not self.inJail:
-            goAgain = True # go again if doubles
+            goAgain = True  # go again if doubles
             self.consequentDoubles += 1
-            log.write("it's a number "+ str(self.consequentDoubles) +" double in a row", 3)
-            if self.consequentDoubles == 3: # but go to jail if 3 times in a row
+            log.write("it's a number " +
+                      str(self.consequentDoubles) + " double in a row", 3)
+            if self.consequentDoubles == 3:  # but go to jail if 3 times in a row
                 self.inJail = True
                 log.write(self.name+" goes to jail on consequtive doubles", 3)
                 self.moveTo(10)
                 self.consequentDoubles = 0
                 return False
         else:
-            self.consequentDoubles = 0 #reset doubles counter
+            self.consequentDoubles = 0  # reset doubles counter
 
         # Jail situation:
-        # Stay unless you roll doubles 
+        # Stay unless you roll doubles
         if self.inJail:
             if self.hasJailCardChance:
                 self.hasJailCardChance = False
-                board.chanceCards.append(1) # return the card
-                log.write(self.name+" uses the Chance GOOJF card to get out of jail", 3)
+                board.chanceCards.append(1)  # return the card
+                log.write(
+                    self.name+" uses the Chance GOOJF card to get out of jail", 3)
             elif self.hasJailCardCommunity:
                 self.hasJailCardCommunity = False
-                board.communityCards.append(6) # return the card
-                log.write(self.name+" uses the Community GOOJF card to get out of jail", 3)
+                board.communityCards.append(6)  # return the card
+                log.write(
+                    self.name+" uses the Community GOOJF card to get out of jail", 3)
             elif dice1 != dice2:
                 self.daysInJail += 1
                 if self.daysInJail < 3:
                     log.write(self.name+" spends this turn in jail", 3)
-                    return False # skip turn in jail
+                    return False  # skip turn in jail
                 else:
-                    self.takeMoney(settingJailFine) # get out on fine
+                    self.takeMoney(settingJailFine)  # get out on fine
                     self.daysInJail = 0
                     log.write(self.name+" pays fine and gets out of jail", 3)
-            else: # get out of jail on doubles
+            else:  # get out of jail on doubles
                 log.write(self.name+" rolls double and gets out of jail", 3)
                 self.daysInJail = 0
                 goAgain = False
         self.inJail = False
 
-         
         # move the piece
         self.position += dice1+dice2
-        
+
         # correction of the position if landed on GO or overshoot GO
         if self.position >= 40:
-            #calculate correct cell
+            # calculate correct cell
             self.position = self.position - 40
             # get salary for passing GO
             self.addMoney(settingsSalary)
             log.write(self.name+" gets salary: $"+str(settingsSalary), 3)
-            
-        log.write(self.name+" moves to cell "+str(self.position) +": "+board.b[self.position].name + \
-                  ( " ("+board.b[self.position].owner.name+")" if type(board.b[self.position])==Property and board.b[self.position].owner!="" else "" ), 3)
+
+        log.write(self.name+" moves to cell "+str(self.position) + ": "+board.b[self.position].name +
+                  (" ("+board.b[self.position].owner.name+")" if type(board.b[self.position]) == Property and board.b[self.position].owner != "" else ""), 3)
 
         # perform action of the cell player ended on
         board.action(self, self.position)
@@ -232,11 +231,11 @@ class Player:
 
         if goAgain:
             log.write(self.name+" will go again now", 3)
-            return True # make a move again
-        return False # no extra move
-
+            return True  # make a move again
+        return False  # no extra move
 
     # get the cheapest mortgage property (name, price)
+
     def cheapestMotgage(self):
         cheapest = False
         for mortgage in self.hasMortgages:
@@ -251,41 +250,42 @@ class Player:
             perHouse, perHotel = 25, 100
         else:
             perHouse, perHotel = 40, 115
-        log.write("Repair cost: $"+str(perHouse)+" per house, $"+str(perHotel)+" per hotel", 3)
+        log.write("Repair cost: $"+str(perHouse) +
+                  " per house, $"+str(perHotel)+" per hotel", 3)
 
         for plot in board.b:
-            if type(plot)==Property and plot.owner==self:
+            if type(plot) == Property and plot.owner == self:
                 if plot.hasHouses == 5:
                     repairCost += perHotel
                 else:
                     repairCost += plot.hasHouses*perHouse
         self.takeMoney(repairCost)
         log.write(self.name+" pays total repair costs $"+str(repairCost), 3)
-                    
-
 
     # check if player has negative money
     # if so, start selling stuff and mortgage plots
     # if that's not enough, player bankrupt
+
     def checkBankrupcy(self, board):
         if self.money < 0:
             log.write(self.name+" doesn't have enough cash", 3)
-            while self.money<0:
+            while self.money < 0:
                 worstAsset = board.choosePropertyToMortgageDowngrade(self)
                 if worstAsset == False:
                     self.isBankrupt = True
                     board.sellAll(self)
                     board.recalculateAfterPropertyChange()
-                    log.write(self.name+" is now bankrupt. Their property is back on board.", 3)
-                    
+                    log.write(
+                        self.name+" is now bankrupt. Their property is back on board.", 3)
+
                     # to track players who lost
                     if writeData == "losersNames":
                         log.write(self.name, data=True)
 
                     # to track cells to land one last time
-                    if writeData=="popularCells":
+                    if writeData == "popularCells":
                         log.write(str(self.position), data=True)
-                    
+
                     return
                 else:
                     board.b[worstAsset].mortgage(self, board)
@@ -295,20 +295,20 @@ class Player:
     def netWorth(self, board):
         worth = self.money
         for plot in board.b:
-            if type(plot)==Property and plot.owner==self:
+            if type(plot) == Property and plot.owner == self:
                 if plot.isMortgaged:
                     worth += plot.cost_base // 2
                 else:
                     worth += plot.cost_base
                     worth += plot.cost_house * plot.hasHouses
-        return worth 
+        return worth
 
-    ## Behaviours
+    # Behaviours
 
     # if there is a mortgage with pay less then current money // behaveUnmortgageCoeff
     # repay the mortgage
     def repayMortgage(self):
-        cheapest  = self.cheapestMotgage()
+        cheapest = self.cheapestMotgage()
         if cheapest and self.money > cheapest[1] * behaveUnmortgageCoeff:
             cheapest[0].unmortgage(self)
             return True
@@ -316,11 +316,12 @@ class Player:
 
     # does player want to buy a property
     def wantsToBuy(self, cost, group):
-        
-        if self.name=="exp" and group==expRefuseProperty:
-            log.write(self.name+" refuses to buy "+expRefuseProperty+" property",3)
+
+        if self.name == "exp" and group == expRefuseProperty:
+            log.write(self.name+" refuses to buy " +
+                      expRefuseProperty+" property", 3)
             return False
-        if self.money > cost + self.cashLimit: #leave some money just in case
+        if self.money > cost + self.cashLimit:  # leave some money just in case
             return True
         else:
             return False
@@ -335,29 +336,31 @@ class Player:
             # Find a match betwee what I want / they want / I have / they have
             for TheyWant in ownerOfWanted.plotsWanted[::-1]:
                 if TheyWant in self.plotsOffered \
-                   and board.b[IWant].group != board.b[TheyWant].group: # prevent exchanging in groups of 2
-                    log.write("Trade match: " + self.name + " wants " + board.b[IWant].name + \
-                              ", and " + ownerOfWanted.name + " wants " + board.b[TheyWant].name, 3 )
-                    
+                   and board.b[IWant].group != board.b[TheyWant].group:  # prevent exchanging in groups of 2
+                    log.write("Trade match: " + self.name + " wants " + board.b[IWant].name +
+                              ", and " + ownerOfWanted.name + " wants " + board.b[TheyWant].name, 3)
+
                     # Compensate that one plot is cheaper than another one
                     if board.b[IWant].cost_base < board.b[TheyWant].cost_base:
                         cheaperOne, expensiveOne = IWant, TheyWant
                     else:
                         cheaperOne, expensiveOne = TheyWant, IWant
-                    priceDiff = board.b[expensiveOne].cost_base - board.b[cheaperOne].cost_base
+                    priceDiff = board.b[expensiveOne].cost_base - \
+                        board.b[cheaperOne].cost_base
                     log.write("Price difference is $" + str(priceDiff), 3)
-                    
+
                     # make sure they they can pay the money
                     if board.b[cheaperOne].owner.money - priceDiff >= board.b[cheaperOne].owner.cashLimit:
-                        log.write("We have a deal. Money and property changed hands", 3)
+                        log.write(
+                            "We have a deal. Money and property changed hands", 3)
                         # Money and property change hands
                         board.b[cheaperOne].owner.takeMoney(priceDiff)
                         board.b[expensiveOne].owner.addMoney(priceDiff)
                         board.b[cheaperOne].owner, board.b[expensiveOne].owner = \
-                                board.b[expensiveOne].owner, board.b[cheaperOne].owner
+                            board.b[expensiveOne].owner, board.b[cheaperOne].owner
                         tradeHappened = True
 
-                        #recalculated wanted and offered plots
+                        # recalculated wanted and offered plots
                         board.recalculateAfterPropertyChange()
         return tradeHappened
 
@@ -384,16 +387,22 @@ class Player:
                         if len(checkDiffGroup) < 3:
                             continue
 
-                        topay1 = board.b[wanted1].cost_base - board.b[wanted3].cost_base
-                        topay2 = board.b[wanted2].cost_base - board.b[wanted1].cost_base
-                        topay3 = board.b[wanted3].cost_base - board.b[wanted2].cost_base
-                        if self.money-topay1>self.cashLimit and \
-                           ownerOfWanted1.money-topay2>ownerOfWanted1.cashLimit and \
-                           ownerOfWanted2.money-topay3>ownerOfWanted2.cashLimit:
-                            log.write ("Tree way trade: ", 3)
-                            log.write ( self.name + " gives "+ board.b[wanted3].name  + " and $" + str(topay1) + " for " + board.b[wanted1].name, 4)
-                            log.write ( ownerOfWanted1.name + " gives " + board.b[wanted1].name + " and $" + str(topay2) + " for " + board.b[wanted2].name, 4)
-                            log.write ( ownerOfWanted2.name + " gives "+ board.b[wanted2].name + " and $" + str(topay3) + " for " + board.b[wanted3].name, 4)
+                        topay1 = board.b[wanted1].cost_base - \
+                            board.b[wanted3].cost_base
+                        topay2 = board.b[wanted2].cost_base - \
+                            board.b[wanted1].cost_base
+                        topay3 = board.b[wanted3].cost_base - \
+                            board.b[wanted2].cost_base
+                        if self.money-topay1 > self.cashLimit and \
+                           ownerOfWanted1.money-topay2 > ownerOfWanted1.cashLimit and \
+                           ownerOfWanted2.money-topay3 > ownerOfWanted2.cashLimit:
+                            log.write("Tree way trade: ", 3)
+                            log.write(self.name + " gives " + board.b[wanted3].name + " and $" + str(
+                                topay1) + " for " + board.b[wanted1].name, 4)
+                            log.write(ownerOfWanted1.name + " gives " + board.b[wanted1].name + " and $" + str(
+                                topay2) + " for " + board.b[wanted2].name, 4)
+                            log.write(ownerOfWanted2.name + " gives " + board.b[wanted2].name + " and $" + str(
+                                topay3) + " for " + board.b[wanted3].name, 4)
                             # Money and property change hands
                             board.b[wanted1].owner = self
                             board.b[wanted2].owner = ownerOfWanted1
@@ -402,21 +411,17 @@ class Player:
                             ownerOfWanted1.takeMoney(topay2)
                             ownerOfWanted2.takeMoney(topay3)
                             tradeHappened = True
-                            #recalculated wanted and offered plots
+                            # recalculated wanted and offered plots
                             board.recalculateAfterPropertyChange()
-                    
 
 
-
-        
-                                                   
 # Generic Cell Class, base for other classes
 class Cell:
-    
+
     def __init__(self, name):
         self.name = name
         self.group = ""
-        
+
     def action(self, player):
         pass
 
@@ -436,7 +441,6 @@ class PropertyTax(Cell):
         toPay = min(settingsPropertyTax, player.netWorth(board)//10)
         log.write(player.name+" pays Property Tax $"+str(toPay), 3)
         player.takeMoney(toPay)
-
 
 
 # Go to Jail (#30)
@@ -461,7 +465,7 @@ class Chance(Cell):
         # 0: Advance to St.Charle
         if chanceCard == 0:
             log.write(player.name+" gets chance card: Advance to St.Charle's", 3)
-            if player.position>=11:
+            if player.position >= 11:
                 player.addMoney(settingsSalary)
                 log.write(player.name+" gets salary: $"+str(settingsSalary), 3)
             player.position = 11
@@ -475,36 +479,44 @@ class Chance(Cell):
 
         # 2: Take a ride on the Reading
         elif chanceCard == 2:
-            log.write(player.name+" gets chance card: Take a ride on the Reading", 3)
-            if player.position>=5:
+            log.write(
+                player.name+" gets chance card: Take a ride on the Reading", 3)
+            if player.position >= 5:
                 player.addMoney(settingsSalary)
                 log.write(player.name+" gets salary: $"+str(settingsSalary), 3)
             player.position = 5
-            log.write(player.name+" goes to "+str(board.b[player.position].name), 3)
+            log.write(player.name+" goes to " +
+                      str(board.b[player.position].name), 3)
             board.action(player, player.position)
 
         # 3: Move to the nearest railroad and pay double
         elif chanceCard == 3:
-            log.write(player.name+" gets chance card: Move to the nearest railroad and pay double", 3)
+            log.write(
+                player.name+" gets chance card: Move to the nearest railroad and pay double", 3)
             # Don't get salary, even if you pass GO (card doesnt say to do it)
             # Dont move is already on a rail.
             # Also, I assue advance means you should go to the nearest in fron of you, not behind
-            player.position = ((player.position+4)//10*10+5) % 40 # nearest railroad 
-            board.action(player, player.position, special="from_chance") # twice for double rent, if needed
+            player.position = ((player.position+4)//10*10 +
+                               5) % 40  # nearest railroad
+            # twice for double rent, if needed
+            board.action(player, player.position, special="from_chance")
 
         # 4: Advance to Illinois Avenue
         elif chanceCard == 4:
-            log.write(player.name+" gets chance card: Advance to Illinois Avenue", 3)
-            if player.position>=24:
+            log.write(
+                player.name+" gets chance card: Advance to Illinois Avenue", 3)
+            if player.position >= 24:
                 player.addMoney(settingsSalary)
                 log.write(player.name+" gets salary: $"+str(settingsSalary), 3)
             player.position = 24
-            log.write(player.name+" goes to "+str(board.b[player.position].name), 3)
+            log.write(player.name+" goes to " +
+                      str(board.b[player.position].name), 3)
             board.action(player, player.position)
 
         # 5: Make general repairs to your property
         elif chanceCard == 5:
-            log.write(player.name+" gets chance card: Make general repairs to your property", 3)
+            log.write(
+                player.name+" gets chance card: Make general repairs to your property", 3)
             player.makeRepairs(board, "chance")
 
         # 6: Advance to GO
@@ -513,11 +525,13 @@ class Chance(Cell):
             player.addMoney(settingsSalary)
             log.write(player.name+" gets salary: $"+str(settingsSalary), 3)
             player.position = 0
-            log.write(player.name+" goes to "+str(board.b[player.position].name), 3)
+            log.write(player.name+" goes to " +
+                      str(board.b[player.position].name), 3)
 
         # 7: Bank pays you dividend $50
         elif chanceCard == 7:
-            log.write(player.name+" gets chance card: Bank pays you dividend $50", 3)
+            log.write(
+                player.name+" gets chance card: Bank pays you dividend $50", 3)
             player.addMoney(50)
 
         # 8: Pay poor tax $15
@@ -527,10 +541,11 @@ class Chance(Cell):
 
         # 9: Advance to the nearest Utility and pay 10x dice
         elif chanceCard == 9:
-            log.write(player.name+" gets chance card: Advance to the nearest Utility and pay 10x dice", 3)
-            if player.position > 12 and player.position <=28:
+            log.write(
+                player.name+" gets chance card: Advance to the nearest Utility and pay 10x dice", 3)
+            if player.position > 12 and player.position <= 28:
                 player.position = 28
-            else: 
+            else:
                 player.position = 12
             board.action(player, player.position, special="from_chance")
 
@@ -543,7 +558,8 @@ class Chance(Cell):
 
         # 11: You've been elected chairman. Pay each player $50
         elif chanceCard == 11:
-            log.write(player.name+" gets chance card: You've been elected chairman. Pay each player $50", 3)
+            log.write(
+                player.name+" gets chance card: You've been elected chairman. Pay each player $50", 3)
             for other_player in board.players:
                 if other_player != player and not other_player.isBankrupt:
                     player.takeMoney(50)
@@ -553,28 +569,32 @@ class Chance(Cell):
         elif chanceCard == 12:
             log.write(player.name+" gets chance card: Advance to BoardWalk", 3)
             player.position = 39
-            log.write(player.name+" goes to "+str(board.b[player.position].name), 3)
+            log.write(player.name+" goes to " +
+                      str(board.b[player.position].name), 3)
             board.action(player, player.position)
 
         # 13: Go back 3 spaces
         elif chanceCard == 13:
             log.write(player.name+" gets chance card: Go back 3 spaces", 3)
             player.position -= 3
-            log.write(player.name+" goes to "+str(board.b[player.position].name), 3)
+            log.write(player.name+" goes to " +
+                      str(board.b[player.position].name), 3)
             board.action(player, player.position)
 
         # 14: Your building loan matures. Receive $150.
         elif chanceCard == 14:
-            log.write(player.name+" gets chance card: Your building loan matures. Receive $150", 3)
+            log.write(
+                player.name+" gets chance card: Your building loan matures. Receive $150", 3)
             player.addMoney(150)
 
         # 15: You have won a crossword competition. Collect $100
         elif chanceCard == 15:
-            log.write(player.name+" gets chance card: You have won a crossword competition. Collect $100", 3)
+            log.write(
+                player.name+" gets chance card: You have won a crossword competition. Collect $100", 3)
             player.addMoney(100)
-            
+
         # Put the card back
-        if chanceCard != 1: # except GOOJF card
+        if chanceCard != 1:  # except GOOJF card
             board.chanceCards.append(chanceCard)
 
 
@@ -614,7 +634,8 @@ class Community(Cell):
 
         # 4: Income tax refund $20
         if communityCard == 4:
-            log.write(player.name+" gets community card: Income tax refund $20", 3)
+            log.write(
+                player.name+" gets community card: Income tax refund $20", 3)
             player.addMoney(20)
 
         # 5: Go Directly to Jail
@@ -631,17 +652,20 @@ class Community(Cell):
 
         # 7: Second prize in beauty contest $10
         if communityCard == 7:
-            log.write(player.name+" gets community card: Second prize in beauty contest $10", 3)
+            log.write(
+                player.name+" gets community card: Second prize in beauty contest $10", 3)
             player.addMoney(10)
 
         # 8: You are assigned for street repairs
         elif communityCard == 8:
-            log.write(player.name+" gets community card: You are assigned for street repairs", 3)
+            log.write(
+                player.name+" gets community card: You are assigned for street repairs", 3)
             player.makeRepairs(board, "community")
 
         # 9: Bank error in your favour: $200
         if communityCard == 9:
-            log.write(player.name+" gets community card: Bank error in your favour: $200", 3)
+            log.write(
+                player.name+" gets community card: Bank error in your favour: $200", 3)
             player.addMoney(200)
 
         # 10: Advance to GO
@@ -650,11 +674,13 @@ class Community(Cell):
             player.addMoney(settingsSalary)
             log.write(player.name+" gets salary: $"+str(settingsSalary), 3)
             player.position = 0
-            log.write(player.name+" goes to "+str(board.b[player.position].name), 3)
+            log.write(player.name+" goes to " +
+                      str(board.b[player.position].name), 3)
 
         # 11: X-Mas fund matured: $100
         if communityCard == 11:
-            log.write(player.name+" gets community card: X-Mas fund matured: $100", 3)
+            log.write(
+                player.name+" gets community card: X-Mas fund matured: $100", 3)
             player.addMoney(100)
 
         # 12: Doctor's fee $50
@@ -664,23 +690,26 @@ class Community(Cell):
 
         # 13: From sale of stock you get $45
         if communityCard == 13:
-            log.write(player.name+" gets community card: From sale of stock you get $45", 3)
+            log.write(
+                player.name+" gets community card: From sale of stock you get $45", 3)
             player.addMoney(45)
 
         # 14: Receive for services $25
         if communityCard == 14:
-            log.write(player.name+" gets community card: Receive for services $25", 3)
+            log.write(
+                player.name+" gets community card: Receive for services $25", 3)
             player.addMoney(25)
 
         # 15: Life insurance matures, collect $100
         if communityCard == 15:
-            log.write(player.name+" gets community card: Life insurance matures, collect $100", 3)
+            log.write(
+                player.name+" gets community card: Life insurance matures, collect $100", 3)
             player.addMoney(100)
-            
+
         # Put the card back
-        if communityCard != 6: # except GOOJF card
+        if communityCard != 6:  # except GOOJF card
             board.communityCards.append(communityCard)
-        
+
 
 # Property Class (for Properties, Rails, Utilities)
 class Property(Cell):
@@ -708,12 +737,13 @@ class Property(Cell):
         # Property up for sale
         elif self.owner == "":
             if player.wantsToBuy(self.cost_base, self.group):
-                log.write(player.name+" buys property "+ self.name + " for $"+str(self.cost_base), 3)
+                log.write(player.name+" buys property " +
+                          self.name + " for $"+str(self.cost_base), 3)
                 player.takeMoney(self.cost_base)
                 self.owner = player
                 board.recalculateAfterPropertyChange()
             else:
-                pass # auction here
+                pass  # auction here
                 log.write(player.name+" didn't buy the property.", 3)
                 # Auction here
                 # Decided not to implement it...
@@ -723,13 +753,14 @@ class Property(Cell):
         else:
             player.takeMoney(rent)
             self.owner.addMoney(rent)
-            log.write(player.name+" pays the rent $"+str(rent) +" to "+self.owner.name, 3)
+            log.write(player.name+" pays the rent $" +
+                      str(rent) + " to "+self.owner.name, 3)
 
     # mortgage the plot to the player / or sell the house
     def mortgage(self, player, board):
-        #Sell hotel
+        # Sell hotel
         if self.hasHouses == 5:
-            player.addMoney( self.cost_house * 5 // 2 )
+            player.addMoney(self.cost_house * 5 // 2)
             self.hasHouses = 0
             board.nHotels -= 1
             log.write(player.name+" sells hotel on "+self.name, 3)
@@ -739,26 +770,26 @@ class Property(Cell):
             self.hasHouses -= 1
             board.nHouses -= 1
             log.write(player.name+" sells house on "+self.name, 3)
-        #Mortgage
+        # Mortgage
         else:
             self.isMortgaged = True
             player.addMoney(self.cost_base // 2)
             # log name of the plot and money player need to pay to get it back
-            player.hasMortgages.append((self, int( (self.cost_base // 2) *1.1 )))
+            player.hasMortgages.append(
+                (self, int((self.cost_base // 2) * 1.1)))
             log.write(player.name+" mortgages "+self.name, 3)
 
-
     # unmortgage thr plot
+
     def unmortgage(self, player):
         #print (player.hasMortgages)
         for mortgage in player.hasMortgages:
-            if mortgage[0]==self:
+            if mortgage[0] == self:
                 thisMortgage = mortgage
         self.isMortgaged = False
         player.takeMoney(thisMortgage[1])
         player.hasMortgages.remove(thisMortgage)
         log.write(player.name+" unmortgages "+self.name, 3)
-      
 
 
 class Board:
@@ -767,7 +798,7 @@ class Board:
 
         # I know it is messy, but I need this for players to pay each other
         self.players = players
-        
+
         # data for plots:
         # name: does not really matter, just convenience
         # base_cost: used when buying plot, mortgage
@@ -776,56 +807,84 @@ class Board:
         # house_cost: price of one house (or a hotel)
         # house_rent: list of rent price with 1,2,3,4 houses and a hotel
         # group: used to determine monopoly
-        
+
         self.b = []
-        #0-4
-        self.b.append( Cell("Go"))
-        self.b.append( Property("A1 Mediterraneal Avenue", 60, 2, 50, (10,30,90,160,250), "brown") )
-        self.b.append( Community("Community Chest"))
-        self.b.append( Property("A2 Baltic Avenue", 60, 4, 50, (20,60,180,320,450),"brown") )
-        self.b.append( PropertyTax("Property Tax"))
-        #5-9
-        self.b.append( Property("R1 Reading railroad", 200, 0, 0, (0,0,0,0,0), "rail") )
-        self.b.append( Property("B1 Oriental Avenue", 100, 6, 50, (30,90,270,400,550), "lightblue") )
-        self.b.append( Chance("Chance") )
-        self.b.append( Property("B2 Vermont Avenue", 100, 6, 50, (30,90,270,400,550), "lightblue") )
-        self.b.append( Property("B3 Connecticut Avenue", 120, 8, 50, (40,100,300,450,600), "lightblue") )
-        #10-14
-        self.b.append( Cell("Prison"))
-        self.b.append( Property("C1 St.Charle's Place", 140, 10, 100, (50,150,450,625,750), "pink") )
-        self.b.append( Property("U1 Electric Company", 150, 0, 0, (0,0,0,0,0), "util") )
-        self.b.append( Property("C2 States Avenue", 140, 10, 100, (50,150,450,625,750), "pink") )
-        self.b.append( Property("C3 Virginia Avenue", 160, 12, 100, (60,180,500,700,900), "pink") )
-        #15-19
-        self.b.append( Property("R2 Pennsylvania Railroad", 200, 0, 0, (0,0,0,0,0), "rail") )
-        self.b.append( Property("D1 St.James Place", 180, 14, 100, (70,200,550,700,950), "orange") )
-        self.b.append( Community("Community Chest"))
-        self.b.append( Property("D2 Tennessee Avenue", 180, 14, 100, (70,200,550,700,950), "orange") )
-        self.b.append( Property("D3 New York Avenue", 200, 16, 100, (80,220,600,800,1000), "orange") )
-        #20-24
-        self.b.append( Cell("Free Parking"))
-        self.b.append( Property("E1 Kentucky Avenue", 220, 18, 150, (90,250,700,875,1050), "red") )
-        self.b.append( Chance("Chance") )
-        self.b.append( Property("E2 Indiana Avenue", 220, 18, 150, (90,250,700,875,1050), "red") )
-        self.b.append( Property("E3 Illinois Avenue", 240, 20, 150, (100,300,750,925,1100), "red") )
-        #25-29
-        self.b.append( Property("R3 BnO Railroad", 200, 0, 0, (0,0,0,0,0), "rail") )
-        self.b.append( Property("F1 Atlantic Avenue", 260, 22, 150, (110,330,800,975,1150), "yellow") )
-        self.b.append( Property("F2 Ventinor Avenue", 260, 22, 150, (110,330,800,975,1150), "yellow") )
-        self.b.append( Property("U2 Waterworks", 150, 0, 0, (0,0,0,0,0), "util") )
-        self.b.append( Property("F3 Martin Gardens", 280, 24, 150, (120,360,850,1025,1200), "yellow") )
-        #30-34
-        self.b.append( GoToJail ("Go To Jail"))
-        self.b.append( Property("G1 Pacific Avenue", 300, 26, 200, (130,390,900,1100,1275), "green") )
-        self.b.append( Property("G2 North Carolina Avenue", 300, 26, 200, (130,390,900,1100,1275), "green") )
-        self.b.append( Community("Community Chest"))
-        self.b.append( Property("G3 Pennsylvania Avenue", 320, 28, 200, (150,450,100,1200,1400), "green") )
-        #35-39
-        self.b.append( Property("R4 Short Line", 200, 0, 0, (0,0,0,0,0), "rail") )
-        self.b.append( Chance("Chance") )
-        self.b.append( Property("H1 Park Place", 350, 35, 200, (175,500,1100,1300,1500), "indigo") )
-        self.b.append( LuxuryTax("Luxury Tax"))
-        self.b.append( Property("H2 Boardwalk", 400, 50, 200, (200,600,1400,1700,2000), "indigo") )
+        # 0-4
+        self.b.append(Cell("Go"))
+        self.b.append(Property("A1 Mediterraneal Avenue", 60,
+                               2, 50, (10, 30, 90, 160, 250), "brown"))
+        self.b.append(Community("Community Chest"))
+        self.b.append(Property("A2 Baltic Avenue", 60, 4,
+                               50, (20, 60, 180, 320, 450), "brown"))
+        self.b.append(PropertyTax("Property Tax"))
+        # 5-9
+        self.b.append(Property("R1 Reading railroad",
+                               200, 0, 0, (0, 0, 0, 0, 0), "rail"))
+        self.b.append(Property("B1 Oriental Avenue", 100, 6,
+                               50, (30, 90, 270, 400, 550), "lightblue"))
+        self.b.append(Chance("Chance"))
+        self.b.append(Property("B2 Vermont Avenue", 100, 6, 50,
+                               (30, 90, 270, 400, 550), "lightblue"))
+        self.b.append(Property("B3 Connecticut Avenue", 120, 8,
+                               50, (40, 100, 300, 450, 600), "lightblue"))
+        # 10-14
+        self.b.append(Cell("Prison"))
+        self.b.append(Property("C1 St.Charle's Place", 140, 10,
+                               100, (50, 150, 450, 625, 750), "pink"))
+        self.b.append(Property("U1 Electric Company",
+                               150, 0, 0, (0, 0, 0, 0, 0), "util"))
+        self.b.append(Property("C2 States Avenue", 140, 10,
+                               100, (50, 150, 450, 625, 750), "pink"))
+        self.b.append(Property("C3 Virginia Avenue", 160, 12,
+                               100, (60, 180, 500, 700, 900), "pink"))
+        # 15-19
+        self.b.append(Property("R2 Pennsylvania Railroad",
+                               200, 0, 0, (0, 0, 0, 0, 0), "rail"))
+        self.b.append(Property("D1 St.James Place", 180, 14,
+                               100, (70, 200, 550, 700, 950), "orange"))
+        self.b.append(Community("Community Chest"))
+        self.b.append(Property("D2 Tennessee Avenue", 180, 14,
+                               100, (70, 200, 550, 700, 950), "orange"))
+        self.b.append(Property("D3 New York Avenue", 200, 16,
+                               100, (80, 220, 600, 800, 1000), "orange"))
+        # 20-24
+        self.b.append(Cell("Free Parking"))
+        self.b.append(Property("E1 Kentucky Avenue", 220, 18,
+                               150, (90, 250, 700, 875, 1050), "red"))
+        self.b.append(Chance("Chance"))
+        self.b.append(Property("E2 Indiana Avenue", 220, 18,
+                               150, (90, 250, 700, 875, 1050), "red"))
+        self.b.append(Property("E3 Illinois Avenue", 240, 20,
+                               150, (100, 300, 750, 925, 1100), "red"))
+        # 25-29
+        self.b.append(Property("R3 BnO Railroad", 200,
+                               0, 0, (0, 0, 0, 0, 0), "rail"))
+        self.b.append(Property("F1 Atlantic Avenue", 260, 22,
+                               150, (110, 330, 800, 975, 1150), "yellow"))
+        self.b.append(Property("F2 Ventinor Avenue", 260, 22,
+                               150, (110, 330, 800, 975, 1150), "yellow"))
+        self.b.append(Property("U2 Waterworks", 150,
+                               0, 0, (0, 0, 0, 0, 0), "util"))
+        self.b.append(Property("F3 Martin Gardens", 280, 24, 150,
+                               (120, 360, 850, 1025, 1200), "yellow"))
+        # 30-34
+        self.b.append(GoToJail("Go To Jail"))
+        self.b.append(Property("G1 Pacific Avenue", 300, 26,
+                               200, (130, 390, 900, 1100, 1275), "green"))
+        self.b.append(Property("G2 North Carolina Avenue", 300,
+                               26, 200, (130, 390, 900, 1100, 1275), "green"))
+        self.b.append(Community("Community Chest"))
+        self.b.append(Property("G3 Pennsylvania Avenue", 320, 28,
+                               200, (150, 450, 100, 1200, 1400), "green"))
+        # 35-39
+        self.b.append(Property("R4 Short Line", 200,
+                               0, 0, (0, 0, 0, 0, 0), "rail"))
+        self.b.append(Chance("Chance"))
+        self.b.append(Property("H1 Park Place", 350, 35, 200,
+                               (175, 500, 1100, 1300, 1500), "indigo"))
+        self.b.append(LuxuryTax("Luxury Tax"))
+        self.b.append(Property("H2 Boardwalk", 400, 50, 200,
+                               (200, 600, 1400, 1700, 2000), "indigo"))
 
         # number of built houses and hotels (to limit when needed)
         self.nHouses = 0
@@ -850,51 +909,51 @@ class Board:
     # Count the number of rails of the same owner as "position"
     # Used in rent calculations
     def countRails(self, position):
-        if type(self.b[position])!=Property or self.b[position].group != "rail":
-            return False        
+        if type(self.b[position]) != Property or self.b[position].group != "rail":
+            return False
         railcount = 0
         thisOwner = self.b[position].owner
         for plot in self.b:
-            if type(plot)==Property and plot.group == "rail" \
+            if type(plot) == Property and plot.group == "rail" \
                and plot.owner == thisOwner and plot.owner != "" \
                and not plot.isMortgaged:
                 railcount += 1
         return railcount
 
-
     # What is the rent of plot "position"
     # Takes into account utilities, rails, monopoly
+
     def calculateRent(self, position, special=""):
         if type(self.b[position]) == Property:
             rent = 0
-            
+
             # utility
             if self.b[position].group == "util":
-                if self.b[position].isMonopoly or special=="from_chance":
-                    rent = (random.randint(1,6)+random.randint(1,6)) * 10
+                if self.b[position].isMonopoly or special == "from_chance":
+                    rent = (random.randint(1, 6)+random.randint(1, 6)) * 10
                 else:
-                    rent = (random.randint(1,6)+random.randint(1,6)) * 4
+                    rent = (random.randint(1, 6)+random.randint(1, 6)) * 4
 
             # rail
             elif self.b[position].group == "rail":
                 rails = self.countRails(position)
-                rent = 0 if rails==0 else 25 * 2**(rails)
-                if special=="from_chance":
+                rent = 0 if rails == 0 else 25 * 2**(rails)
+                if special == "from_chance":
                     rent *= 2
 
-            # usual property    
+            # usual property
             else:
                 if self.b[position].hasHouses > 0:
                     if self.b[position].hasHouses-1 > 5:
-                        print (self.b[position].hasHouses-1)
-                        print (position)
+                        print(self.b[position].hasHouses-1)
+                        print(position)
                         self.printMap()
-                    rent = self.b[position].rent_house[ self.b[position].hasHouses-1 ]
+                    rent = self.b[position].rent_house[self.b[position].hasHouses-1]
                 elif self.b[position].isMonopoly:
                     rent = 2*self.b[position].rent_base
                 else:
                     rent = self.b[position].rent_base
-        else: # not a Property
+        else:  # not a Property
             rent = 0
         return rent
 
@@ -904,51 +963,57 @@ class Board:
         total = 0
         owned = 0
         for plot in self.b:
-            if type(plot)==Property and plot.group == group:
+            if type(plot) == Property and plot.group == group:
                 total += 1
-                if plot.owner == player :
+                if plot.owner == player:
                     owned += 1
         return owned / total
-            
 
     # What is the least valuable property / building
     # Used to pick what to mortgage / sell buildings
+
     def choosePropertyToMortgageDowngrade(self, player):
-        #list all the items this player has:
+        # list all the items this player has:
         ownedStuff = []
         for i in range(len(self.b)):
             plot = self.b[i]
-            if type(plot)==Property and not plot.isMortgaged and plot.owner == player:
-                ownedStuff.append( (i, plot.cost_base, self.b[i].isMonopoly, self.shareOfGroup(plot.group, player), plot.hasHouses ) )
+            if type(plot) == Property and not plot.isMortgaged and plot.owner == player:
+                ownedStuff.append((i, plot.cost_base, self.b[i].isMonopoly, self.shareOfGroup(
+                    plot.group, player), plot.hasHouses))
         if len(ownedStuff) == 0:
             return False
         # first to sel/mortgage are: least "monoolistic"; most houses
-        ownedStuff.sort(key = lambda x: (x[3],-x[4]))
+        ownedStuff.sort(key=lambda x: (x[3], -x[4]))
         return ownedStuff[0][0]
 
     # Chose Property to build the next house/hotel according to its value and available money
     def listPropertyToBuild(self, player):
-        #list all the items this player could built on:
+        # list all the items this player could built on:
         toBuildStuff = []
-        minInGroup = {} # smaller level of improvement in the group (to prevent inequal improvement)
+        # smaller level of improvement in the group (to prevent inequal improvement)
+        minInGroup = {}
         # start with listing all their monopolies
         for i in range(len(self.b)):
             plot = self.b[i]
-            if type(plot)==Property and self.b[i].isMonopoly and plot.owner == player \
-               and plot.group != "rail" and plot.group != "util" and plot.hasHouses<5:
-                if not (player.name=="exp" and expHouseBuildLimit==plot.hasHouses): # limit max houses experiment
-                    toBuildStuff.append( (i, plot.name, plot.group, plot.hasHouses, plot.cost_house, plot.cost_base) )
+            if type(plot) == Property and self.b[i].isMonopoly and plot.owner == player \
+               and plot.group != "rail" and plot.group != "util" and plot.hasHouses < 5:
+                # limit max houses experiment
+                if not (player.name == "exp" and expHouseBuildLimit == plot.hasHouses):
+                    toBuildStuff.append(
+                        (i, plot.name, plot.group, plot.hasHouses, plot.cost_house, plot.cost_base))
                     if plot.group in minInGroup:
-                        minInGroup[plot.group] = min(plot.hasHouses, minInGroup[plot.group])
+                        minInGroup[plot.group] = min(
+                            plot.hasHouses, minInGroup[plot.group])
                     else:
                         minInGroup[plot.group] = plot.hasHouses
         if len(toBuildStuff) == 0:
             return []
-        
+
         # remove those that has more houses than other plots in monopoly (to ensure gradual development)
-        toBuildStuff.sort(key = lambda x: (x[2],x[3]))
-        for i in range(len(toBuildStuff)-1,-1,-1):
-            if toBuildStuff[i][3]>minInGroup[ toBuildStuff[i][2] ]: # if it has more houses than minimum in that group, remove
+        toBuildStuff.sort(key=lambda x: (x[2], x[3]))
+        for i in range(len(toBuildStuff)-1, -1, -1):
+            # if it has more houses than minimum in that group, remove
+            if toBuildStuff[i][3] > minInGroup[toBuildStuff[i][2]]:
                 if not settingsAllowUnEqualDevelopment:
                     toBuildStuff.pop(i)
 
@@ -956,48 +1021,46 @@ class Board:
         if behaveBuildRandom:
             random.shuffle(toBuildStuff)
         elif behaveBuildCheapest:
-            toBuildStuff.sort(key = lambda x: (-x[4],-x[5]))
+            toBuildStuff.sort(key=lambda x: (-x[4], -x[5]))
         else:
-            toBuildStuff.sort(key = lambda x: (x[4],x[5]))
-        
-            
-        if expBuildCheapest and player.name=="exp":
-            toBuildStuff.sort(key = lambda x: (-x[4],-x[5]))
-        if expBuildExpensive and player.name=="exp":
-            toBuildStuff.sort(key = lambda x: (x[4],x[5]))
-            
-        if expBuildThree and player.name=="exp":
-            hasLessThanThree=False
+            toBuildStuff.sort(key=lambda x: (x[4], x[5]))
+
+        if expBuildCheapest and player.name == "exp":
+            toBuildStuff.sort(key=lambda x: (-x[4], -x[5]))
+        if expBuildExpensive and player.name == "exp":
+            toBuildStuff.sort(key=lambda x: (x[4], x[5]))
+
+        if expBuildThree and player.name == "exp":
+            hasLessThanThree = False
             for i in range(len(toBuildStuff)):
-                if toBuildStuff[i][3]<3:
-                    hasLessThanThree=True
+                if toBuildStuff[i][3] < 3:
+                    hasLessThanThree = True
             if hasLessThanThree:
-                for i in range(len(toBuildStuff)-1,-1,-1):
-                    if toBuildStuff[i][3]>=3:
+                for i in range(len(toBuildStuff)-1, -1, -1):
+                    if toBuildStuff[i][3] >= 3:
                         del toBuildStuff[i]
-            toBuildStuff.sort(key = lambda x: (x[3],x[4],x[5]))
-            #if len(toBuildStuff)>3:
+            toBuildStuff.sort(key=lambda x: (x[3], x[4], x[5]))
+            # if len(toBuildStuff)>3:
             #    print (toBuildStuff)
-            
-        #if len(toBuildStuff)>5:
+
+        # if len(toBuildStuff)>5:
             #print (toBuildStuff)
         return toBuildStuff
 
     def choosePropertyToBuild(self, player, availiableMoney):
-        for i in range(len(player.plotsToBuild)-1,-1,-1):
+        for i in range(len(player.plotsToBuild)-1, -1, -1):
             if player.plotsToBuild[i][4] <= availiableMoney:
                 return player.plotsToBuild[i][0]
         return False
-                
-
 
     # Build one house/hotel withinavailabel money
     # return True if built, so this function will be called again
+
     def improveProperty(self, player, availiableMoney):
         propertyToImprove = self.choosePropertyToBuild(player, availiableMoney)
         if type(propertyToImprove) == bool and not propertyToImprove:
             return False
-        
+
         # Check if we reached the limit of available Houses/Hotels
         thisIsHotel = True if self.b[propertyToImprove].hasHouses == 4 else False
         if thisIsHotel:
@@ -1009,33 +1072,32 @@ class Board:
                 log.write("reached house limit", 3)
                 return False
 
-        #add a building
+        # add a building
         self.b[propertyToImprove].hasHouses += 1
-        #add to the counter
+        # add to the counter
         if thisIsHotel:
             self.nHotels += 1
             self.nHouses -= 4
         else:
             self.nHouses += 1
-            
-        log.write(player.name+" builds house N"+str(self.b[propertyToImprove].hasHouses)+" on "+self.b[propertyToImprove].name, 3 )
-        player.takeMoney( self.b[propertyToImprove].cost_house )
+
+        log.write(player.name+" builds house N" +
+                  str(self.b[propertyToImprove].hasHouses)+" on "+self.b[propertyToImprove].name, 3)
+        player.takeMoney(self.b[propertyToImprove].cost_house)
         player.plotsToBuild = self.listPropertyToBuild(player)
         return True
 
-
-
     # When player is bankrupt - return all their property to market
+
     def sellAll(self, player):
         for plot in self.b:
-            if type(plot)==Property and plot.owner == player:
+            if type(plot) == Property and plot.owner == player:
                 plot.owner = ""
                 plot.isMortgaged = False
 
-                    
-
     # Get the list of plots player would want to get
     # that is he lacks one to for a monopoly
+
     def getListOfWantedPlots(self, player):
         groups = {}
         for plot in self.b:
@@ -1043,17 +1105,17 @@ class Board:
                 if plot.group in groups:
                     groups[plot.group][0] += 1
                 else:
-                    groups[plot.group] = [1,0]
+                    groups[plot.group] = [1, 0]
                 if plot.owner == player:
                     groups[plot.group][1] += 1
         wanted = []
         for group in groups:
-            if group!="util" and groups[group][0]-groups[group][1] == 1:
+            if group != "util" and groups[group][0]-groups[group][1] == 1:
                 for i in range(len(self.b)):
-                    if type(self.b[i])==Property and self.b[i].group==group and self.b[i].owner != player:
+                    if type(self.b[i]) == Property and self.b[i].group == group and self.b[i].owner != player:
                         wanted.append(i)
         return sorted(wanted)
-    
+
     # Get the list of plots player would want to offer for trade
     # that one random plot in a group
     def getListOfOfferedPlots(self, player):
@@ -1066,9 +1128,9 @@ class Board:
                     groups[plot.group] += 1
         offered = []
         for group in groups:
-            if group!="util" and groups[group] == 1:
+            if group != "util" and groups[group] == 1:
                 for i in range(len(self.b)):
-                    if type(self.b[i])==Property and self.b[i].group==group \
+                    if type(self.b[i]) == Property and self.b[i].group == group \
                        and self.b[i].owner == player and self.b[i].isMortgaged == False:
                         offered.append(i)
         return sorted(offered)
@@ -1078,23 +1140,23 @@ class Board:
         groups = {}
         for i in range(len(self.b)):
             plot = self.b[i]
-            if type(plot)==Property:
+            if type(plot) == Property:
                 if plot.owner == "":
                     groups[plot.group] = False
                 else:
                     if plot.group in groups:
-                        if groups[plot.group]!=plot.owner:
+                        if groups[plot.group] != plot.owner:
                             groups[plot.group] = False
                     else:
                         groups[plot.group] = plot.owner
         for i in range(len(self.b)):
             plot = self.b[i]
-            if type(plot)==Property:
-                if groups[plot.group]!=False:
+            if type(plot) == Property:
+                if groups[plot.group] != False:
                     plot.isMonopoly = True
-                else: 
+                else:
                     plot.isMonopoly = False
-                    
+
     # calculating heavy tasks that we want to do after property change:
     # list of wanted and offered properties for each player
     def recalculateAfterPropertyChange(self):
@@ -1103,30 +1165,32 @@ class Board:
             player.plotsWanted = self.getListOfWantedPlots(player)
             player.plotsOffered = self.getListOfOfferedPlots(player)
             player.plotsToBuild = self.listPropertyToBuild(player)
-    
-    
+
     # perform action for a player on a plot
+
     def action(self, player, position, special=""):
-        
-        #Landed on a property - calculate rent first
-        if type(self.b[position])==Property:
-            rent = self.calculateRent(position, special=special) # calculate the rent one would have to pay (but not pay it yet)
-            self.b[position].action(player, rent, self) # pass action to to the cell
-        #landed on a chance, pass board, to track the chance cards
-        elif type(self.b[position])==Chance or type(self.b[position])==Community or type(self.b[position])==PropertyTax:
+
+        # Landed on a property - calculate rent first
+        if type(self.b[position]) == Property:
+            # calculate the rent one would have to pay (but not pay it yet)
+            rent = self.calculateRent(position, special=special)
+            # pass action to to the cell
+            self.b[position].action(player, rent, self)
+        # landed on a chance, pass board, to track the chance cards
+        elif type(self.b[position]) == Chance or type(self.b[position]) == Community or type(self.b[position]) == PropertyTax:
             self.b[position].action(player, self)
         # other cells
         else:
             self.b[position].action(player)
-            
+
     def printMap(self):
         for i in range(len(self.b)):
-            if type(self.b[i])==Property:
-                print (i, self.b[i].name, "houses:", self.b[i].hasHouses, \
-                       "mortgaged:", self.b[i].isMortgaged, \
-                       "owner:", "none" if self.b[i].owner=="" else self.b[i].owner.name, \
-                        "monopoly" if self.b[i].isMonopoly else "" \
-                       )
+            if type(self.b[i]) == Property:
+                print(i, self.b[i].name, "houses:", self.b[i].hasHouses,
+                      "mortgaged:", self.b[i].isMortgaged,
+                      "owner:", "none" if self.b[i].owner == "" else self.b[i].owner.name,
+                      "monopoly" if self.b[i].isMonopoly else ""
+                      )
             else:
                 pass
                 #print (i, type(self.b[i]))
@@ -1144,8 +1208,10 @@ def isGameOver(players):
         return True
 
 # simulate one game
+
+
 def oneGame():
-    
+
     # create players
     players = []
     #names = ["pl"+str(i) for i in range(nPlayers)]
@@ -1155,63 +1221,60 @@ def oneGame():
     for i in range(nPlayers):
         players.append(Player(names[i]))
 
-    
     # create board
     gameBoard = Board(players)
 
     #  netWorth history first point
-    if writeData=="netWorth":
+    if writeData == "netWorth":
         networthstring = ""
         for player in players:
             networthstring += str(player.netWorth(gameBoard))
             if player != players[-1]:
-                networthstring+="\t"
+                networthstring += "\t"
         log.write(networthstring, data=True)
-
 
     # game
     for i in range(nMoves):
 
         if isGameOver(players):
             # to track length of the game
-            if writeData=="lastTurn":
+            if writeData == "lastTurn":
                 log.write(str(i-1), data=True)
             break
-        
+
         log.write(" TURN "+str(i+1), 1)
         for player in players:
-            if player.money>0:
-                log.write(player.name+": $"+str(player.money)+", position:"+str(player.position),2)
+            if player.money > 0:
+                log.write(player.name+": $"+str(player.money) +
+                          ", position:"+str(player.position), 2)
 
-        
-        for player in players:         
-            if not isGameOver(players): # Only continue if 2 or more players
-                while player.makeAMove(gameBoard): #returns True if player has to go again
+        for player in players:
+            if not isGameOver(players):  # Only continue if 2 or more players
+                # returns True if player has to go again
+                while player.makeAMove(gameBoard):
                     pass
 
-
         # track netWorth history of the game
-        if writeData=="netWorth":
+        if writeData == "netWorth":
             networthstring = ""
             for player in players:
                 networthstring += str(player.netWorth(gameBoard))
                 if player != players[-1]:
-                    networthstring+="\t"
+                    networthstring += "\t"
             log.write(networthstring, data=True)
-                
 
-    ## tests
-##    for player in players:
-##        player.threeWayTrade(gameBoard)
-    
+    # tests
+# for player in players:
+# player.threeWayTrade(gameBoard)
+
     # return final scores
     results = [players[i].getMoney() for i in range(nPlayers)]
-    
+
     # if it is an only simulation, print map and final score
-    if nSimulations==1 and showMap:
+    if nSimulations == 1 and showMap:
         gameBoard.printMap()
-    if nSimulations==1 and showResult:
-        print (results)
+    if nSimulations == 1 and showResult:
+        print(results)
     return results
 
 
@@ -1219,43 +1282,43 @@ def oneGame():
 def runSimulation():
     results = []
     for i in range(nSimulations):
-        
+
         log.write("="*10+" GAME "+str(i+1)+" "+"="*10+"\n")
 
         # remaining players - add to the results list
         results.append(oneGame())
 
         # write remaining players in a data log
-        if writeData=="remainingPlayers":
-            remPlayers = sum([1 for r in results[-1] if r>0])
+        if writeData == "remainingPlayers":
+            remPlayers = sum([1 for r in results[-1] if r > 0])
             log.write(str(remPlayers), data=True)
 
-            
-        if (i+1)%progressAsterix == 0:
+        if (i+1) % progressAsterix == 0:
             pass
-            print ("*", end = "")
-    print ()
+            print("*", end="")
+    print()
 
     return results
 
 
-# Analize results 
+# Analize results
 def analyzeResults(results):
-    
-    remainingPlayers = [0,]*nPlayers
+
+    remainingPlayers = [0, ]*nPlayers
     for result in results:
         alive = 0
         for score in result:
-            if score>=0:
-                alive +=1
+            if score >= 0:
+                alive += 1
         remainingPlayers[alive-1] += 1
-        
+
     if showRemPlayers:
-        print ("Remaining:", remainingPlayers)
+        print("Remaining:", remainingPlayers)
+
 
 def analyzeData():
-    
-    if writeData == "losersNames" or writeData == "experiment" or writeData=="remainingPlayers":
+
+    if writeData == "losersNames" or writeData == "experiment" or writeData == "remainingPlayers":
         groups = {}
         with open("data.txt", "r") as fs:
             for line in fs:
@@ -1271,24 +1334,25 @@ def analyzeData():
 
             if writeData == "losersNames":
                 count = 1-count
-            if item=="exp":
+            if item == "exp":
                 experiment = count
             else:
                 control += count
-                
-            margin = 1.96 * math.sqrt(count*(1-count)/nSimulations)
-            print ("{}: {:.1%} +- {:.1%}".format(item, count, margin) )
 
-        if experiment!=0:
-            print ("Exp result: {:.1%}".format(experiment-control/(nPlayers-1)) )
+            margin = 1.96 * math.sqrt(count*(1-count)/nSimulations)
+            print("{}: {:.1%} +- {:.1%}".format(item, count, margin))
+
+        if experiment != 0:
+            print("Exp result: {:.1%}".format(experiment-control/(nPlayers-1)))
 
     if writeData == "netWorth":
-        print ("graph here")
-        npdata = np.transpose( np.loadtxt("data.txt", dtype=int, delimiter="\t") )
-        x = np.arange(0, max( [len(d) for d in npdata] ) )
-        
+        print("graph here")
+        npdata = np.transpose(np.loadtxt(
+            "data.txt", dtype=int, delimiter="\t"))
+        x = np.arange(0, max([len(d) for d in npdata]))
+
         plt.ioff()
-        fig, ax = plt.subplots() 
+        fig, ax = plt.subplots()
         for i in range(nPlayers):
             ax.plot(x, npdata[i], label='1')
         plt.savefig("fig"+str(time.time())+".png")
@@ -1296,18 +1360,18 @@ def analyzeData():
 
 if __name__ == "__main__":
 
-        print ("="*40)
+    print("="*40)
 
-        t = time.time()
-        log = Log()
-        if seed != "":
-            random.seed(seed)
-        else:
-            random.seed()
-        print ("Players:", nPlayers, " Turns:", nMoves, " Games:", nSimulations, " Seed:", seed)
-        results = runSimulation()
-        analyzeResults(results)
-        log.close()
-        analyzeData()
-        print ("Done in {:.2f}s".format(time.time()-t))
-    
+    t = time.time()
+    log = Log()
+    if seed != "":
+        random.seed(seed)
+    else:
+        random.seed()
+    print("Players:", nPlayers, " Turns:", nMoves,
+          " Games:", nSimulations, " Seed:", seed)
+    results = runSimulation()
+    analyzeResults(results)
+    log.close()
+    analyzeData()
+    print("Done in {:.2f}s".format(time.time()-t))
