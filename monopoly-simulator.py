@@ -46,8 +46,7 @@ expBuildExpensive = False
 expBuildThree = False
 
 # reporting settings
-# output * every N simulations
-progressAsterix = nSimulations // 100 if nSimulations // 100 > 0 else 1
+OUT_WIDTH = 80
 showMap = False  # only for 1 game: show final board map
 showResult = True  # only for 1 game: show final money score
 showRemPlayers = True
@@ -80,6 +79,12 @@ class Log:
             if level < 2:
                 self.fs.write("\n"*(2-level))
             self.fs.write("\t"*level+text+"\n")
+
+
+def pbwrapper(iterable):
+    """Returns a progress bar iterable with widgets"""
+    widgets = [progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
+    return progressbar.progressbar(iterable, widgets=widgets, term_width=OUT_WIDTH)
 
 
 class Player:
@@ -1283,7 +1288,7 @@ def oneGame():
 def runSimulation():
     """run multiple game somulations"""
     results = []
-    for i in range(nSimulations):
+    for i in pbwrapper(range(nSimulations)):
 
         log.write("="*10+" GAME "+str(i+1)+" "+"="*10+"\n")
 
@@ -1294,10 +1299,6 @@ def runSimulation():
         if writeData == "remainingPlayers":
             remPlayers = sum([1 for r in results[-1] if r > 0])
             log.write(str(remPlayers), data=True)
-
-        if (i+1) % progressAsterix == 0:
-            pass
-            print("*", end="")
     print()
 
     return results
@@ -1362,7 +1363,7 @@ def analyzeData():
 
 if __name__ == "__main__":
 
-    print("="*40)
+    print("="*OUT_WIDTH)
 
     t = time.time()
     log = Log()
