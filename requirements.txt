@@ -1,2 +1,3 @@
 matplotlib
 numpy
+progressbar2

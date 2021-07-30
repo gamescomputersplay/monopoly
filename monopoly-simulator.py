@@ -8,6 +8,7 @@ import math
 import time
 import matplotlib.pyplot as plt
 import numpy as np
+import progressbar
 
 # simulation settings
 nPlayers = 4
