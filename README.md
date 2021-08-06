@@ -9,6 +9,8 @@
 Copyright (C) 2021 gamescomputersplay and nopeless
 
 All code is licensed under [`GPL-3.0-or-later`].
+That is, the GNU General Public License, either version 3,
+or (at your option) any later version.
 The [gitignore](.gitignore) and [requirements](requirements.txt) files are
 marked with [CC0 1.0].
 
