@@ -1,3 +1,7 @@
+# Copyright (C) 2021 Games Computers Play <https://github.com/gamescomputersplay> and nopeless
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # mnp
 
 # tra3
