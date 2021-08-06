@@ -1,3 +1,9 @@
+<!-- 
+SPDX-FileCopyrightText: 2021 Games Computers Play, nfitzen, and nopeless
+
+SPDX-License-Identifier: CC0-1.0
+-->
+
 # Monopoly simulator
 
 ## Original creator: Games Computer Play
@@ -12,7 +18,7 @@ All code is licensed under [`GPL-3.0-or-later`].
 That is, the GNU General Public License, either version 3,
 or (at your option) any later version.
 The [gitignore](.gitignore) and [requirements](requirements.txt) files are
-marked with [CC0 1.0].
+marked with [CC0 1.0]. This README is also marked with [CC0 1.0].
 
 See the [LICENSES](LICENSES/) folder for copies of the licenses.
 
