@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2021 Games Computers Play and nopeless
+#
+# SPDX-License-Identifier: CC0-1.0
 
 # Output files
 data.txt
@@ -14,6 +17,7 @@ temp/
 -*.*
 
 # Below is copied from https://github.com/github/gitignore/blob/master/Python.gitignore
+# Licensed under CC0-1.0.
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
