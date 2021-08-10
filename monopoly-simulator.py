@@ -2,10 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# mnp
-
-# tra3
-# graphs
+# Monopoly Simulator
 
 import random
 import math
@@ -51,6 +48,7 @@ expBuildThree = False
 
 # reporting settings
 OUT_WIDTH = 80
+showProgressBar = True
 showMap = False  # only for 1 game: show final board map
 showResult = True  # only for 1 game: show final money score
 showRemPlayers = True
@@ -83,12 +81,6 @@ class Log:
             if level < 2:
                 self.fs.write("\n"*(2-level))
             self.fs.write("\t"*level+text+"\n")
-
-
-def pbwrapper(iterable):
-    """Returns a progress bar iterable with widgets"""
-    widgets = [progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
-    return progressbar.progressbar(iterable, widgets=widgets, term_width=OUT_WIDTH)
 
 
 class Player:
@@ -1290,10 +1282,19 @@ def oneGame():
 
 
 def runSimulation():
-    """run multiple game somulations"""
+    """run multiple game simulations"""
     results = []
-    for i in pbwrapper(range(nSimulations)):
 
+    if showProgressBar:
+        widgets = [progressbar.Percentage(), progressbar.Bar(), progressbar.ETA()]
+        pbar = progressbar.ProgressBar(widgets=widgets, term_width=OUT_WIDTH, maxval=nSimulations)
+        pbar.start()
+    
+    for i in range(nSimulations):
+
+        if showProgressBar:
+            pbar.update(i+1)
+        
         log.write("="*10+" GAME "+str(i+1)+" "+"="*10+"\n")
 
         # remaining players - add to the results list
@@ -1303,8 +1304,11 @@ def runSimulation():
         if writeData == "remainingPlayers":
             remPlayers = sum([1 for r in results[-1] if r > 0])
             log.write(str(remPlayers), data=True)
+            
     print()
-
+    if showProgressBar:
+        pbar.finish()
+    
     return results
 
 
