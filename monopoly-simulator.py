@@ -45,6 +45,8 @@ expUnspendableCash = 0  # unspendable money
 expBuildCheapest = False
 expBuildExpensive = False
 expBuildThree = False
+variableStartingMoney = []# [1370, 1460, 1540, 1630] # [] to disable
+
 
 # reporting settings
 OUT_WIDTH = 80
@@ -86,10 +88,10 @@ class Log:
 class Player:
     """Player class"""
 
-    def __init__(self, name):
+    def __init__(self, name, startingMoney):
         self.name = name
         self.position = 0
-        self.money = settingStartingMoney
+        self.money = startingMoney
         self.consequentDoubles = 0
         self.inJail = False
         self.daysInJail = 0
@@ -1218,11 +1220,15 @@ def oneGame():
     # create players
     players = []
     # names = ["pl"+str(i) for i in range(nPlayers)]
-    names = ["pl"+str(i) for i in range(nPlayers-1)]+["exp"]
+    names = ["exp"]+["pl"+str(i) for i in range(nPlayers-1)]
     if shufflePlayers:
         random.shuffle(names)
     for i in range(nPlayers):
-        players.append(Player(names[i]))
+        if variableStartingMoney == []:
+            startingMoney = settingStartingMoney
+        else:
+            startingMoney = variableStartingMoney[i]
+        players.append(Player(names[i], startingMoney))
 
     # create board
     gameBoard = Board(players)
@@ -1305,7 +1311,7 @@ def runSimulation():
             remPlayers = sum([1 for r in results[-1] if r > 0])
             log.write(str(remPlayers), data=True)
             
-    print()
+
     if showProgressBar:
         pbar.finish()
     
