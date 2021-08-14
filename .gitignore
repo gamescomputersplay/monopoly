@@ -13,6 +13,10 @@ config.py
 # Temp folder
 temp/
 
+# IDE
+.vscode/
+.idea/
+
 # Python script files and temporary files
 # One letter name files will be ignored
 # files starting with - will also be ignored
