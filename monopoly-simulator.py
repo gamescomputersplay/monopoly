@@ -11,12 +11,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import progressbar
 
+import util
+
 # simulation settings
 nPlayers = 4
 nMoves = 1000
 nSimulations = 1000
 seed = ""  # "" for none
 shufflePlayers = True
+realTime = False # Allow step by step execution via space/enter key
 
 # some game rules
 settingStartingMoney = 1500
@@ -64,12 +67,30 @@ writeData = "losersNames"  # Who lost
 # writeData = "netWorth" # history of a game
 # writeData = "remainingPlayers"
 
+try:
+    import config # type: ignore
+    items = util.get_vars(config)
+    if items:
+        log = items.get("log", True)
+        if log:
+            print("="*OUT_WIDTH)
+            print("Overrides (is now value << was value):")
+        for k, v in items.items():
+            if log:
+                print(f"{f'  {k}={repr(v)}':30} << {locals()[k]}")
+            locals()[k] = v
+except ImportError:
+    print("No config file found, using default settings")
 
 class Log:
 
     def __init__(self):
-        self.datafs = open("data.txt", "w")
-        self.fs = open("log.txt", "w")
+        for n in ['log.txt', 'data.txt']:
+            with open(n, "w") as f:
+                f.write("")
+        # Use explicit form of append logging
+        self.datafs = open("data.txt", "ab", 0)
+        self.fs = open("log.txt", "ab", 0)
 
     def close(self):
         self.datafs.close()
@@ -77,12 +98,12 @@ class Log:
 
     def write(self, text, level=0, data=False):
         if data and writeData:
-            self.datafs.write(text+"\n")
+            self.datafs.write(bytes(text+"\n", "utf-8"))
             return
         if writeLog:
             if level < 2:
-                self.fs.write("\n"*(2-level))
-            self.fs.write("\t"*level+text+"\n")
+                self.fs.write(bytes("\n"*(2-level), "utf-8"))
+            self.fs.write(bytes("\t"*level+text+"\n", "utf-8"))
 
 
 class Player:
@@ -1220,7 +1241,7 @@ def oneGame():
     # create players
     players = []
     # names = ["pl"+str(i) for i in range(nPlayers)]
-    names = ["exp"]+["pl"+str(i) for i in range(nPlayers-1)]
+    names = [util.cardinal(i + 1) for i in range(nPlayers)]
     if shufflePlayers:
         random.shuffle(names)
     for i in range(nPlayers):
@@ -1244,18 +1265,18 @@ def oneGame():
 
     # game
     for i in range(nMoves):
-
+        if realTime:
+            input("Press enter to continue")
         if isGameOver(players):
             # to track length of the game
             if writeData == "lastTurn":
                 log.write(str(i-1), data=True)
             break
 
-        log.write(" TURN "+str(i+1), 1)
+        log.write("TURN "+str(i+1), 1)
         for player in players:
             if player.money > 0:
-                log.write(player.name+": $"+str(player.money) +
-                          ", position:"+str(player.position), 2)
+                log.write(f"{f'{player.name}: ':8} ${player.money} | position:"+str(player.position), 2)
 
         for player in players:
             if not isGameOver(players):  # Only continue if 2 or more players

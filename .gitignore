@@ -6,9 +6,16 @@
 data.txt
 log.txt
 
+# Config file
+config.py
+
 # Below is some common gitignores for small project
 # Temp folder
 temp/
+
+# IDE
+.vscode/
+.idea/
 
 # Python script files and temporary files
 # One letter name files will be ignored
