@@ -66,6 +66,20 @@ writeData = "losersNames"  # Who lost
 # writeData = "netWorth" # history of a game
 # writeData = "remainingPlayers"
 
+try:
+    import config # type: ignore
+    items = util.get_vars(config)
+    if items:
+        log = items.get("log", True)
+        if log:
+            print("="*OUT_WIDTH)
+            print("Overrides (is now value << was value):")
+        for k, v in items.items():
+            if log:
+                print(f"{f'  {k}={repr(v)}':30} << {locals()[k]}")
+            locals()[k] = v
+except ImportError:
+    print("No config file found, using default settings")
 
 class Log:
 
