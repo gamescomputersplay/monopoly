@@ -1270,8 +1270,7 @@ def oneGame():
         log.write("TURN "+str(i+1), 1)
         for player in players:
             if player.money > 0:
-                log.write(player.name+": $"+str(player.money) +
-                          ", position:"+str(player.position), 2)
+                log.write(f"{f'{player.name}: ':8} ${player.money} | position:"+str(player.position), 2)
 
         for player in players:
             if not isGameOver(players):  # Only continue if 2 or more players
