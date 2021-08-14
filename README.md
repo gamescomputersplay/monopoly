@@ -21,6 +21,14 @@ log=True # disables override logs if False (default True)
 showMap=True # overrides the showmap=False option in the main file
 ```
 
+# Watching changes
+
+Powershell:  
+`get-content log.txt -wait -tail 30`
+
+Bash:  
+`tail log.txt -f`
+
 ## Copyright
 
 Copyright (C) 2021 gamescomputersplay and nopeless
