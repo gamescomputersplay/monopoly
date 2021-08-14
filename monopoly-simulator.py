@@ -1267,7 +1267,7 @@ def oneGame():
                 log.write(str(i-1), data=True)
             break
 
-        log.write(" TURN "+str(i+1), 1)
+        log.write("TURN "+str(i+1), 1)
         for player in players:
             if player.money > 0:
                 log.write(player.name+": $"+str(player.money) +
