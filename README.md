@@ -10,6 +10,17 @@ SPDX-License-Identifier: CC0-1.0
 
 * YouTube: https://www.youtube.com/channel/UCTrp88f-QJ1SqKX8o5IDhWQ
 
+# Config file (optional)
+
+`config.py` allows dynamic variable loading  
+It is more versitle than `.env` files
+
+example:
+```py
+log=True # disables override logs if False (default True)
+showMap=True # overrides the showmap=False option in the main file
+```
+
 ## Copyright
 
 Copyright (C) 2021 gamescomputersplay and nopeless
