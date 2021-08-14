@@ -6,6 +6,9 @@
 data.txt
 log.txt
 
+# Config file
+config.py
+
 # Below is some common gitignores for small project
 # Temp folder
 temp/
