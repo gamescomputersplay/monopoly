@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import progressbar
 
+import util
+
 # simulation settings
 nPlayers = 4
 nMoves = 1000
@@ -1220,7 +1222,7 @@ def oneGame():
     # create players
     players = []
     # names = ["pl"+str(i) for i in range(nPlayers)]
-    names = ["exp"]+["pl"+str(i) for i in range(nPlayers-1)]
+    names = [util.cardinal(i + 1) for i in range(nPlayers)]
     if shufflePlayers:
         random.shuffle(names)
     for i in range(nPlayers):
