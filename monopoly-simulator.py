@@ -3,6 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # Monopoly Simulator
+# Videos with some research using this simulator:
+# https://www.youtube.com/watch?v=6EJrZeN0jNI
+# https://www.youtube.com/watch?v=Dx1ofZHGUtI
 
 import random
 import math
