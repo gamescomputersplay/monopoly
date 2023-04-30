@@ -24,7 +24,7 @@ sim_conf = SimulationConfig()
 log = Log()
 
 # simulate one game
-def oneGame(run_number):
+def one_game(run_number):
 
     game_rules = GameRulesConfig()
     player_behaviours = PlayerBehaviourConfig(0)
@@ -49,19 +49,19 @@ def oneGame(run_number):
     # create board
     game_board = Board(players, game_rules, log)
 
-    #  netWorth history first point
+    #  net_worth history first point
     if sim_conf.write_mode == WriteMode.NET_WORTH:
-        networthstring = ""
+        net_worth_string = ""
         for player in players:
-            networthstring += str(player.netWorth(game_board))
+            net_worth_string += str(player.net_worth(game_board))
             if player != players[-1]:
-                networthstring += "\t"
-        log.write(networthstring, data=True)
+                net_worth_string += "\t"
+        log.write(net_worth_string, data=True)
 
     # game
     for i in range(sim_conf.n_moves):
             
-        if isGameOver(players):
+        if is_game_over(players):
             # to track length of the game
             if sim_conf.write_mode == WriteMode.GAME_LENGTH:
                 log.write(str(i-1), data=True)
@@ -73,16 +73,16 @@ def oneGame(run_number):
                 log.write(f"{f'{player.name}: ':8} ${player.money} | position:"+str(player.position), 2)
 
         for player in players:
-            if not isGameOver(players):  # Only continue if 2 or more players
+            if not is_game_over(players):  # Only continue if 2 or more players
                 # returns True if player has to go again
-                while player.makeAMove(game_board):
+                while player.make_a_move(game_board):
                     pass
 
-        # track netWorth history of the game
+        # track net_worth history of the game
         if sim_conf.write_mode == WriteMode.NET_WORTH:
             net_worth_string = "\n"
             for player in players:
-                net_worth_string += str(player.netWorth(game_board))
+                net_worth_string += str(player.net_worth(game_board))
                 if player != players[-1]:
                     net_worth_string += "\t"
                 
@@ -90,10 +90,10 @@ def oneGame(run_number):
 
     # tests
     # for player in players:
-    # player.threeWayTrade(gameBoard)
+    # player.three_way_trade(gameBoard)
 
     # return final scores
-    results = [players[i].getMoney() for i in range(sim_conf.n_players)]
+    results = [players[i].get_money() for i in range(sim_conf.n_players)]
 
     # if it is an only simulation, print map and final score
     if sim_conf.n_simulations == 1 and sim_conf.show_map:
@@ -104,7 +104,7 @@ def oneGame(run_number):
     return results, log.get_data()
 
 
-def runSimulation():
+def run_simulation():
     """run multiple game simulations"""
     results = []
     local_log = Log()
@@ -120,17 +120,16 @@ def runSimulation():
         i = 0
         tracking_winners = [0]*sim_conf.n_players
 
-        for result in pbwrapper(pool.imap(oneGame, range(sim_conf.n_simulations)), sim_conf.n_simulations):
+        for result in pbwrapper(pool.imap(one_game, range(sim_conf.n_simulations)), sim_conf.n_simulations):
             if sim_conf.show_progress_bar:
                 pbar.update(i + 1)
                 i += 1
             results.append(result)
 
             # determine winner
-            ending_networth, _ = result
+            ending_net_worth, _ = result
             
-            winner_result_map = list(enumerate(ending_networth))
-            print(winner_result_map)
+            winner_result_map = list(enumerate(ending_net_worth))
             winner_result_map = sorted(list(winner_result_map), reverse=True, key=lambda x: x[1])
 
             if (winner_result_map[1][1] < 0):
@@ -139,19 +138,13 @@ def runSimulation():
             if sim_conf.write_mode == WriteMode.REMAINING_PLAYERS:
                 remPlayers = sum([1 for r in result[-1] if r > 0])
                 local_log.write(str(remPlayers), data=True)
-            #
+
+        if sim_conf.show_progress_bar:
+            pbar.finish()
+        
         print("DISTRIBUTION OF WINNERS " + str(i))
         print(tracking_winners)
 
-    # for i in pbwrapper(range(sim_conf.n_simulations), sim_conf.n_simulations):
-    
-    #     local_log.write("="*10+" GAME "+str(i+1)+" "+"="*10+"\n")
-    
-    #     # remaining players - add to the results list
-    #     results.append(oneGame(i))
-
-    if sim_conf.show_progress_bar:
-        pbar.finish()
 
     return results
 
@@ -169,7 +162,7 @@ if __name__ == "__main__":
     print("Players:", sim_conf.n_players, " Turns:", sim_conf.n_moves,
           " Games:", sim_conf.n_simulations, " Seed:", sim_conf.seed)
 
-    results_and_metrics = runSimulation()
+    results_and_metrics = run_simulation()
     results = []
     metric_str = ""
     for result, metrics in results_and_metrics:
@@ -179,7 +172,7 @@ if __name__ == "__main__":
     with open('data.txt', 'w') as f:
         f.write(metric_str)
 
-    analyzeResults(results, sim_conf)
-    # analyzeData()
+    analyze_results(results, sim_conf)
+    # analyze_data()
 
     print("Done in {:.2f}s".format(time.time()-t))

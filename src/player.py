@@ -12,17 +12,17 @@ class Player:
         self.log = log
         self.position = 0
         self.money = starting_money
-        self.consequentDoubles = 0
-        self.inJail = False
-        self.daysInJail = 0
-        self.hasJailCardChance = False
-        self.hasJailCardCommunity = False
-        self.isBankrupt = False
-        self.hasMortgages = []
-        self.plotsWanted = []
-        self.plotsOffered = []
-        self.plotsToBuild = []
-        self.cashLimit = behaviour.unspendable_cash
+        self.consequent_doubles = 0
+        self.in_jail = False
+        self.days_in_jail = 0
+        self.has_jail_card_chance = False
+        self.has_jail_card_community = False
+        self.is_bankrupt = False
+        self.has_mortgages = []
+        self.plots_wanted = []
+        self.plots_offered = []
+        self.plots_to_build = []
+        self.cash_limit = behaviour.unspendable_cash
         self.behaviour = behaviour
         self.sim_conf = simulation_conf
 
@@ -31,43 +31,41 @@ class Player:
                ". Position: "+str(self.position) + \
                ". Money: $"+str(self.money)
 
-    # some getters and setters
-
-    def getMoney(self):
+    def get_money(self):
         return self.money
 
-    def getName(self):
+    def get_name(self):
         return self.name
 
     # add money (salary, receive rent etc)
-    def addMoney(self, amount):
+    def add_money(self, amount):
         self.money += amount
 
     # subtract money (pay reny, buy property etc)
-    def takeMoney(self, amount, board, action_origin):
+    def take_money(self, amount, board, action_origin):
         amount_taken = min(self.money, amount)
         self.money -= amount
         final_account_balance = self.money
-        self.checkBankrupcy(board, action_origin)
-        if self.isBankrupt:
+        self.check_bankruptcy(board, action_origin)
+        if self.is_bankrupt:
             amount_taken += self.money - final_account_balance
         else:
             amount_taken = amount
         return amount_taken
 
     # subtract money (pay reny, buy property etc)
-    def moveTo(self, position):
+    def move_to(self, position):
         self.position = position
         self.log.write(self.name+" moves to cell "+str(position), 3)
 
     # make a move procedure
 
-    def makeAMove(self, board):
+    def make_a_move(self, board):
 
         goAgain = False
 
         # Only proceed if player is alive (not bankrupt)
-        if self.isBankrupt:
+        if self.is_bankrupt:
             return
 
         # to track the popular cells to land
@@ -78,11 +76,11 @@ class Player:
 
         # non-board actions: Trade, unmortgage, build
         # repay mortgage if you have X times more cashe than mortgage    cost
-        while self.repayMortgage(board):
+        while self.repay_mortgage(board):
             board.recalculateAfterPropertyChange()
 
         # build houses while you have pare cash
-        while board.improveProperty(self, board, self.money-self.cashLimit):
+        while board.improveProperty(self, board, self.money-self.cash_limit):
             pass
 
         # Calculate property player wants to get and ready to give away
@@ -90,8 +88,8 @@ class Player:
             pass  # Experiement: do not trade
         elif not self.behaviour.refuse_to_trade:
             #  Make a trade
-            if not self.twoWayTrade(board) and self.sim_conf.n_players >= 3 and self.behaviour.three_way_trade:
-                self.threeWayTrade(board)
+            if not self.two_way_trade(board) and self.sim_conf.n_players >= 3 and self.behaviour.three_way_trade:
+                self.three_way_trade(board)
 
         # roll dice
         dice1 = random.randint(1, 6)
@@ -100,47 +98,47 @@ class Player:
                   str(dice2)+" = "+str(dice1+dice2), 3)
 
         # doubles
-        if dice1 == dice2 and not self.inJail:
+        if dice1 == dice2 and not self.in_jail:
             goAgain = True  # go again if doubles
-            self.consequentDoubles += 1
+            self.consequent_doubles += 1
             self.log.write("it's a number " +
-                      str(self.consequentDoubles) + " double in a row", 3)
-            if self.consequentDoubles == 3:  # but go to jail if 3 times in a row
-                self.inJail = True
+                      str(self.consequent_doubles) + " double in a row", 3)
+            if self.consequent_doubles == 3:  # but go to jail if 3 times in a row
+                self.in_jail = True
                 self.log.write(self.name+" goes to jail on consequtive doubles", 3)
-                self.moveTo(10)
-                self.consequentDoubles = 0
+                self.move_to(10)
+                self.consequent_doubles = 0
                 return False
         else:
-            self.consequentDoubles = 0  # reset doubles counter
+            self.consequent_doubles = 0  # reset doubles counter
 
         # Jail situation:
         # Stay unless you roll doubles
-        if self.inJail:
-            if self.hasJailCardChance:
-                self.hasJailCardChance = False
+        if self.in_jail:
+            if self.has_jail_card_chance:
+                self.has_jail_card_chance = False
                 board.chanceCards.append(1)  # return the card
                 self.log.write(
                     self.name+" uses the Chance GOOJF card to get out of jail", 3)
-            elif self.hasJailCardCommunity:
-                self.hasJailCardCommunity = False
+            elif self.has_jail_card_community:
+                self.has_jail_card_community = False
                 board.communityCards.append(6)  # return the card
                 self.log.write(
                     self.name+" uses the Community GOOJF card to get out of jail", 3)
             elif dice1 != dice2:
-                self.daysInJail += 1
-                if self.daysInJail < 3:
+                self.days_in_jail += 1
+                if self.days_in_jail < 3:
                     self.log.write(self.name+" spends this turn in jail", 3)
                     return False  # skip turn in jail
                 else:
-                    self.takeMoney(board.game_conf.jail_fine, board, BANK_NAME)  # get out on fine
-                    self.daysInJail = 0
+                    self.take_money(board.game_conf.jail_fine, board, BANK_NAME)  # get out on fine
+                    self.days_in_jail = 0
                     self.log.write(self.name+" pays fine and gets out of jail", 3)
             else:  # get out of jail on doubles
                 self.log.write(self.name+" rolls double and gets out of jail", 3)
-                self.daysInJail = 0
+                self.days_in_jail = 0
                 goAgain = False
-        self.inJail = False
+        self.in_jail = False
 
         # move the piece
         self.position += dice1+dice2
@@ -150,7 +148,7 @@ class Player:
             # calculate correct cell
             self.position = self.position - 40
             # get salary for passing GO
-            self.addMoney(board.game_conf.salary)
+            self.add_money(board.game_conf.salary)
             self.log.write(self.name+" gets salary: $"+str(board.game_conf.salary), 3)
 
         self.log.write(self.name+" moves to cell "+str(self.position) + ": "+board.b[self.position].name +
@@ -166,15 +164,15 @@ class Player:
 
     # get the cheapest mortgage property (name, price)
 
-    def cheapestMotgage(self):
+    def cheapest_mortgage(self):
         cheapest = False
-        for mortgage in self.hasMortgages:
+        for mortgage in self.has_mortgages:
             if not cheapest or mortgage[1] < cheapest[1]:
                 cheapest = mortgage
         return cheapest
 
     # Chance card make general repairs: 25/house 100/hotel
-    def makeRepairs(self, board, repairtype):
+    def make_repairs(self, board, repairtype):
         repairCost = 0
         if repairtype == "chance":
             perHouse, perHotel = 25, 100
@@ -189,20 +187,20 @@ class Player:
                     repairCost += perHotel
                 else:
                     repairCost += plot.hasHouses*perHouse
-        self.takeMoney(repairCost, board, BANK_NAME)
+        self.take_money(repairCost, board, BANK_NAME)
         self.log.write(self.name+" pays total repair costs $"+str(repairCost), 3)
 
     # check if player has negative money
     # if so, start selling stuff and mortgage plots
     # if that's not enough, player bankrupt
 
-    def checkBankrupcy(self, board, bankrupter):
+    def check_bankruptcy(self, board, bankrupter):
         if self.money < 0:
             self.log.write(self.name+" doesn't have enough cash", 3)
             while self.money < 0:
                 worstAsset = board.choosePropertyToMortgageDowngrade(self)
                 if worstAsset == False:
-                    self.isBankrupt = True
+                    self.is_bankrupt = True
                     if bankrupter == BANK_NAME or board.game_conf.bankruptcy_goes_to_bank:
                         board.sellAll(self)
                         self.log.write("The bank bankrupted " + self.name + ". Their property is back on the board", 3)
@@ -228,7 +226,7 @@ class Player:
                     board.recalculateAfterPropertyChange()
 
     # Calculate net worth of a player (for property tax)
-    def netWorth(self, board):
+    def net_worth(self, board):
         worth = self.money
         for plot in board.b:
             if type(plot) == Property and plot.owner == self:
@@ -243,15 +241,15 @@ class Player:
 
     # if there is a mortgage with pay less then current money // behaveUnmortgageCoeff
     # repay the mortgage
-    def repayMortgage(self, board):
-        cheapest = self.cheapestMotgage()
+    def repay_mortgage(self, board):
+        cheapest = self.cheapest_mortgage()
         if cheapest and self.money > cheapest[1] * self.behaviour.unmortgage_coeff:
             cheapest[0].unmortgage(self, board)
             return True
         return False
 
     # does player want to buy a property
-    def wantsToBuy(self, base_cost, cost, group, board):
+    def wants_to_buy(self, base_cost, cost, group, board):
         if self.name == "exp" and group == expRefuseProperty:
             self.log.write(self.name+" refuses to buy " +
                       expRefuseProperty+" property", 3)
@@ -273,26 +271,26 @@ class Player:
                 if plot.owner == self:
                     groups[plot.group][1] += 1
         if groups[group][1] >= 1:
-            if self.money > cost + self.cashLimit and cost <= base_cost*2:
+            if self.money > cost + self.cash_limit and cost <= base_cost*2:
                 return True
             else:
                 return False
         else:
-            if self.money > cost + self.cashLimit and cost <= base_cost:
+            if self.money > cost + self.cash_limit and cost <= base_cost:
                 return True
             else:
                 return False
 
     # Look for and perform a two-way trade
-    def twoWayTrade(self, board):
-        tradeHappened = False
-        for IWant in self.plotsWanted[::-1]:
+    def two_way_trade(self, board):
+        trade_happened = False
+        for IWant in self.plots_wanted[::-1]:
             ownerOfWanted = board.b[IWant].owner
             if ownerOfWanted == "":
                 continue
             # Find a match betwee what I want / they want / I have / they have
-            for TheyWant in ownerOfWanted.plotsWanted[::-1]:
-                if TheyWant in self.plotsOffered \
+            for TheyWant in ownerOfWanted.plots_wanted[::-1]:
+                if TheyWant in self.plots_offered \
                    and board.b[IWant].group != board.b[TheyWant].group:  # prevent exchanging in groups of 2
                     self.log.write("Trade match: " + self.name + " wants " + board.b[IWant].name +
                               ", and " + ownerOfWanted.name + " wants " + board.b[TheyWant].name, 3)
@@ -307,41 +305,41 @@ class Player:
                     self.log.write("Price difference is $" + str(priceDiff), 3)
 
                     # make sure they they can pay the money
-                    if board.b[cheaperOne].owner.money - priceDiff >= board.b[cheaperOne].owner.cashLimit:
+                    if board.b[cheaperOne].owner.money - priceDiff >= board.b[cheaperOne].owner.cash_limit:
                         self.log.write(
                             "We have a deal. Money and property changed hands", 3)
                         # Money and property change hands
-                        board.b[cheaperOne].owner.takeMoney(priceDiff, board, "noone")
-                        board.b[expensiveOne].owner.addMoney(priceDiff)
+                        board.b[cheaperOne].owner.take_money(priceDiff, board, "noone")
+                        board.b[expensiveOne].owner.add_money(priceDiff)
                         board.b[cheaperOne].owner, board.b[expensiveOne].owner = \
                             board.b[expensiveOne].owner, board.b[cheaperOne].owner
-                        tradeHappened = True
+                        trade_happened = True
 
                         # recalculated wanted and offered plots
                         board.recalculateAfterPropertyChange()
-        return tradeHappened
+        return trade_happened
 
-    def threeWayTrade(self, board):
+    def three_way_trade(self, board):
         """Look for and perform a three-way trade"""
-        tradeHappened = False
-        for wanted1 in self.plotsWanted[::-1]:
-            ownerOfWanted1 = board.b[wanted1].owner
-            if ownerOfWanted1 == "":
+        trade_happened = False
+        for wanted1 in self.plots_wanted[::-1]:
+            first_owner_of_wanted = board.b[wanted1].owner
+            if first_owner_of_wanted == "":
                 continue
-            for wanted2 in ownerOfWanted1.plotsWanted[::-1]:
-                ownerOfWanted2 = board.b[wanted2].owner
-                if ownerOfWanted2 == "":
+            for wanted2 in first_owner_of_wanted.plots_wanted[::-1]:
+                second_owner_of_wanted = board.b[wanted2].owner
+                if second_owner_of_wanted == "":
                     continue
-                for wanted3 in ownerOfWanted2.plotsWanted[::-1]:
-                    if wanted3 in self.plotsOffered:
+                for wanted3 in second_owner_of_wanted.plots_wanted[::-1]:
+                    if wanted3 in self.plots_offered:
 
                         # check we have property from 3 groups
                         # otherwise someone can give and take brown or indigo at the same time
-                        checkDiffGroup = set()
-                        checkDiffGroup.add(board.b[wanted1].group)
-                        checkDiffGroup.add(board.b[wanted2].group)
-                        checkDiffGroup.add(board.b[wanted3].group)
-                        if len(checkDiffGroup) < 3:
+                        check_diff_group = set()
+                        check_diff_group.add(board.b[wanted1].group)
+                        check_diff_group.add(board.b[wanted2].group)
+                        check_diff_group.add(board.b[wanted3].group)
+                        if len(check_diff_group) < 3:
                             continue
 
                         topay1 = board.b[wanted1].cost_base - \
@@ -350,23 +348,25 @@ class Player:
                             board.b[wanted1].cost_base
                         topay3 = board.b[wanted3].cost_base - \
                             board.b[wanted2].cost_base
-                        if self.money-topay1 > self.cashLimit and \
-                           ownerOfWanted1.money-topay2 > ownerOfWanted1.cashLimit and \
-                           ownerOfWanted2.money-topay3 > ownerOfWanted2.cashLimit:
+                        if self.money-topay1 > self.cash_limit and \
+                           first_owner_of_wanted.money-topay2 > first_owner_of_wanted.cash_limit and \
+                           first_owner_of_wanted.money-topay3 > second_owner_of_wanted.cash_limit:
                             self.log.write("Three way trade: ", 3)
                             self.log.write(self.name + " gives " + board.b[wanted3].name + " and $" + str(
                                 topay1) + " for " + board.b[wanted1].name, 4)
-                            self.log.write(ownerOfWanted1.name + " gives " + board.b[wanted1].name + " and $" + str(
+                            self.log.write(first_owner_of_wanted.name + " gives " + board.b[wanted1].name + " and $" + str(
                                 topay2) + " for " + board.b[wanted2].name, 4)
-                            self.log.write(ownerOfWanted2.name + " gives " + board.b[wanted2].name + " and $" + str(
+                            self.log.write(second_owner_of_wanted.name + " gives " + board.b[wanted2].name + " and $" + str(
                                 topay3) + " for " + board.b[wanted3].name, 4)
                             # Money and property change hands
                             board.b[wanted1].owner = self
-                            board.b[wanted2].owner = ownerOfWanted1
-                            board.b[wanted3].owner = ownerOfWanted2
-                            self.takeMoney(topay1, board, "noone") # guaranteed to have enough money
-                            ownerOfWanted1.takeMoney(topay2, board, "noone")
-                            ownerOfWanted2.takeMoney(topay3, board, "noone")
+                            board.b[wanted2].owner = first_owner_of_wanted
+                            board.b[wanted3].owner = second_owner_of_wanted
+                            self.take_money(topay1, board, "noone") # guaranteed to have enough money
+                            first_owner_of_wanted.take_money(topay2, board, "noone")
+                            second_owner_of_wanted.take_money(topay3, board, "noone")
                             tradeHappened = True
                             # recalculated wanted and offered plots
                             board.recalculateAfterPropertyChange()
+        return trade_happened
+        

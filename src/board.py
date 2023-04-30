@@ -263,9 +263,9 @@ class Board:
         return toBuildStuff
 
     def choosePropertyToBuild(self, player, availiableMoney):
-        for i in range(len(player.plotsToBuild)-1, -1, -1):
-            if player.plotsToBuild[i][4] <= availiableMoney:
-                return player.plotsToBuild[i][0]
+        for i in range(len(player.plots_to_build)-1, -1, -1):
+            if player.plots_to_build[i][4] <= availiableMoney:
+                return player.plots_to_build[i][0]
         return False
 
     # Build one house/hotel withinavailabel money
@@ -298,8 +298,8 @@ class Board:
 
         self.log.write(player.name+" builds house N" +
                   str(self.b[propertyToImprove].hasHouses)+" on "+self.b[propertyToImprove].name, 3)
-        player.takeMoney(self.b[propertyToImprove].cost_house, self, BANK_NAME)
-        player.plotsToBuild = self.listPropertyToBuild(player, board)
+        player.take_money(self.b[propertyToImprove].cost_house, self, BANK_NAME)
+        player.plots_to_build = self.listPropertyToBuild(player, board)
         return True
 
     # When player is bankrupt - return all their property to market
@@ -380,9 +380,9 @@ class Board:
     def recalculateAfterPropertyChange(self):
         self.checkMonopolies()
         for player in self.players:
-            player.plotsWanted = self.getListOfWantedPlots(player)
-            player.plotsOffered = self.getListOfOfferedPlots(player)
-            player.plotsToBuild = self.listPropertyToBuild(player, self)
+            player.plots_wanted = self.getListOfWantedPlots(player)
+            player.plots_offered = self.getListOfOfferedPlots(player)
+            player.plots_to_build = self.listPropertyToBuild(player, self)
 
     # perform action for a player on a plot
 

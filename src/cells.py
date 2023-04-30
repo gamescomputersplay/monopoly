@@ -17,7 +17,7 @@ class LuxuryTax(Cell):
     """Pay Luxury Tax cell (#38)"""
 
     def action(self, player, board):
-        player.takeMoney(board.game_conf.luxury_tax, board, BANK_NAME)
+        player.take_money(board.game_conf.luxury_tax, board, BANK_NAME)
         self.log.write(player.name+" pays Luxury Tax $"+str(board.game_conf.luxury_tax), 3)
 
 
@@ -25,17 +25,17 @@ class PropertyTax(Cell):
     """Pay Property Tax cell (200 or 10%) (#4)"""
 
     def action(self, player, board):
-        toPay = min(board.game_conf.property_tax, player.netWorth(board)//10)
+        toPay = min(board.game_conf.property_tax, player.net_worth(board)//10)
         self.log.write(player.name+" pays Property Tax $"+str(toPay), 3)
-        player.takeMoney(toPay, board, BANK_NAME)
+        player.take_money(toPay, board, BANK_NAME)
 
 
 class GoToJail(Cell):
     """Go to Jail (#30)"""
 
     def action(self, player, board):
-        player.moveTo(10)
-        player.inJail = True
+        player.move_to(10)
+        player.in_jail = True
         self.log.write(player.name+" goes to jail from Go To Jail ", 3)
 
 
@@ -53,7 +53,7 @@ class Chance(Cell):
         if chanceCard == 0:
             self.log.write(player.name+" gets chance card: Advance to St.Charle's", 3)
             if player.position >= 11:
-                player.addMoney(board.game_conf.salary)
+                player.add_money(board.game_conf.salary)
                 self.log.write(player.name+" gets salary: $"+str(board.game_conf.salary), 3)
             player.position = 11
             self.log.write(player.name+" goes to "+str(board.b[11].name), 3)
@@ -62,14 +62,14 @@ class Chance(Cell):
         # 1: Get Out Of Jail Free
         elif chanceCard == 1:
             self.log.write(player.name+" gets chance card: Get Out Of Jail Free", 3)
-            player.hasJailCardChance = True
+            player.has_jail_card_chance = True
 
         # 2: Take a ride on the Reading
         elif chanceCard == 2:
             self.log.write(
                 player.name+" gets chance card: Take a ride on the Reading", 3)
             if player.position >= 5:
-                player.addMoney(board.game_conf.salary)
+                player.add_money(board.game_conf.salary)
                 self.log.write(player.name+" gets salary: $"+str(board.game_conf.salary), 3)
             player.position = 5
             self.log.write(player.name+" goes to " +
@@ -93,7 +93,7 @@ class Chance(Cell):
             self.log.write(
                 player.name+" gets chance card: Advance to Illinois Avenue", 3)
             if player.position >= 24:
-                player.addMoney(board.game_conf.salary)
+                player.add_money(board.game_conf.salary)
                 self.log.write(player.name+" gets salary: $"+str(board.game_conf.salary), 3)
             player.position = 24
             self.log.write(player.name+" goes to " +
@@ -104,12 +104,12 @@ class Chance(Cell):
         elif chanceCard == 5:
             self.log.write(
                 player.name+" gets chance card: Make general repairs to your property", 3)
-            player.makeRepairs(board, "chance")
+            player.make_repairs(board, "chance")
 
         # 6: Advance to GO
         elif chanceCard == 6:
             self.log.write(player.name+" gets chance card: Advance to GO", 3)
-            player.addMoney(board.game_conf.salary)
+            player.add_money(board.game_conf.salary)
             self.log.write(player.name+" gets salary: $"+str(board.game_conf.salary), 3)
             player.position = 0
             self.log.write(player.name+" goes to " +
@@ -119,12 +119,12 @@ class Chance(Cell):
         elif chanceCard == 7:
             self.log.write(
                 player.name+" gets chance card: Bank pays you dividend $50", 3)
-            player.addMoney(50)
+            player.add_money(50)
 
         # 8: Pay poor tax $15
         elif chanceCard == 8:
             self.log.write(player.name+" gets chance card: Pay poor tax $15", 3)
-            player.takeMoney(15, board, BANK_NAME)
+            player.take_money(15, board, BANK_NAME)
 
         # 9: Advance to the nearest Utility and pay 10x dice
         elif chanceCard == 9:
@@ -139,8 +139,8 @@ class Chance(Cell):
         # 10: Go Directly to Jail
         elif chanceCard == 10:
             self.log.write(player.name+" gets chance card: Go Directly to Jail", 3)
-            player.moveTo(10)
-            player.inJail = True
+            player.move_to(10)
+            player.in_jail = True
             self.log.write(player.name+" goes to jail on Chance card", 3)
 
         # 11: You've been elected chairman. Pay each player $50
@@ -148,9 +148,9 @@ class Chance(Cell):
             self.log.write(
                 player.name+" gets chance card: You've been elected chairman. Pay each player $50", 3)
             for other_player in board.players:
-                if other_player != player and not other_player.isBankrupt:
-                    player.takeMoney(50, board, BANK_NAME)
-                    other_player.addMoney(50)
+                if other_player != player and not other_player.is_bankrupt:
+                    player.take_money(50, board, BANK_NAME)
+                    other_player.add_money(50)
 
         # 12: Advance to BoardWalk
         elif chanceCard == 12:
@@ -172,13 +172,13 @@ class Chance(Cell):
         elif chanceCard == 14:
             self.log.write(
                 player.name+" gets chance card: Your building loan matures. Receive $150", 3)
-            player.addMoney(150)
+            player.add_money(150)
 
         # 15: You have won a crossword competition. Collect $100
         elif chanceCard == 15:
             self.log.write(
                 player.name+" gets chance card: You have won a crossword competition. Collect $100", 3)
-            player.addMoney(100)
+            player.add_money(100)
 
         # Put the card back
         if chanceCard != 1:  # except GOOJF card
@@ -198,66 +198,66 @@ class Community(Cell):
         # 0: Pay school tax $150
         if communityCard == 0:
             self.log.write(player.name+" gets community card: Pay school tax $150", 3)
-            player.takeMoney(150, board, BANK_NAME)
+            player.take_money(150, board, BANK_NAME)
 
         # 1: Opera night: collect $50 from each player
         if communityCard == 1:
             self.log.write(player.name+" Opera night: collect $50 from each player", 3)
             for other_player in board.players:
-                if other_player != player and not other_player.isBankrupt:
-                    player.addMoney(50)
-                    other_player.takeMoney(50, board, BANK_NAME)
+                if other_player != player and not other_player.is_bankrupt:
+                    player.add_money(50)
+                    other_player.take_money(50, board, BANK_NAME)
 
         # 2: You inherit $100
         if communityCard == 2:
             self.log.write(player.name+" gets community card: You inherit $100", 3)
-            player.addMoney(100)
+            player.add_money(100)
 
         # 3: Pay hospital $100
         if communityCard == 3:
             self.log.write(player.name+" gets community card: Pay hospital $100", 3)
-            player.takeMoney(100, board, BANK_NAME)
+            player.take_money(100, board, BANK_NAME)
 
         # 4: Income tax refund $20
         if communityCard == 4:
             self.log.write(
                 player.name+" gets community card: Income tax refund $20", 3)
-            player.addMoney(20)
+            player.add_money(20)
 
         # 5: Go Directly to Jail
         elif communityCard == 5:
             self.log.write(player.name+" gets community card: Go Directly to Jail", 3)
-            player.moveTo(10)
-            player.inJail = True
+            player.move_to(10)
+            player.in_jail = True
             self.log.write(player.name+" goes to jail on Community card", 3)
 
         # 6: Get Out Of Jail Free
         elif communityCard == 6:
             self.log.write(player.name+" gets community card: Get Out Of Jail Free", 3)
-            player.hasJailCardCommunity = True
+            player.has_jail_card_community = True
 
         # 7: Second prize in beauty contest $10
         if communityCard == 7:
             self.log.write(
                 player.name+" gets community card: Second prize in beauty contest $10", 3)
-            player.addMoney(10)
+            player.add_money(10)
 
         # 8: You are assigned for street repairs
         elif communityCard == 8:
             self.log.write(
                 player.name+" gets community card: You are assigned for street repairs", 3)
-            player.makeRepairs(board, "community")
+            player.make_repairs(board, "community")
 
         # 9: Bank error in your favour: $200
         if communityCard == 9:
             self.log.write(
                 player.name+" gets community card: Bank error in your favour: $200", 3)
-            player.addMoney(200)
+            player.add_money(200)
 
         # 10: Advance to GO
         elif communityCard == 10:
             self.log.write(player.name+" gets community card: Advance to GO", 3)
-            player.addMoney(board.game_conf.salary)
+            player.add_money(board.game_conf.salary)
             self.log.write(player.name+" gets salary: $"+str(board.game_conf.salary), 3)
             player.position = 0
             self.log.write(player.name+" goes to " +
@@ -267,30 +267,30 @@ class Community(Cell):
         if communityCard == 11:
             self.log.write(
                 player.name+" gets community card: X-Mas fund matured: $100", 3)
-            player.addMoney(100)
+            player.add_money(100)
 
         # 12: Doctor's fee $50
         if communityCard == 12:
             self.log.write(player.name+" gets community card: Doctor's fee $50", 3)
-            player.takeMoney(50, board, BANK_NAME)
+            player.take_money(50, board, BANK_NAME)
 
         # 13: From sale of stock you get $45
         if communityCard == 13:
             self.log.write(
                 player.name+" gets community card: From sale of stock you get $45", 3)
-            player.addMoney(45)
+            player.add_money(45)
 
         # 14: Receive for services $25
         if communityCard == 14:
             self.log.write(
                 player.name+" gets community card: Receive for services $25", 3)
-            player.addMoney(25)
+            player.add_money(25)
 
         # 15: Life insurance matures, collect $100
         if communityCard == 15:
             self.log.write(
                 player.name+" gets community card: Life insurance matures, collect $100", 3)
-            player.addMoney(100)
+            player.add_money(100)
 
         # Put the card back
         if communityCard != 6:  # except GOOJF card
@@ -323,10 +323,10 @@ class Property(Cell):
 
         # Property up for sale
         elif self.owner == "":
-            if player.wantsToBuy(self.cost_base, self.cost_base, self.group, board):
+            if player.wants_to_buy(self.cost_base, self.cost_base, self.group, board):
                 self.log.write(player.name+" buys property " +
                           self.name + " for $"+str(self.cost_base), 3)
-                player.takeMoney(self.cost_base, board, BANK_NAME)
+                player.take_money(self.cost_base, board, BANK_NAME)
                 self.owner = player
                 board.recalculateAfterPropertyChange()
             else:
@@ -334,7 +334,7 @@ class Property(Cell):
                 while True:
                     players_who_want_the_property = []
                     for board_player in board.players:
-                        if board_player.wantsToBuy(self.cost_base, current_auction_price, self.group, board):
+                        if board_player.wants_to_buy(self.cost_base, current_auction_price, self.group, board):
                             players_who_want_the_property.append(board_player)
                     if len(players_who_want_the_property) == 1:
                         player_money_str = ""
@@ -343,7 +343,7 @@ class Property(Cell):
 
                         self.log.write(players_who_want_the_property[0].name + " buys property " +
                                        self.name + " for $" + str(current_auction_price), 3)
-                        players_who_want_the_property[0].takeMoney(self.cost_base, board, BANK_NAME)
+                        players_who_want_the_property[0].take_money(self.cost_base, board, BANK_NAME)
                         self.owner = players_who_want_the_property[0]
                         board.recalculateAfterPropertyChange()
                         # print(player_money_str)
@@ -360,8 +360,8 @@ class Property(Cell):
 
         # someone else's property - pay the rent
         else:
-            amount_taken = player.takeMoney(rent, board, self.owner)
-            self.owner.addMoney(amount_taken)
+            amount_taken = player.take_money(rent, board, self.owner)
+            self.owner.add_money(amount_taken)
             self.log.write(player.name+" pays the rent $" +
                       str(rent) + " to "+self.owner.name, 3)
 
@@ -369,33 +369,33 @@ class Property(Cell):
     def mortgage(self, player, board):
         """Sell hotel"""
         if self.hasHouses == 5:
-            player.addMoney(self.cost_house * 5 // 2)
+            player.add_money(self.cost_house * 5 // 2)
             self.hasHouses = 0
             board.nHotels -= 1
             self.log.write(player.name+" sells hotel on "+self.name, 3)
         # Sell one house
         elif self.hasHouses > 0:
-            player.addMoney(self.cost_house // 2)
+            player.add_money(self.cost_house // 2)
             self.hasHouses -= 1
             board.nHouses -= 1
             self.log.write(player.name+" sells house on "+self.name, 3)
         # Mortgage
         else:
             self.isMortgaged = True
-            player.addMoney(self.cost_base // 2)
+            player.add_money(self.cost_base // 2)
             # log name of the plot and money player need to pay to get it back
-            player.hasMortgages.append(
+            player.has_mortgages.append(
                 (self, int((self.cost_base // 2) * 1.1)))
             self.log.write(player.name+" mortgages "+self.name, 3)
 
     # unmortgage thr plot
 
     def unmortgage(self, player, board):
-        # print (player.hasMortgages)
-        for mortgage in player.hasMortgages:
+        # print (player.has_mortgages)
+        for mortgage in player.has_mortgages:
             if mortgage[0] == self:
                 thisMortgage = mortgage
         self.isMortgaged = False
-        player.takeMoney(thisMortgage[1], board, BANK_NAME)
-        player.hasMortgages.remove(thisMortgage)
+        player.take_money(thisMortgage[1], board, BANK_NAME)
+        player.has_mortgages.remove(thisMortgage)
         self.log.write(player.name+" unmortgages "+self.name, 3)

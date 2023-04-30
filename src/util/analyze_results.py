@@ -1,6 +1,6 @@
 
 
-def analyzeResults(results, sim_conf):
+def analyze_results(results, sim_conf):
     """Analize results"""
 
     remainingPlayers = [0, ]*sim_conf.n_players
@@ -16,7 +16,7 @@ def analyzeResults(results, sim_conf):
         print("Remaining:", remainingPlayers)
 
 
-def analyzeData():
+def analyze_data():
 
     if writeData == "losersNames" or writeData == "experiment" or writeData == "remainingPlayers":
         groups = {}
@@ -45,7 +45,7 @@ def analyzeData():
         if experiment != 0:
             print("Exp result: {:.1%}".format(experiment-control/(nPlayers-1)))
 
-    if writeData == "netWorth":
+    if writeData == "net_worth":
         print("graph here")
         npdata = np.loadtxt(
             "data.txt", dtype=int)

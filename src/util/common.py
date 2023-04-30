@@ -17,11 +17,11 @@ def pbwrapper(iterable, max_value):
     progress = progressbar.ProgressBar(widgets=widgets, term_width=OUT_WIDTH, maxval=max_value)
     return progress(iterable)
 
-def isGameOver(players):
+def is_game_over(players):
     """Check if there are more then 1 player left in the game"""
     alive = 0
     for player in players:
-        if not player.isBankrupt:
+        if not player.is_bankrupt:
             alive += 1
     if alive > 1:
         return False
