@@ -1,6 +1,6 @@
 class Log:
     def __init__(self):
-        for n in ['log.txt', 'data.txt']:
+        for n in ["log.txt", "data.txt"]:
             with open(n, "w") as f:
                 f.write("")
         self.data = []
@@ -15,9 +15,8 @@ class Log:
             return
 
         if level < 2:
-            self.fs.write(bytes("\n"*(2-level), "utf-8"))
-        self.fs.write(bytes("\t"*level+text+"\n", "utf-8"))
+            self.fs.write(bytes("\n" * (2 - level), "utf-8"))
+        self.fs.write(bytes("\t" * level + text + "\n", "utf-8"))
 
     def get_data(self):
         return self.data
-
