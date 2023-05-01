@@ -14,6 +14,7 @@ from multiprocessing import Pool
 import matplotlib.pyplot as plt
 import numpy as np
 import progressbar
+from statistics import mean
 
 from src.util import *
 from src.util.configs import OUT_WIDTH
@@ -58,13 +59,16 @@ def one_game(run_number):
                 net_worth_string += "\t"
         log.write(net_worth_string, data=True)
 
+    last_turn = None
     # game
     for i in range(sim_conf.n_moves):
-            
+        
+        last_turn = i - 1
+
         if is_game_over(players):
-            # to track length of the game
             if sim_conf.write_mode == WriteMode.GAME_LENGTH:
-                log.write(str(i-1), data=True)
+                log.write(str(last_turn), data=True)
+            
             break
 
         log.write("TURN "+str(i+1), 1)
@@ -101,10 +105,10 @@ def one_game(run_number):
 
     if sim_conf.n_simulations == 1 and sim_conf.show_result:
         print(results)
-    return results, log.get_data()
+    return results, last_turn, log.get_data()
 
 
-def run_simulation():
+def run_simulation(parallel=False):
     """run multiple game simulations"""
     results = []
     local_log = Log()
@@ -117,34 +121,64 @@ def run_simulation():
             pbar.start()
 
         results = []
+        game_lengths = []
         i = 0
         tracking_winners = [0]*sim_conf.n_players
+        
+        if parallel:
+            for game_result in pbwrapper(pool.imap(one_game, range(sim_conf.n_simulations)), sim_conf.n_simulations):
+                if sim_conf.show_progress_bar:
+                    pbar.update(i + 1)
+                    i += 1
+                results.append(game_result)
 
-        for result in pbwrapper(pool.imap(one_game, range(sim_conf.n_simulations)), sim_conf.n_simulations):
-            if sim_conf.show_progress_bar:
-                pbar.update(i + 1)
-                i += 1
-            results.append(result)
+                # determine winner, and calculate average game length
+                ending_net_worth, last_turn, _ = game_result
+                if (last_turn != sim_conf.n_simulations - 2):
+                    game_lengths.append(last_turn)
+                
+                winner_result_map = list(enumerate(ending_net_worth))
+                winner_result_map = sorted(list(winner_result_map), reverse=True, key=lambda x: x[1])
 
-            # determine winner
-            ending_net_worth, _ = result
+                if (winner_result_map[1][1] < 0):
+                    tracking_winners[winner_result_map[0][0]] += 1
             
-            winner_result_map = list(enumerate(ending_net_worth))
-            winner_result_map = sorted(list(winner_result_map), reverse=True, key=lambda x: x[1])
+                # write remaining players in a data log
+                if sim_conf.write_mode == WriteMode.REMAINING_PLAYERS:
+                    rem_players = sum([1 for r in result[-1] if r > 0])
+                    local_log.write(str(rem_players), data=True)
+        else:
+            for i in pbwrapper(range(sim_conf.n_simulations), sim_conf.n_simulations):
+            
+                local_log.write("=" * 10 + " GAME " + str(i+1) + " " + "=" * 10 + "\n")
+            
+                # remaining players - add to the results list
+                game_result = one_game(i)
+                results.append(game_result)
 
-            if (winner_result_map[1][1] < 0):
-                tracking_winners[winner_result_map[0][0]] += 1
+                # determine winner
+                ending_net_worth, last_turn, _ = game_result
+                if (last_turn != sim_conf.n_simulations - 2):
+                    game_lengths.append(last_turn)
+                
+                winner_result_map = list(enumerate(ending_net_worth))
+                winner_result_map = sorted(list(winner_result_map), reverse=True, key=lambda x: x[1])
 
-            if sim_conf.write_mode == WriteMode.REMAINING_PLAYERS:
-                remPlayers = sum([1 for r in result[-1] if r > 0])
-                local_log.write(str(remPlayers), data=True)
+                if (winner_result_map[1][1] < 0):
+                    tracking_winners[winner_result_map[0][0]] += 1
+            
+                # write remaining players in a data log
+                if sim_conf.write_mode == WriteMode.REMAINING_PLAYERS:
+                    rem_players = sum([1 for r in result[-1] if r > 0])
+                    local_log.write(str(rem_players), data=True)
 
         if sim_conf.show_progress_bar:
             pbar.finish()
         
-        print("DISTRIBUTION OF WINNERS " + str(i))
+        print(f"Winners distribution (A, B, C, D ...) across {len(game_lengths)} games that finished:")
         print(tracking_winners)
 
+        print(f"Average game length: {mean(game_lengths)} (excluding games that did not finish).")
 
     return results
 
@@ -162,17 +196,17 @@ if __name__ == "__main__":
     print("Players:", sim_conf.n_players, " Turns:", sim_conf.n_moves,
           " Games:", sim_conf.n_simulations, " Seed:", sim_conf.seed)
 
-    results_and_metrics = run_simulation()
+    results_and_metrics = run_simulation(parallel=True)
     results = []
     metric_str = ""
-    for result, metrics in results_and_metrics:
+    for result, game_length, metrics in results_and_metrics:
         results.append(result)
         metric_str += '\t'.join(metrics) + "\n"
 
     with open('data.txt', 'w') as f:
         f.write(metric_str)
 
-    analyze_results(results, sim_conf)
+    # analyze_results(results, sim_conf)
     # analyze_data()
 
     print("Done in {:.2f}s".format(time.time()-t))

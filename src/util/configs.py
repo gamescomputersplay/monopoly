@@ -40,16 +40,16 @@ class SimulationConfig(MonopolyConfig):
 class GameRulesConfig(MonopolyConfig):
     # some game rules
     salary = 200
-    luxury_tax = 75
+    luxury_tax = 100
     property_tax = 200
     jail_fine = 50
     house_limit = 32
     hotel_limit = 12
     allow_unequal_development = False  # default = False
     bankruptcy_goes_to_bank = False
-    total_available_houses = 100  # NOT USED YET
     starting_money = 1500
-    starting_money_per_player = None  # [1370, 1460, 1540, 1630] # None to disable
+    starting_money_per_player = None
+    # starting_money_per_player = [1500, 1500, 1500, 1500]  # [1370, 1460, 1540, 1630] # None to disable
 
 
 class PlayerBehaviourConfig(MonopolyConfig):
