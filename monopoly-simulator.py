@@ -6,15 +6,36 @@ import time
 
 from tqdm import tqdm
 
-from config import SimulationConfig
-from log import Log
+from settings import SimulationSettings, GameSettings
+
+from classes.log import Log
+from classes.player import Player
+from classes.board import Board
 
 def one_game(game_number, game_seed):
     ''' Simulation of one game
     '''
 
     log = Log()
-    log.add(f"=== GAME {game_number} (seed = {game_seed}) ===")
+    log.add(f"\n\n= GAME {game_number} (seed = {game_seed}) =")
+
+    players = [Player(player_name, player_setting)
+               for player_name, player_setting in GameSettings.players_list]
+
+    board = Board(GameSettings)
+
+    for turn_n in range(1, SimulationSettings.n_moves + 1):
+
+        # Start a turn
+        log.add(f"\n== Turn {turn_n} ===")
+
+        # Log all the players and their current position/money
+        for player_n, player in enumerate(players):
+            log.add(f"- Player {player_n}, '{player.name}', " +
+                    f"${player.money}, at {player.position} ({board.b[player.position].name})")
+
+        for player in players:
+            player.make_a_move(board, players, log)
 
     time.sleep(.1)
 
@@ -44,6 +65,7 @@ def run_simulation(config):
     for game_number, game_seed in iterator:
         one_game(game_number, game_seed)
 
+
 if __name__ == "__main__":
 
-    run_simulation(SimulationConfig)
+    run_simulation(SimulationSettings)
