@@ -27,12 +27,11 @@ class Player:
 
         # Player rolls the dice
         dice_roll, dice_roll_score, dice_roll_is_double = dice.cast()
-
         log.add(f"Player {self.name} rolls: {dice_roll} " + 
                 f"(score {dice_roll_score}{', double' if dice_roll_is_double else ''})")
 
         # Player moves to the new cell
         self.position += dice_roll_score
         self.position %= 40
-
         log.add(f"Player {self.name} goes to: {board.b[self.position].name}")
+

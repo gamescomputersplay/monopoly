@@ -33,6 +33,11 @@ class GameSettings():
     dice_count = 2
     dice_sides = 6
 
+    # Initial money (a single integer if it is same
+    # for everybody or a list of values for individual values)
+    starting_money = 1500
+    # starting_money = [1370, 1460, 1540, 1630]
+
     # Game mechanics settings
     salary = 200
 
