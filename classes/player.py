@@ -15,7 +15,7 @@ class Player:
         # Player's position
         self.position = 0
 
-    def make_a_move(self, board, players, log):
+    def make_a_move(self, board, players, dice, log):
         ''' Main function for a player to make a move
         Receives:
         - a board, with all cells and other things
@@ -26,7 +26,7 @@ class Player:
         log.add(f"=== Player {self.name}'s move ===")
 
         # Player rolls the dice
-        dice_roll, dice_roll_score, dice_roll_is_double = board.dice.cast()
+        dice_roll, dice_roll_score, dice_roll_is_double = dice.cast()
 
         log.add(f"Player {self.name} rolls: {dice_roll} " + 
                 f"(score {dice_roll_score}{', double' if dice_roll_is_double else ''})")

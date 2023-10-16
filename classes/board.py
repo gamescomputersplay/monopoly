@@ -1,26 +1,6 @@
 ''' Class to hold board information
 '''
 
-import random
-
-class Dice:
-    ''' Class to have dice settings, in case we want to play with that
-    '''
-
-    def __init__(self, dice_count, dice_sides):
-        self.dice_count = dice_count
-        self.dice_sides = dice_sides
-
-    def cast(self):
-        ''' Cast dice and return: return raw cast, the score, is it a double
-        '''
-
-        cast = [random.randint(1, self.dice_sides) for _ in range(self.dice_count)]
-
-        # Cast, total score, all dice are equal
-        return cast, sum(cast), len(set(cast)) == 1
-
-
 class Cell:
     """ Generic Cell Class, base for other classes
     """
@@ -109,5 +89,3 @@ class Board:
         self.b.append(Property("H1 Park Place", 350, 35, 200, (175, 500, 1100, 1300, 1500), "indigo"))
         self.b.append(Cell("LT Luxury Tax"))
         self.b.append(Property("H2 Boardwalk", 400, 50, 200, (200, 600, 1400, 1700, 2000), "indigo"))
-
-        self.dice = Dice(settings.dice_count, settings.dice_sides)

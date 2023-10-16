@@ -11,18 +11,19 @@ from settings import SimulationSettings, GameSettings
 from classes.log import Log
 from classes.player import Player
 from classes.board import Board
+from classes.dice import Dice
 
-def one_game(game_number, game_seed):
+def one_game(game_seed, log):
     ''' Simulation of one game
     '''
-
-    log = Log()
-    log.add(f"\n\n= GAME {game_number} (seed = {game_seed}) =")
 
     players = [Player(player_name, player_setting)
                for player_name, player_setting in GameSettings.players_list]
 
     board = Board(GameSettings)
+
+    dice = Dice(game_seed, GameSettings.dice_count, GameSettings.dice_sides)
+
 
     for turn_n in range(1, SimulationSettings.n_moves + 1):
 
@@ -31,15 +32,14 @@ def one_game(game_number, game_seed):
 
         # Log all the players and their current position/money
         for player_n, player in enumerate(players):
-            log.add(f"- Player {player_n}, '{player.name}', " +
+            log.add(f"- Player {player_n}, '{player.name}': " +
                     f"${player.money}, at {player.position} ({board.b[player.position].name})")
 
+        # Players make their moves
         for player in players:
-            player.make_a_move(board, players, log)
+            player.make_a_move(board, players, dice, log)
 
-    time.sleep(.1)
-
-    log.save()
+    time.sleep(.2)
 
 
 def run_simulation(config):
@@ -60,11 +60,16 @@ def run_simulation(config):
 
     # Use TQDM to show a progress bar
     # We'll be iterating through the list of seeds, numbering games from 1
-    iterator = tqdm(enumerate(seeds, start=1), smoothing=False, leave=False)
+    iterator = tqdm(seeds, smoothing=False, leave=False)
 
-    for game_number, game_seed in iterator:
-        one_game(game_number, game_seed)
+    for game_number, game_seed in enumerate(iterator, start = 1):
 
+        log = Log()
+        log.add(f"\n\n= GAME {game_number} of {config.n_simulations} (seed = {game_seed}) =")
+
+        one_game(game_seed, log)
+
+        log.save()
 
 if __name__ == "__main__":
 
