@@ -32,6 +32,18 @@ class Player:
 
         # Player moves to the new cell
         self.position += dice_roll_score
+
+        # Get salary if we passed go on the way
+        if self.position >= 40:
+            self.get_salary(board, log)
+            
+
         self.position %= 40
         log.add(f"Player {self.name} goes to: {board.b[self.position].name}")
+
+    def get_salary(self, board, log):
+        ''' Adding Salary to the player's money, according to the game's settings
+        '''
+        self.money += board.settings.salary
+        log.add(f"Player {self.name} receives salary ${board.settings.salary}")
 

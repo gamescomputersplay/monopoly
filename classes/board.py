@@ -31,6 +31,8 @@ class Board:
     def __init__(self, settings):
         ''' Initialize board configuration: properties, special cells etc
         '''
+        # Keep a copy of game settings (to use in in-game calculations)
+        self.settings = settings
 
         self.b = []
 
