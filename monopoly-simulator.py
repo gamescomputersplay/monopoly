@@ -3,6 +3,7 @@
 
 import random
 import time
+import concurrent.futures
 
 from tqdm import tqdm
 
@@ -14,9 +15,16 @@ from classes.dice import Dice
 from classes.log import Log
 
 
-def one_game(game_seed, log):
+def one_game(data_for_simulation):
     ''' Simulation of one game
+    For convenience to set up a multi-thread, all data packed into a tuple:
+    - game number (to dicplay it in the log)
+    - seed to intialize the log
+    - log handle
     '''
+    game_number, game_seed, log = data_for_simulation
+
+    log.add(f"\n\n= GAME {game_number} of {SimulationSettings.n_simulations} (seed = {game_seed}) =")
 
     # Set up players with their behaviour settings
     players = [Player(player_name, player_setting)
@@ -51,7 +59,10 @@ def one_game(game_seed, log):
         for player in players:
             player.make_a_move(board, players, dice, log)
 
+    log.save()
     time.sleep(.2)
+
+    return None
 
 
 def run_simulation(config):
@@ -67,22 +78,17 @@ def run_simulation(config):
     if config.seed is not None:
         random.seed(config.seed)
 
+    # Initiate
+    log = Log()
+
     # Pre-generate seeds (to have simulation multi-thread safe)
-    seeds = [random.random() for _ in range(config.n_simulations)]
+    data_for_simulation = [
+        (i + 1, random.random(), log)
+        for i in range(config.n_simulations)]
 
-    # Use TQDM to show a progress bar
-    # We'll be iterating through the list of seeds, numbering games from 1
-    iterator = tqdm(seeds, smoothing=False, leave=False)
-
-    # Simulate each game
-    for game_number, game_seed in enumerate(iterator, start = 1):
-
-        log = Log()
-        log.add(f"\n\n= GAME {game_number} of {config.n_simulations} (seed = {game_seed}) =")
-
-        one_game(game_seed, log)
-
-        log.save()
+    # Simulate each game with multithreading
+    with concurrent.futures.ProcessPoolExecutor(max_workers=config.multi_process) as executor:
+        list(tqdm(executor.map(one_game, data_for_simulation), total=len(data_for_simulation)))
 
 
 if __name__ == "__main__":

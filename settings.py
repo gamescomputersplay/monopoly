@@ -8,13 +8,16 @@ class SimulationSettings():
     # Number of moves to simulate
     # (if there are more than one player alive after then,
     # the game is considered to have no winner)
-    n_moves = 10
+    n_moves = 5
 
     # Number of games to simulate
-    n_simulations = 5
+    n_simulations = 3
 
     # Random seed to start simulation with
     seed = 0
+
+    # Number of parallel processes to use in the simulation
+    multi_process = 4
 
 class StandardPlayer:
     ''' Settings for a Standard Player
