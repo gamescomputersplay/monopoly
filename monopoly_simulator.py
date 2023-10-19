@@ -23,7 +23,7 @@ def one_game(data_for_simulation):
     game_number, game_seed = data_for_simulation
 
     # Initialize log
-    log = Log()
+    log = Log(game_number)
 
     log.add(f"\n\n= GAME {game_number} of {SimulationSettings.n_simulations} " +
             f"(seed = {game_seed}) =")
@@ -73,7 +73,7 @@ def run_simulation(config):
     '''
 
     # Empty the log file
-    log = Log()
+    log = Log(0)
     log.reset()
 
     # Initiate RNG with the seed in config
