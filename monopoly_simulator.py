@@ -26,7 +26,8 @@ def one_game(data_for_simulation):
     # Initialize log
     log = Log()
 
-    log.add(f"\n\n= GAME {game_number} of {SimulationSettings.n_simulations} (seed = {game_seed}) =")
+    log.add(f"\n\n= GAME {game_number} of {SimulationSettings.n_simulations} " +
+            f"(seed = {game_seed}) =")
 
     # Set up players with their behaviour settings
     players = [Player(player_name, player_setting)

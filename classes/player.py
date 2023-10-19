@@ -1,7 +1,9 @@
 ''' Player Class
 '''
 
-from .board import Property
+from classes.board import Property
+
+
 class Player:
     ''' Class to contain player-replated into and actions:
     - money, position, owned property
