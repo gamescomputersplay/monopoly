@@ -3,6 +3,10 @@
 
 from .board import Property
 class Player:
+    ''' Class to contain player-replated into and actions:
+    - money, position, owned property
+    - actions to buy property of hadle Chance cards etc
+    '''
 
     def __init__(self, name, settings):
 
@@ -19,6 +23,9 @@ class Player:
         # Owned properties
         self.owned = []
 
+    def __str__(self):
+        return self.name
+
     def make_a_move(self, board, players, dice, log):
         ''' Main function for a player to make a move
         Receives:
@@ -31,7 +38,7 @@ class Player:
 
         # Player rolls the dice
         dice_roll, dice_roll_score, dice_roll_is_double = dice.cast()
-        log.add(f"Player {self.name} rolls: {dice_roll} " + 
+        log.add(f"Player {self.name} rolls: {dice_roll} " +
                 f"(score {dice_roll_score}{', double' if dice_roll_is_double else ''})")
 
         # Player moves to the new cell
@@ -45,13 +52,26 @@ class Player:
 
         # Player lands on a property
         if isinstance(board.b[self.position], Property):
+
             # Property is not owned by anyone
             if board.b[self.position].owner is None:
+
                 # Does the player want to buy it?
                 if self.wants_to_buy(board.b[self.position]):
-                    log.add(f"Player {self.name} landed on a property, he wants to buy it")
+                    self.buy_property(board.b[self.position])
+                    log.add(f"Player {self.name} bought {board.b[self.position]}" +
+                            f"for ${board.b[self.position].cost_base}")
+                    monopoly_was_created = board.check_if_monopoly(board.b[self.position])
+                    if monopoly_was_created:
+                        log.add(f"{board.b[self.position].group} is now a monopoly")
+
                 else:
                     log.add(f"Player {self.name} landed on a property, he refuses to buy it")
+
+            # Property has an owner
+            else:
+                log.add(f"Player {self.name} landed on a property," +
+                        f"owned by {board.b[self.position].owner}")
 
     def get_salary(self, board, log):
         ''' Adding Salary to the player's money, according to the game's settings
@@ -79,3 +99,10 @@ class Player:
 
         # Nothing stops the player from making a purchase
         return True
+
+    def buy_property(self, property_to_buy):
+        ''' Player buys the property
+        '''
+        property_to_buy.owner = self
+        self.owned.append(property_to_buy)
+        self.money -= property_to_buy.cost_base

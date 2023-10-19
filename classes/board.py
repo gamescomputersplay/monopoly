@@ -21,11 +21,12 @@ class Property(Cell):
         self.rent_house = rent_house
         self.group = group
         self.owner = None
-        self.isMortgaged = False
-        self.isMonopoly = False
-        self.hasHouses = 0
+        self.is_mortgaged = False
+        self.is_monopoly = False
+        self.has_houses = 0
 
-
+    def __str__(self):
+        return self.name
 class Board:
 
     def __init__(self, settings):
@@ -91,3 +92,33 @@ class Board:
         self.b.append(Property("H1 Park Place", 350, 35, 200, (175, 500, 1100, 1300, 1500), "indigo"))
         self.b.append(Cell("LT Luxury Tax"))
         self.b.append(Property("H2 Boardwalk", 400, 50, 200, (200, 600, 1400, 1700, 2000), "indigo"))
+
+    def check_if_monopoly(self, property_to_check):
+        ''' Checks if property_to_check is a monopoly. If it is (or isn't),
+        sets the monopoly flags on the property.
+        Returns True or False if the property is a monopoly
+        '''
+        # This is the group we'll be looking at
+        group_to_check = property_to_check.group
+
+        # Collect all owners of this group in this set. For this
+        # particular check, consider mortgaged property to have no owner
+        owners = set()
+        for cell in self.b:
+            if isinstance(cell, Property) and cell.group == group_to_check:
+                if cell.is_mortgaged:
+                    owners.add(None)
+                else:
+                    owners.add(cell.owner)
+
+        # It is a monopoly: update the monopoly status
+        if len(owners) == 1 and None not in owners:
+            for cell in self.b:
+                if isinstance(cell, Property) and cell.group == group_to_check:
+                    cell.is_monopoly = True
+            return True
+        # It is a NOT monopoly: also update the monopoly status
+        for cell in self.b:
+            if isinstance(cell, Property) and cell.group == group_to_check:
+                cell.is_monopoly = False
+        return False
