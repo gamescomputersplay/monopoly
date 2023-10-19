@@ -8,10 +8,10 @@ class SimulationSettings():
     # Number of moves to simulate
     # (if there are more than one player alive after then,
     # the game is considered to have no winner)
-    n_moves = 5
+    n_moves = 100
 
     # Number of games to simulate
-    n_simulations = 3
+    n_simulations = 10
 
     # Random seed to start simulation with
     seed = 0
@@ -31,7 +31,7 @@ class StandardPlayer:
 class ExperimentPlayer(StandardPlayer):
     ''' Changed settings for the Experiement Player
     '''
-    unspendable_cash = 1490
+    unspendable_cash = 1500
 
 class GameSettings():
     ''' Setting for the game (rules + player list)

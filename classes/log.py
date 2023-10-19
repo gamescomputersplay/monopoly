@@ -4,6 +4,9 @@
 import multiprocessing
 
 class Log:
+    ''' Class to handle logging of game events
+    '''
+
     # Lock is declare on the class level,
     # so it would be shared among processes
     lock = multiprocessing.Lock()
@@ -28,5 +31,5 @@ class Log:
         ''' Empty the log file
         '''
         with self.lock:
-            with open(self.log_file_name, "w", encoding="utf-8") as logfile:
+            with open(self.log_file_name, "w", encoding="utf-8") as _:
                 pass

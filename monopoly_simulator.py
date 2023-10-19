@@ -2,7 +2,6 @@
 '''
 
 import random
-import time
 import concurrent.futures
 
 from tqdm import tqdm
@@ -64,7 +63,6 @@ def one_game(data_for_simulation):
 
     # Save the log
     log.save()
-    time.sleep(.2)
 
     return None
 

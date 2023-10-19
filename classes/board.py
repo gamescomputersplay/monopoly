@@ -28,7 +28,7 @@ class Property(Cell):
 
     def __str__(self):
         return self.name
-    
+
     def calculate_rent(self):
         ''' Calculate the rent amount for this property, including monopoly, houses etc
         '''
