@@ -24,6 +24,7 @@ class Property(Cell):
         self.is_mortgaged = False
         self.is_monopoly = False
         self.has_houses = 0
+        self.has_hotel = 0
 
     def __str__(self):
         return self.name
@@ -31,6 +32,20 @@ class Property(Cell):
     def calculate_rent(self):
         ''' Calculate the rent amount for this property, including monopoly, houses etc
         '''
+        # There is a hotel on this property
+        if self.has_hotel:
+            return self.rent_house[-1]
+
+        # There are houses on this property
+        if self.has_houses:
+            return self.rent_house[self.has_houses - 1]
+
+        # Monopoly: double rent on undeveloped properties
+        if self.is_monopoly:
+            return self.rent_base * 2
+
+        # Otherwise, just the base rent
+        return self.rent_base
 class Board:
     ''' Class collecting board repalted information:
     properties and their owners, build houses, etc
@@ -136,7 +151,7 @@ class Board:
         # This is the group we'll be looking at
         group_to_check = property_to_check.group
 
-        # Collect all owners of this group in this set. 
+        # Collect all owners of this group in this set.
         owners = set()
         for cell in self.b:
             if isinstance(cell, Property) and cell.group == group_to_check:

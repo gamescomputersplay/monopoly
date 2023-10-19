@@ -61,7 +61,7 @@ class Player:
                 # Does the player want to buy it?
                 if self.wants_to_buy(board.b[self.position]):
                     self.buy_property(board.b[self.position])
-                    log.add(f"Player {self.name} bought {board.b[self.position]}" +
+                    log.add(f"Player {self.name} bought {board.b[self.position]} " +
                             f"for ${board.b[self.position].cost_base}")
                     monopoly_was_created = board.check_if_monopoly(board.b[self.position])
                     if monopoly_was_created:
@@ -72,8 +72,21 @@ class Player:
 
             # Property has an owner
             else:
-                log.add(f"Player {self.name} landed on a property," +
-                        f"owned by {board.b[self.position].owner}")
+                # It is mortgaged: no action
+                if board.b[self.position].is_mortgaged:
+                    log.add("Property is mortgaged, no rent")
+                # It is mortgaged: no action
+                elif board.b[self.position].owner == self:
+                    log.add("Own property, no rent")
+                # Handle rent payments
+                else:
+                    log.add(f"Player {self.name} landed on a property, " +
+                            f"owned by {board.b[self.position].owner}")
+                    rent_amount = board.b[self.position].calculate_rent()
+                    self.money -= rent_amount
+                    board.b[self.position].owner.money += rent_amount
+                    log.add(f"{self} pays {board.b[self.position].owner} rent ${rent_amount}")
+
 
     def get_salary(self, board, log):
         ''' Adding Salary to the player's money, according to the game's settings
