@@ -1,6 +1,7 @@
 ''' Player Class
 '''
 
+from .board import Property
 class Player:
 
     def __init__(self, name, settings):
@@ -14,6 +15,9 @@ class Player:
 
         # Player's position
         self.position = 0
+
+        # Owned properties
+        self.owned = []
 
     def make_a_move(self, board, players, dice, log):
         ''' Main function for a player to make a move
@@ -32,14 +36,22 @@ class Player:
 
         # Player moves to the new cell
         self.position += dice_roll_score
-
         # Get salary if we passed go on the way
         if self.position >= 40:
             self.get_salary(board, log)
-            
-
+        # Finish the move
         self.position %= 40
         log.add(f"Player {self.name} goes to: {board.b[self.position].name}")
+
+        # Player lands on a property
+        if isinstance(board.b[self.position], Property):
+            # Property is not owned by anyone
+            if board.b[self.position].owner is None:
+                # Does the player want to buy it?
+                if self.wants_to_buy(board.b[self.position]):
+                    log.add(f"Player {self.name} landed on a property, he wants to buy it")
+                else:
+                    log.add(f"Player {self.name} landed on a property, he refuses to buy it")
 
     def get_salary(self, board, log):
         ''' Adding Salary to the player's money, according to the game's settings
@@ -47,3 +59,23 @@ class Player:
         self.money += board.settings.salary
         log.add(f"Player {self.name} receives salary ${board.settings.salary}")
 
+
+    def wants_to_buy(self, property_to_buy):
+        ''' Check if the player is willing to buy an onowned property
+        '''
+        # Player has money lower than unspendable minumum
+        if self.money - property_to_buy.cost_base < self.settings.unspendable_cash:
+            return False
+
+        # Player does not have enough money
+        # If unspendable_cash >= 0 this check is redundant
+        # However we'll need to think if a "mortgage to buy" situation
+        if property_to_buy.cost_base > self.money:
+            return False
+
+        # Property is in one of the groups, player chose to ignore
+        if property_to_buy.group in self.settings.ignore_property_groups:
+            return False
+
+        # Nothing stops the player from making a purchase
+        return True

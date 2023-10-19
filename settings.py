@@ -22,12 +22,16 @@ class SimulationSettings():
 class StandardPlayer:
     ''' Settings for a Standard Player
     '''
+    # Amount of money player wants to keep unspent (money safety pillow)
     unspendable_cash = 500
+
+    # Group of properties, player refuse to buy (set, as there may be several)
+    ignore_property_groups = {}
 
 class ExperimentPlayer(StandardPlayer):
     ''' Changed settings for the Experiement Player
     '''
-    unspendable_cash = 0
+    unspendable_cash = 1490
 
 class GameSettings():
     ''' Setting for the game (rules + player list)
