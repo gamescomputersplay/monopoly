@@ -61,7 +61,7 @@ class Player:
                     self.buy_property(board.b[self.position])
                     log.add(f"Player {self.name} bought {board.b[self.position]} " +
                             f"for ${board.b[self.position].cost_base}")
-                    board.recalculate_monopoly_coeffs()
+                    board.recalculate_monopoly_coeffs(board.b[self.position])
 
                 else:
                     log.add(f"Player {self.name} landed on a property, he refuses to buy it")

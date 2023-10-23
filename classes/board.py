@@ -78,7 +78,7 @@ class Board:
 
         # 5-9
         self.b.append(Property(
-            "R1 Reading railroad", 200, 0, 0, (0, 0, 0, 0, 0), "Railroads"))
+            "R1 Reading railroad", 200, 25, 0, (0, 0, 0, 0, 0), "Railroads"))
         self.b.append(Property(
             "B1 Oriental Avenue", 100, 6, 50, (30, 90, 270, 400, 550), "Lightblue"))
         self.b.append(Cell("CH1 Chance"))
@@ -100,7 +100,7 @@ class Board:
 
         # 15-19
         self.b.append(Property(
-            "R2 Pennsylvania Railroad", 200, 0, 0, (0, 0, 0, 0, 0), "Railroads"))
+            "R2 Pennsylvania Railroad", 200, 25, 0, (0, 0, 0, 0, 0), "Railroads"))
         self.b.append(Property(
             "D1 St.James Place", 180, 14, 100, (70, 200, 550, 700, 950), "Orange"))
         self.b.append(Cell("COM2 Community Chest"))
@@ -121,7 +121,7 @@ class Board:
 
         # 25-29
         self.b.append(Property(
-            "R3 BnO Railroad", 200, 0, 0, (0, 0, 0, 0, 0), "Railroads"))
+            "R3 BnO Railroad", 200, 25, 0, (0, 0, 0, 0, 0), "Railroads"))
         self.b.append(Property(
             "F1 Atlantic Avenue", 260, 22, 150, (110, 330, 800, 975, 1150), "Yellow"))
         self.b.append(Property(
@@ -143,7 +143,7 @@ class Board:
 
         # 35-39
         self.b.append(Property(
-            "R4 Short Line", 200, 0, 0, (0, 0, 0, 0, 0), "Railroads"))
+            "R4 Short Line", 200, 25, 0, (0, 0, 0, 0, 0), "Railroads"))
         self.b.append(Cell("CH3 Chance"))
         self.b.append(Property(
             "H1 Park Place", 350, 35, 200, (175, 500, 1100, 1300, 1500), "Indigo"))
@@ -151,49 +151,56 @@ class Board:
         self.b.append(Property(
             "H2 Boardwalk", 400, 50, 200, (200, 600, 1400, 1700, 2000), "Indigo"))
 
-    def recalculate_monopoly_coeffs(self):
+        # Board fields, groupped by group self.groups["Green"] - list of all greens
+        self.groups = self.property_groups()
+
+    def property_groups(self):
+        ''' self.groups is a convenient way to group cells by the group,
+        so we don't have to check all properties on the board, to, for example,
+        update their monopoly status
+        '''
+        groups = {}
+        for cell in self.b:
+            if not isinstance(cell, Property):
+                continue
+            if cell.group not in groups:
+                groups[cell.group] = []
+            groups[cell.group].append(cell)
+        return groups
+        
+    def recalculate_monopoly_coeffs(self, changed_cell):
         ''' Go through all properties and set monopoly_coeff,
         depending of how many properties in teh same group players own.
         Whould be run every time, when propery ownership change.
         '''
 
-        # Create and populate list of owners for each group:
-        # {"brown": [Player1, Player2], ...}
-        owner_by_group = {}
+        # Create and populate list of owners for this group
+        owners = []
 
-        for cell in self.b:
-            if not isinstance(cell, Property):
-                continue
-            group = cell.group
-
-            if group not in owner_by_group:
-                owner_by_group[group] = []
-            owner_by_group[group].append(cell.owner)
+        for cell in self.groups[changed_cell.group]:
+            owners.append(cell.owner)
 
         # Update monopoly_coeff
-        for cell in self.b:
-            # Only allpied to "Properties"
-            if not isinstance(cell, Property):
-                continue
+        for cell in self.groups[changed_cell.group]:
+
+            # Go through cells. For each cell count how many properties
+            # in a group owner of this cell has
+            ownership_count = owners.count(cell.owner)
 
             # For railroad it is 1/2/4/8 (or 2**(n-1))
             if cell.group == "Railroads":
-                ownership_count = owner_by_group[cell.group].count(cell.owner)
-                if cell.owner is None:
-                    cell.monopoly_coeff = 1
-                else:
-                    cell.monopoly_coeff = 2 ** (ownership_count - 1)
+                cell.monopoly_coeff = 2 ** (ownership_count - 1)
 
             # For Utilities it is either 4 or 10
             elif cell.group == "Utilities":
-                if len(owner_by_group[cell.group]) == 1 and None not in owner_by_group[cell.group]:
+                if ownership_count == 2:
                     cell.monopoly_coeff = 10
                 else:
                     cell.monopoly_coeff = 4
 
             # For all other properties it is 1 or 2
             else:
-                if len(owner_by_group[cell.group]) == 1 and None not in owner_by_group[cell.group]:
+                if ownership_count == len(self.groups[changed_cell.group]):
                     cell.monopoly_coeff = 2
                 else:
                     cell.monopoly_coeff = 1
