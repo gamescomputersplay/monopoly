@@ -23,7 +23,7 @@ def one_game(data_for_simulation):
     game_number, game_seed = data_for_simulation
 
     # Initialize log
-    log = Log(game_number)
+    log = Log()
 
     log.add(f"\n\n= GAME {game_number} of {SimulationSettings.n_simulations} " +
             f"(seed = {game_seed}) =")
@@ -52,7 +52,7 @@ def one_game(data_for_simulation):
 
         # Log a start a turn
         # Log all the players and their current position/money
-        log.add(f"\n== Turn {turn_n} ===")
+        log.add(f"\n== GAME {game_number} Turn {turn_n} ===")
         for player_n, player in enumerate(players):
             log.add(f"- Player {player_n}, '{player.name}': " +
                     f"${player.money}, at {player.position} ({board.b[player.position].name})")
@@ -73,7 +73,7 @@ def run_simulation(config):
     '''
 
     # Empty the log file
-    log = Log(0)
+    log = Log()
     log.reset()
 
     # Initiate RNG with the seed in config
