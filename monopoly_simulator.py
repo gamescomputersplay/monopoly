@@ -9,7 +9,7 @@ from tqdm import tqdm
 from settings import SimulationSettings, GameSettings
 
 from classes.player import Player
-from classes.board import Board
+from classes.board import Board, Property
 from classes.dice import Dice
 from classes.log import Log
 
@@ -45,7 +45,7 @@ def one_game(data_for_simulation):
 
     # Set up dice (create a separate random generator with initial "game_seed",
     # to make it thread-safe)
-    dice = Dice(game_seed, GameSettings.dice_count, GameSettings.dice_sides)
+    dice = Dice(game_seed, GameSettings.dice_count, GameSettings.dice_sides, log)
 
     # Play for the required number of turns
     for turn_n in range(1, SimulationSettings.n_moves + 1):

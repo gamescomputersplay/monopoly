@@ -39,9 +39,7 @@ class Player:
         log.add(f"=== Player {self.name}'s move ===")
 
         # Player rolls the dice
-        dice_roll, dice_roll_score, dice_roll_is_double = dice.cast()
-        log.add(f"Player {self.name} rolls: {dice_roll} " +
-                f"(score {dice_roll_score}{', double' if dice_roll_is_double else ''})")
+        _, dice_roll_score, dice_roll_is_double = dice.cast()
 
         # Player moves to the new cell
         self.position += dice_roll_score
@@ -63,9 +61,7 @@ class Player:
                     self.buy_property(board.b[self.position])
                     log.add(f"Player {self.name} bought {board.b[self.position]} " +
                             f"for ${board.b[self.position].cost_base}")
-                    monopoly_was_created = board.check_if_monopoly(board.b[self.position])
-                    if monopoly_was_created:
-                        log.add(f"{board.b[self.position].group} is now a monopoly")
+                    board.recalculate_monopoly_coeffs()
 
                 else:
                     log.add(f"Player {self.name} landed on a property, he refuses to buy it")
@@ -82,7 +78,7 @@ class Player:
                 else:
                     log.add(f"Player {self.name} landed on a property, " +
                             f"owned by {board.b[self.position].owner}")
-                    rent_amount = board.b[self.position].calculate_rent()
+                    rent_amount = board.b[self.position].calculate_rent(dice)
                     self.money -= rent_amount
                     board.b[self.position].owner.money += rent_amount
                     log.add(f"{self} pays {board.b[self.position].owner} rent ${rent_amount}")

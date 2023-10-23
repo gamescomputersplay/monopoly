@@ -22,15 +22,20 @@ class Property(Cell):
         self.group = group
         self.owner = None
         self.is_mortgaged = False
-        self.is_monopoly = False
+
+        # Multiplier to calculate rent(1 - no monopoly, 2 - monopoly,
+        # 2/4/8 - railways, 4/10 - utilities)
+        self.monopoly_coeff = 1
+
         self.has_houses = 0
         self.has_hotel = 0
 
     def __str__(self):
         return self.name
 
-    def calculate_rent(self):
-        ''' Calculate the rent amount for this property, including monopoly, houses etc
+    def calculate_rent(self, dice):
+        ''' Calculate the rent amount for this property, including monopoly, houses etc.
+        dice are used to calculate rent for utilities
         '''
         # There is a hotel on this property
         if self.has_hotel:
@@ -40,12 +45,15 @@ class Property(Cell):
         if self.has_houses:
             return self.rent_house[self.has_houses - 1]
 
-        # Monopoly: double rent on undeveloped properties
-        if self.is_monopoly:
-            return self.rent_base * 2
+        if self.group != "Utilities":
+            # Monopoly: double rent on undeveloped properties
+            # Rails: multiply rent depending on how many owned
+            return self.rent_base * self.monopoly_coeff
 
-        # Otherwise, just the base rent
-        return self.rent_base
+        # Utilities: Dice roll * 4/10
+        _, dice_points, _ = dice.cast()
+        return dice_points * self.monopoly_coeff
+
 class Board:
     ''' Class collecting board repalted information:
     properties and their owners, build houses, etc
@@ -143,28 +151,51 @@ class Board:
         self.b.append(Property(
             "H2 Boardwalk", 400, 50, 200, (200, 600, 1400, 1700, 2000), "Indigo"))
 
-    def check_if_monopoly(self, property_to_check):
-        ''' Checks if property_to_check is a monopoly. If it is (or isn't),
-        sets the monopoly flags on the property.
-        Returns True or False if the property is a monopoly
+    def recalculate_monopoly_coeffs(self):
+        ''' Go through all properties and set monopoly_coeff,
+        depending of how many properties in teh same group players own.
+        Whould be run every time, when propery ownership change.
         '''
-        # This is the group we'll be looking at
-        group_to_check = property_to_check.group
 
-        # Collect all owners of this group in this set.
-        owners = set()
-        for cell in self.b:
-            if isinstance(cell, Property) and cell.group == group_to_check:
-                owners.add(cell.owner)
+        # Create and populate list of owners for each group:
+        # {"brown": [Player1, Player2], ...}
+        owner_by_group = {}
 
-        # It is a monopoly: update the monopoly status
-        if len(owners) == 1 and None not in owners:
-            for cell in self.b:
-                if isinstance(cell, Property) and cell.group == group_to_check:
-                    cell.is_monopoly = True
-            return True
-        # It is a NOT monopoly: also update the monopoly status
         for cell in self.b:
-            if isinstance(cell, Property) and cell.group == group_to_check:
-                cell.is_monopoly = False
-        return False
+            if not isinstance(cell, Property):
+                continue
+            group = cell.group
+
+            if group not in owner_by_group:
+                owner_by_group[group] = []
+            owner_by_group[group].append(cell.owner)
+
+        # Update monopoly_coeff
+        for cell in self.b:
+            # Only allpied to "Properties"
+            if not isinstance(cell, Property):
+                continue
+
+            # For railroad it is 1/2/4/8 (or 2**(n-1))
+            if cell.group == "Railroads":
+                ownership_count = owner_by_group[cell.group].count(cell.owner)
+                if cell.owner is None:
+                    cell.monopoly_coeff = 1
+                else:
+                    cell.monopoly_coeff = 2 ** (ownership_count - 1)
+
+            # For Utilities it is either 4 or 10
+            elif cell.group == "Utilities":
+                if len(owner_by_group[cell.group]) == 1 and None not in owner_by_group[cell.group]:
+                    cell.monopoly_coeff = 10
+                else:
+                    cell.monopoly_coeff = 4
+
+            # For all other properties it is 1 or 2
+            else:
+                if len(owner_by_group[cell.group]) == 1 and None not in owner_by_group[cell.group]:
+                    cell.monopoly_coeff = 2
+                else:
+                    cell.monopoly_coeff = 1
+
+        return
