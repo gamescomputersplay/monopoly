@@ -1,6 +1,8 @@
 # Output and log files
 gamelog.txt
 
+# Mac stuff
+.DS_Store
 
 # Below is some common gitignores for small project
 # Temp folder
