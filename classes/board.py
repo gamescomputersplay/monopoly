@@ -27,6 +27,9 @@ class Property(Cell):
         # 2/4/8 - railways, 4/10 - utilities)
         self.monopoly_coeff = 1
 
+        # Flag that indicates that a property can be built on
+        self.can_be_improved = False
+
         self.has_houses = 0
         self.has_hotel = 0
 
@@ -167,7 +170,18 @@ class Board:
                 groups[cell.group] = []
             groups[cell.group].append(cell)
         return groups
-        
+
+    def log_curent_state(self, log):
+        ''' Log current situation on the board,
+        who owns what, monopolies, improvements, etc
+        '''
+        log.add("\n== BOARD ==")
+        for cell in self.b:
+            if not isinstance(cell, Property):
+                continue
+            log.add(f"- {cell.name}, Owner: {cell.owner}, " +
+                    f"Rent coeff: {cell.monopoly_coeff}, Can improve: {cell.can_be_improved}")
+
     def recalculate_monopoly_coeffs(self, changed_cell):
         ''' Go through all properties and set monopoly_coeff,
         depending of how many properties in teh same group players own.
@@ -200,8 +214,13 @@ class Board:
 
             # For all other properties it is 1 or 2
             else:
+                # This is a monopoly (owner owns all properties of this color)
                 if ownership_count == len(self.groups[changed_cell.group]):
+                    # Rent coefficient for unimproved cells is 2
                     cell.monopoly_coeff = 2
+                    # And, unless it already has a hotel, it can be improved
+                    if cell.has_hotel == 0:
+                        cell.can_be_improved = True
                 else:
                     cell.monopoly_coeff = 1
 

@@ -61,6 +61,8 @@ def one_game(data_for_simulation):
         for player in players:
             player.make_a_move(board, players, dice, log)
 
+    board.log_curent_state(log)
+
     # Save the log
     log.save()
 

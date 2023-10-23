@@ -31,7 +31,7 @@ class StandardPlayer:
 class ExperimentPlayer(StandardPlayer):
     ''' Changed settings for the Experiement Player
     '''
-    unspendable_cash = 1500
+    #unspendable_cash = 1500
 
 class GameSettings():
     ''' Setting for the game (rules + player list)
