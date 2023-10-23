@@ -52,36 +52,40 @@ class Player:
 
         # Player lands on a property
         if isinstance(board.b[self.position], Property):
+            self.handle_landing_on_property(board, dice, log)
 
-            # Property is not owned by anyone
-            if board.b[self.position].owner is None:
 
-                # Does the player want to buy it?
-                if self.wants_to_buy(board.b[self.position]):
-                    self.buy_property(board.b[self.position])
-                    log.add(f"Player {self.name} bought {board.b[self.position]} " +
-                            f"for ${board.b[self.position].cost_base}")
-                    board.recalculate_monopoly_coeffs(board.b[self.position])
+    def handle_landing_on_property(self, board, dice, log):
+        ''' Landing on property: either buy it or pay rent
+        '''
+        # Property is not owned by anyone
+        if board.b[self.position].owner is None:
 
-                else:
-                    log.add(f"Player {self.name} landed on a property, he refuses to buy it")
+            # Does the player want to buy it?
+            if self.wants_to_buy(board.b[self.position]):
+                self.buy_property(board.b[self.position])
+                log.add(f"Player {self.name} bought {board.b[self.position]} " +
+                        f"for ${board.b[self.position].cost_base}")
+                board.recalculate_monopoly_coeffs(board.b[self.position])
 
-            # Property has an owner
             else:
-                # It is mortgaged: no action
-                if board.b[self.position].is_mortgaged:
-                    log.add("Property is mortgaged, no rent")
-                # It is mortgaged: no action
-                elif board.b[self.position].owner == self:
-                    log.add("Own property, no rent")
-                # Handle rent payments
-                else:
-                    log.add(f"Player {self.name} landed on a property, " +
-                            f"owned by {board.b[self.position].owner}")
-                    rent_amount = board.b[self.position].calculate_rent(dice)
-                    self.money -= rent_amount
-                    board.b[self.position].owner.money += rent_amount
-                    log.add(f"{self} pays {board.b[self.position].owner} rent ${rent_amount}")
+                log.add(f"Player {self.name} landed on a property, he refuses to buy it")
+
+        # Property has an owner
+        else:
+            # It is mortgaged: no action
+            if board.b[self.position].is_mortgaged:
+                log.add("Property is mortgaged, no rent")
+            # It is mortgaged: no action
+            elif board.b[self.position].owner == self:
+                log.add("Own property, no rent")
+            # Handle rent payments
+            else:
+                log.add(f"Player {self.name} landed on a property, " +
+                        f"owned by {board.b[self.position].owner}")
+                rent_amount = board.b[self.position].calculate_rent(dice)
+                self.pay_money(rent_amount, board.b[self.position].owner)
+                log.add(f"{self} pays {board.b[self.position].owner} rent ${rent_amount}")
 
 
     def get_salary(self, board, log):
@@ -90,6 +94,12 @@ class Player:
         self.money += board.settings.salary
         log.add(f"Player {self.name} receives salary ${board.settings.salary}")
 
+    def pay_money(self, amount, payee):
+        ''' Function to pay money to another player (or bank)
+        This is where Bankrupcy will be triggered.
+        '''
+        self.money -= amount
+        payee.money += amount
 
     def wants_to_buy(self, property_to_buy):
         ''' Check if the player is willing to buy an onowned property
