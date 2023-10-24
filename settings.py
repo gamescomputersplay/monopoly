@@ -11,10 +11,10 @@ class SimulationSettings():
     n_moves = 100
 
     # Number of games to simulate
-    n_simulations = 10
+    n_simulations = 1
 
     # Random seed to start simulation with
-    seed = 0
+    seed = 4
 
     # Number of parallel processes to use in the simulation
     multi_process = 4

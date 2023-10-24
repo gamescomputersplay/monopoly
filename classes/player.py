@@ -38,6 +38,9 @@ class Player:
 
         log.add(f"=== Player {self.name}'s move ===")
 
+        list_to_improve = self.get_list_of_properties_to_improve()
+        log.add(str(list_to_improve))
+
         # Player rolls the dice
         _, dice_roll_score, dice_roll_is_double = dice.cast()
 
@@ -87,6 +90,18 @@ class Player:
                 self.pay_money(rent_amount, board.b[self.position].owner)
                 log.add(f"{self} pays {board.b[self.position].owner} rent ${rent_amount}")
 
+    def get_list_of_properties_to_improve(self):
+        ''' Put together a list of properties a player wants to improve, in order.
+        Properties will appear several times, once for each house/hotel that can be built.
+        '''
+        list_to_improve = []
+        for cell in self.owned:
+            if cell.can_be_improved:
+                for i in range(5 - cell.has_houses):
+                    list_to_improve.append((i + 1, cell.cost_house, cell))
+        # Start from least developed and cheapest
+        list_to_improve.sort(key = lambda x: (x[0], x[1]))
+        return list_to_improve
 
     def get_salary(self, board, log):
         ''' Adding Salary to the player's money, according to the game's settings

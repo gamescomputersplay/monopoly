@@ -41,7 +41,7 @@ class Property(Cell):
         dice are used to calculate rent for utilities
         '''
         # There is a hotel on this property
-        if self.has_hotel:
+        if self.has_hotel == 1:
             return self.rent_house[-1]
 
         # There are houses on this property
