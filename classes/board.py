@@ -179,8 +179,14 @@ class Board:
         for cell in self.b:
             if not isinstance(cell, Property):
                 continue
+            improvements = "none"
+            if cell.has_hotel == 1:
+                improvements = "hotel"
+            if cell.has_houses > 0:
+                improvements = f"{cell.has_houses} house(s)"
             log.add(f"- {cell.name}, Owner: {cell.owner}, " +
-                    f"Rent coeff: {cell.monopoly_coeff}, Can improve: {cell.can_be_improved}")
+                    f"Rent coeff: {cell.monopoly_coeff}, Can improve: {cell.can_be_improved}, " +
+                    f"Improvements: {improvements}")
 
     def recalculate_monopoly_coeffs(self, changed_cell):
         ''' Go through all properties and set monopoly_coeff,
@@ -214,6 +220,9 @@ class Board:
 
             # For all other properties it is 1 or 2
             else:
+                # Reset "can improve" flag
+                cell.can_be_improved = False
+                
                 # This is a monopoly (owner owns all properties of this color)
                 if ownership_count == len(self.groups[changed_cell.group]):
                     # Rent coefficient for unimproved cells is 2

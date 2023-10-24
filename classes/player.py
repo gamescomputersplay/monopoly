@@ -38,8 +38,8 @@ class Player:
 
         log.add(f"=== Player {self.name}'s move ===")
 
-        list_to_improve = self.get_list_of_properties_to_improve()
-        log.add(str(list_to_improve))
+        # Improve any properties, if needed
+        self.improve_properties(board, log)
 
         # Player rolls the dice
         _, dice_roll_score, dice_roll_is_double = dice.cast()
@@ -97,11 +97,46 @@ class Player:
         list_to_improve = []
         for cell in self.owned:
             if cell.can_be_improved:
-                for i in range(5 - cell.has_houses):
-                    list_to_improve.append((i + 1, cell.cost_house, cell))
-        # Start from least developed and cheapest
-        list_to_improve.sort(key = lambda x: (x[0], x[1]))
+                # Number available to build houses from cell.has_houses + 1 to 5
+                for i in range(cell.has_houses + 1, 6):
+                    list_to_improve.append((i, cell.cost_house, cell))
+        # It will be popped from the end, so first to build should be last
+        # in the list (by default, least developed and cheaperst)
+        list_to_improve.sort(key = lambda x: (-x[0], -x[1]))
         return list_to_improve
+
+    def improve_properties(self, board, log):
+        ''' While there is money to spend and properties to improve,
+        keep building houses/hotels
+        '''
+        list_to_improve = self.get_list_of_properties_to_improve()
+        while list_to_improve:
+
+            _, improvement_cost, cell_to_improve = list_to_improve.pop()
+
+            # Don't do it if you don't have money to spend
+            if self.money - improvement_cost < self.settings.unspendable_cash:
+                break
+
+            # Building a house
+            ordinal = {1: "1st", 2: "2nd", 3: "3rd", 4:"4th"}
+
+            if cell_to_improve.has_houses != 4:
+                cell_to_improve.has_houses += 1
+                log.add(f"{self} built {ordinal[cell_to_improve.has_houses]} " +
+                        f"house on {cell_to_improve}")
+
+            # Building a hotel
+            else:
+                cell_to_improve.has_houses = 0
+                cell_to_improve.has_hotel = 1
+                log.add(f"{self} built a hotel on {cell_to_improve}")
+                # Should not be improved beyong hotel
+                cell_to_improve.can_be_improved = False
+
+            # Paying for the improvement
+            self.money -= cell_to_improve.cost_house
+
 
     def get_salary(self, board, log):
         ''' Adding Salary to the player's money, according to the game's settings
