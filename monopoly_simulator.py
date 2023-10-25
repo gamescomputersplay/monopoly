@@ -9,7 +9,7 @@ from tqdm import tqdm
 from settings import SimulationSettings, GameSettings
 
 from classes.player import Player
-from classes.board import Board, Property
+from classes.board import Board
 from classes.dice import Dice
 from classes.log import Log
 
@@ -54,8 +54,11 @@ def one_game(data_for_simulation):
         # Log all the players and their current position/money
         log.add(f"\n== GAME {game_number} Turn {turn_n} ===")
         for player_n, player in enumerate(players):
-            log.add(f"- Player {player_n}, '{player.name}': " +
-                    f"${player.money}, at {player.position} ({board.b[player.position].name})")
+            if not player.is_bankrupt:
+                log.add(f"- Player {player_n}, '{player.name}': " +
+                        f"${player.money}, at {player.position} ({board.b[player.position].name})")
+            else:
+                log.add(f"- Player {player_n}, '{player.name}': Bankrupt")
 
         # Players make their moves
         for player in players:

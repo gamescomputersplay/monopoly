@@ -25,6 +25,9 @@ class Player:
         # Owned properties
         self.owned = []
 
+        # Bankrupt (game ended for thi player)
+        self.is_bankrupt = False
+
     def __str__(self):
         return self.name
 
@@ -36,10 +39,14 @@ class Player:
         - log handle
         '''
 
+        # Is player is bankrupt - do nothing
+        if self.is_bankrupt:
+            return
+
         log.add(f"=== Player {self.name}'s move ===")
 
         # Improve any properties, if needed
-        self.improve_properties(board, log)
+        self.improve_properties(log)
 
         # Player rolls the dice
         _, dice_roll_score, dice_roll_is_double = dice.cast()
@@ -87,7 +94,7 @@ class Player:
                 log.add(f"Player {self.name} landed on a property, " +
                         f"owned by {board.b[self.position].owner}")
                 rent_amount = board.b[self.position].calculate_rent(dice)
-                self.pay_money(rent_amount, board.b[self.position].owner)
+                self.pay_money(rent_amount, board.b[self.position].owner, board, log)
                 log.add(f"{self} pays {board.b[self.position].owner} rent ${rent_amount}")
 
     def get_list_of_properties_to_improve(self):
@@ -105,7 +112,7 @@ class Player:
         list_to_improve.sort(key = lambda x: (-x[0], -x[1]))
         return list_to_improve
 
-    def improve_properties(self, board, log):
+    def improve_properties(self, log):
         ''' While there is money to spend and properties to improve,
         keep building houses/hotels
         '''
@@ -144,12 +151,113 @@ class Player:
         self.money += board.settings.salary
         log.add(f"Player {self.name} receives salary ${board.settings.salary}")
 
-    def pay_money(self, amount, payee):
+    def max_raisable_money(self):
+        ''' How much cash a plyer can produce?
+        Used to determine if they should go bankrupt or not.
+        Max raisable money are 1/2 of houses cost + 1/2 of unmortgaged properties cost
+        '''
+        max_raisable = self.money
+        for cell in self.owned:
+            if cell.has_houses > 0:
+                max_raisable += cell.cost_house * cell.has_houses // 2
+            if cell.has_hotel > 0:
+                max_raisable += cell.cost_house * 5 // 2
+            if not cell.is_mortgaged:
+                max_raisable += cell.cost_base // 2
+        return max_raisable
+
+    def get_list_of_properties_to_deimprove(self):
+        ''' Put together a list of properties a player can sell houses from.
+        '''
+        list_to_deimprove = []
+        for cell in self.owned:
+            if cell.has_hotel == 1:
+                for i in range(1, 6):
+                    list_to_deimprove.append((i, cell.cost_house // 2, cell))
+            if cell.has_houses > 0:
+                for i in range(1, cell.has_houses + 1):
+                    list_to_deimprove.append((i, cell.cost_house // 2, cell))
+        # It will be popped from the end, so first to sell should be last
+        list_to_deimprove.sort(key = lambda x: (x[0], x[1]))
+        return list_to_deimprove
+
+    def get_list_of_properties_to_mortgage(self):
+        ''' Put together a list of properties a player can sell houses from.
+        '''
+        list_to_mortgage = []
+        for cell in self.owned:
+            if not cell.is_mortgaged:
+                list_to_mortgage.append((cell.cost_base // 2, cell))
+
+        # It will be popped from the end, so first to sell should be last
+        list_to_mortgage.sort(key = lambda x: -x[0])
+        return list_to_mortgage
+
+    def raise_money(self, required_amount, board, log):
+        ''' Sell houses, hotels, mortgage property until you get required_amount of money
+        '''
+        # Sell improvements
+        list_to_deimprove = self.get_list_of_properties_to_deimprove()
+
+        while list_to_deimprove and self.money < required_amount:
+            order, sell_price, cell_to_deimprove = list_to_deimprove.pop()
+            if order == 5:
+                cell_to_deimprove.has_hotel = 0
+                cell_to_deimprove.has_houses = 4
+                cell_to_deimprove.can_be_improved = True
+                log.add(f"{self} sells hotel on {cell_to_deimprove}, raising ${sell_price}")
+            else:
+                cell_to_deimprove.has_houses -= 1
+                log.add(f"{self} sells a house on {cell_to_deimprove}, raising ${sell_price}")
+            self.money += sell_price
+
+        # Mortgage properties
+        list_to_mortgage = self.get_list_of_properties_to_mortgage()
+        while list_to_mortgage and self.money < required_amount:
+            mortgage_price, cell_to_mortgage = list_to_mortgage.pop()
+            # Mortgage this property
+            cell_to_mortgage.is_mortgages = True
+            self.money += mortgage_price
+            board.recalculate_monopoly_coeffs(cell_to_mortgage)
+            log.add(f"{self} mortgages {cell_to_mortgage}, raising ${mortgage_price}")
+
+    def transfer_all_properties(self, payee, board, log):
+        ''' Part of bankruptcy procedure, transfer all mortgaged property to the creditor
+        '''
+        while self.owned:
+            cell_to_transfer = self.owned.pop()
+            payee.owned.append(cell_to_transfer)
+            board.recalculate_monopoly_coeffs(cell_to_transfer)
+            log.add(f"{self} transfers {cell_to_transfer} to {payee}")
+
+    def pay_money(self, amount, payee, board, log):
         ''' Function to pay money to another player (or bank)
         This is where Bankrupcy will be triggered.
         '''
-        self.money -= amount
-        payee.money += amount
+        # Regular transaction
+        if amount < self.money:
+            self.money -= amount
+            payee.money += amount
+            return
+        
+        max_raisable_money = self.max_raisable_money()
+        # Can pay but need to sell some things first
+        if amount < max_raisable_money:
+            log.add(f"{self} can pay ${amount}, but needs to sell some things for that")
+            self.raise_money(amount, board, log)
+            self.money -= amount
+            payee.money += amount
+
+        # Bunkruptcy (can't pay even after selling and morgtgaging all)
+        else:
+            log.add(f"{self} has to pay ${amount}, max they can raise is ${max_raisable_money}")
+            self.is_bankrupt = True
+            log.add(f"{self} is bankrupt")
+            self.raise_money(amount, board, log)
+            log.add(f"{self} gave {payee} all their remaining money (${self.money})")
+            payee.money += self.money
+            self.money = 0
+            self.transfer_all_properties(payee, board, log)
 
     def wants_to_buy(self, property_to_buy):
         ''' Check if the player is willing to buy an onowned property

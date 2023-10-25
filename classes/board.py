@@ -197,8 +197,11 @@ class Board:
         # Create and populate list of owners for this group
         owners = []
 
+        has_mortgages = False
         for cell in self.groups[changed_cell.group]:
             owners.append(cell.owner)
+            if cell.is_mortgaged:
+                has_mortgages = True
 
         # Update monopoly_coeff
         for cell in self.groups[changed_cell.group]:
@@ -222,13 +225,14 @@ class Board:
             else:
                 # Reset "can improve" flag
                 cell.can_be_improved = False
-                
+
                 # This is a monopoly (owner owns all properties of this color)
                 if ownership_count == len(self.groups[changed_cell.group]):
                     # Rent coefficient for unimproved cells is 2
                     cell.monopoly_coeff = 2
                     # And, unless it already has a hotel, it can be improved
-                    if cell.has_hotel == 0:
+                    # And unless one of the properties of this group is mortgaged
+                    if cell.has_hotel == 0 and not has_mortgages:
                         cell.can_be_improved = True
                 else:
                     cell.monopoly_coeff = 1
