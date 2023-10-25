@@ -6,6 +6,7 @@ TODOs:
 
 Game replated:
 - Handle bunkruptcy correctly
+- House shortages
 - Bankruptcy after payment to the bank
 - Unmortgage
 - Chance cards
@@ -25,6 +26,9 @@ Behaviour related:
 Experiemnts:
 - ignore property
 - jail behaviour
-- unspandable cache
+- unspendable cache
+- negative unspendable cache
 - fair starting money
 - fair trade price
+- fair auction price
+- build 4
