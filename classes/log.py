@@ -11,7 +11,7 @@ class Log:
     # so it would be shared among processes
     lock = multiprocessing.Lock()
 
-    def __init__(self, log_file_name="gamelog.txt"):
+    def __init__(self, log_file_name="log.txt"):
         self.log_file_name = log_file_name
         self.content = ""
 

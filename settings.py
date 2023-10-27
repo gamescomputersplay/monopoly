@@ -19,6 +19,17 @@ class SimulationSettings():
     # Number of parallel processes to use in the simulation
     multi_process = 4
 
+class LogSettings:
+    ''' Settings for logging
+    '''
+    # Detailed log about all that is going on in th game:
+    # movements, purchases, rent, cards, etc
+    game_log_file = "gamelog.txt"
+
+    # Log that keeps information about on which turn which player went bunkrupt
+    # Base info for most of analysis
+    data_log_file = "datalog.txt"
+
 class StandardPlayer:
     ''' Settings for a Standard Player
     '''

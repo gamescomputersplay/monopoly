@@ -6,12 +6,14 @@ import concurrent.futures
 
 from tqdm import tqdm
 
-from settings import SimulationSettings, GameSettings
+from settings import SimulationSettings, GameSettings, LogSettings
 
+from classes.analize import Analyzer
 from classes.player import Player
 from classes.board import Board
 from classes.dice import Dice
 from classes.log import Log
+
 
 
 def one_game(data_for_simulation):
@@ -23,12 +25,12 @@ def one_game(data_for_simulation):
     game_number, game_seed = data_for_simulation
 
     # Initialize log
-    log = Log()
+    log = Log(LogSettings.game_log_file)
 
     log.add(f"\n\n= GAME {game_number} of {SimulationSettings.n_games} " +
             f"(seed = {game_seed}) =")
 
-    datalog = Log("datalog.txt")
+    datalog = Log(LogSettings.data_log_file)
 
     # Set up players with their behaviour settings
     players = [Player(player_name, player_setting)
@@ -94,10 +96,14 @@ def run_simulation(config):
     '''
 
     # Empty the log file
-    log = Log("gamelog.txt")
+    log = Log(LogSettings.game_log_file)
     log.reset()
-    datalog = Log("datalog.txt")
+
+    # Empty and prepare headers for the data output
+    datalog = Log(LogSettings.data_log_file)
     datalog.reset()
+    datalog.add("game_number\tplayer\tturn")
+    datalog.save()
 
     # Initiate RNG with the seed in config
     if config.seed is not None:
@@ -111,6 +117,10 @@ def run_simulation(config):
     # Simulate each game with multi-processing
     with concurrent.futures.ProcessPoolExecutor(max_workers=config.multi_process) as executor:
         list(tqdm(executor.map(one_game, data_for_simulation), total=len(data_for_simulation)))
+
+    # Print analysis of the simulation
+    analysis = Analyzer()
+    analysis.game_length()
 
 
 if __name__ == "__main__":
