@@ -41,7 +41,7 @@ class Player:
 
         # Is player is bankrupt - do nothing
         if self.is_bankrupt:
-            return
+            return None
 
         log.add(f"=== Player {self.name}'s move ===")
 
@@ -64,6 +64,9 @@ class Player:
         if isinstance(board.b[self.position], Property):
             self.handle_landing_on_property(board, dice, log)
 
+        # If player went bankrupt this turn - return string "baknrupt"
+        if self.is_bankrupt:
+            return "bankrupt"
 
     def handle_landing_on_property(self, board, dice, log):
         ''' Landing on property: either buy it or pay rent
@@ -239,7 +242,7 @@ class Player:
             self.money -= amount
             payee.money += amount
             return
-        
+
         max_raisable_money = self.max_raisable_money()
         # Can pay but need to sell some things first
         if amount < max_raisable_money:

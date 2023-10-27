@@ -25,8 +25,10 @@ def one_game(data_for_simulation):
     # Initialize log
     log = Log()
 
-    log.add(f"\n\n= GAME {game_number} of {SimulationSettings.n_simulations} " +
+    log.add(f"\n\n= GAME {game_number} of {SimulationSettings.n_games} " +
             f"(seed = {game_seed}) =")
+
+    datalog = Log("datalog.txt")
 
     # Set up players with their behaviour settings
     players = [Player(player_name, player_setting)
@@ -52,22 +54,36 @@ def one_game(data_for_simulation):
 
         # Log a start a turn
         # Log all the players and their current position/money
+        # Also, count alive players
+        alive = 0
         log.add(f"\n== GAME {game_number} Turn {turn_n} ===")
         for player_n, player in enumerate(players):
             if not player.is_bankrupt:
+                alive += 1
                 log.add(f"- Player {player_n}, '{player.name}': " +
                         f"${player.money}, at {player.position} ({board.b[player.position].name})")
             else:
                 log.add(f"- Player {player_n}, '{player.name}': Bankrupt")
 
+        # If there are less than 2 alive players
+        # (I guess 0 alive is possible but quite unlikely)
+        # End the game
+        if alive < 2:
+            log.add("Only 1 player remains, game over")
+            break
+
         # Players make their moves
         for player in players:
-            player.make_a_move(board, players, dice, log)
+            result = player.make_a_move(board, players, dice, log)
+            # Keep track of when each player got bankrupt
+            if result == "bankrupt":
+                datalog.add(f"{game_number}\t{player}\t{turn_n}")
 
     board.log_curent_state(log)
 
-    # Save the log
+    # Save the logs
     log.save()
+    datalog.save()
 
     return None
 
@@ -78,8 +94,10 @@ def run_simulation(config):
     '''
 
     # Empty the log file
-    log = Log()
+    log = Log("gamelog.txt")
     log.reset()
+    datalog = Log("datalog.txt")
+    datalog.reset()
 
     # Initiate RNG with the seed in config
     if config.seed is not None:
@@ -88,7 +106,7 @@ def run_simulation(config):
     # Pre-generate game seeds (to have simulation multi-thread safe)
     data_for_simulation = [
         (i + 1, random.random())
-        for i in range(config.n_simulations)]
+        for i in range(config.n_games)]
 
     # Simulate each game with multi-processing
     with concurrent.futures.ProcessPoolExecutor(max_workers=config.multi_process) as executor:

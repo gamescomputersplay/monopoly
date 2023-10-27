@@ -1,5 +1,5 @@
 # Output and log files
-gamelog.txt
+*.txt
 
 # Mac stuff
 .DS_Store
