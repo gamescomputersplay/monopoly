@@ -26,7 +26,8 @@ class Log:
         with self.lock:
             with open(self.log_file_name, "a", encoding="utf-8") as logfile:
                 logfile.write("\n".join(self.content))
-                logfile.write("\n")
+                if self.content:
+                    logfile.write("\n")
 
     def reset(self):
         ''' Empty the log file
