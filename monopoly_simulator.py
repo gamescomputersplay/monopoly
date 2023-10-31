@@ -120,7 +120,8 @@ def run_simulation(config):
 
     # Print analysis of the simulation
     analysis = Analyzer()
-    analysis.game_length()
+    analysis.remaining_players()
+    analysis.median_gamelength()
 
 
 if __name__ == "__main__":
