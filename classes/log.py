@@ -13,19 +13,20 @@ class Log:
 
     def __init__(self, log_file_name="log.txt"):
         self.log_file_name = log_file_name
-        self.content = ""
+        self.content = []
 
     def add(self, data):
         ''' Add a line to a Log
         '''
-        self.content += data + "\n"
+        self.content.append(data)
 
     def save(self):
         ''' Write out the log
         '''
         with self.lock:
             with open(self.log_file_name, "a", encoding="utf-8") as logfile:
-                logfile.write(self.content)
+                logfile.write("\n".join(self.content))
+                logfile.write("\n")
 
     def reset(self):
         ''' Empty the log file
