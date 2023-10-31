@@ -53,7 +53,7 @@ class Analyzer:
         ''' Display winning (survival) rate of players
         '''
         loses_counts = self.df.groupby('player').size().reset_index(name='count')
-        print(loses_counts)
+
         # {player: games_survived}
         survival_rate = {row['player']: row['count']
                              for index, row in loses_counts.iterrows()}
