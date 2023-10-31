@@ -1,9 +1,10 @@
 ''' Functions to analyze the results of the simulation
 '''
 
+import pandas as pd
+
 from settings import SimulationSettings, GameSettings, LogSettings
 
-import pandas as pd
 
 class Analyzer:
     ''' Functions to analized games after the simulation
@@ -42,7 +43,26 @@ class Analyzer:
         filtered_groups = grouped.filter(lambda x: len(x) == len(GameSettings.players_list) - 1)
         lengths_df = filtered_groups.groupby('game_number')['turn'].max().reset_index()
         lengths = lengths_df["turn"].tolist()
-        all_lengths = lengths + [SimulationSettings.n_moves for _ in range(SimulationSettings.n_games - len(lengths))]
+        all_lengths = lengths + [SimulationSettings.n_moves
+                                 for _ in range(SimulationSettings.n_games - len(lengths))]
         if lengths:
             print(f"Median game length (for finished games): {lengths[len(lengths)//2]}")
         print(f"Median game length (for all games): {all_lengths[len(all_lengths)//2]}")
+
+    def winning_rate(self):
+        ''' Display winning (survival) rate of players
+        '''
+        loses_counts = self.df.groupby('player').size().reset_index(name='count')
+        print(loses_counts)
+        # {player: games_survived}
+        survival_rate = {row['player']: row['count']
+                             for index, row in loses_counts.iterrows()}
+        print("Players' survival rate:")
+        for player_name, loses in sorted(survival_rate.items()):
+            survivals = SimulationSettings.n_games - loses
+            surv_rate = survivals / SimulationSettings.n_games
+            margin = 1.96 * (surv_rate * (1 - surv_rate) / SimulationSettings.n_games) ** 0.5
+            print(f"  - {player_name}: {survivals} " +
+                  f"({surv_rate * 100:.1f} "
+                  f"+- {margin * 100:.1f}%)")
+

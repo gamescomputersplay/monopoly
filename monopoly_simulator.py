@@ -122,6 +122,7 @@ def run_simulation(config):
     analysis = Analyzer()
     analysis.remaining_players()
     analysis.median_gamelength()
+    analysis.winning_rate()
 
 
 if __name__ == "__main__":
