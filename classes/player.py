@@ -25,6 +25,11 @@ class Player:
         # Owned properties
         self.owned = []
 
+        # List of properties player wants to sell / buy
+        # through trading with other players
+        self.wants_to_sell = []
+        self.wants_to_buy = []
+
         # Bankrupt (game ended for thi player)
         self.is_bankrupt = False
 
@@ -75,12 +80,13 @@ class Player:
         if board.b[self.position].owner is None:
 
             # Does the player want to buy it?
-            if self.wants_to_buy(board.b[self.position]):
+            if self.is_willing_to_buy_property(board.b[self.position]):
                 self.buy_property(board.b[self.position])
                 log.add(f"Player {self.name} bought {board.b[self.position]} " +
                         f"for ${board.b[self.position].cost_base}")
                 board.recalculate_monopoly_coeffs(board.b[self.position])
-
+                self.update_lists_of_properties_to_trade(board)
+                log.add(f"- Wants buy: {[str(cell) for cell in self.wants_to_buy]}, sell {[str(cell) for cell in self.wants_to_sell]}")
             else:
                 log.add(f"Player {self.name} landed on a property, he refuses to buy it")
 
@@ -262,7 +268,7 @@ class Player:
             self.money = 0
             self.transfer_all_properties(payee, board, log)
 
-    def wants_to_buy(self, property_to_buy):
+    def is_willing_to_buy_property(self, property_to_buy):
         ''' Check if the player is willing to buy an onowned property
         '''
         # Player has money lower than unspendable minumum
@@ -288,3 +294,37 @@ class Player:
         property_to_buy.owner = self
         self.owned.append(property_to_buy)
         self.money -= property_to_buy.cost_base
+
+    def update_lists_of_properties_to_trade(self, board):
+        ''' Updtate list of properies player is willing to sell / buy
+        '''
+
+        # Reset the lists
+        self.wants_to_sell = []
+        self.wants_to_buy = []
+
+        # Go through each group
+        for group_cells in board.groups.values():
+
+            # Break down all properties within each color group into
+            # "owned by me" / "owned by others" / "not owned"
+            owned_by_me = []
+            owned_by_others = []
+            not_owned = []
+            for cell in group_cells:
+                if cell.owner == self:
+                    owned_by_me.append(cell)
+                elif cell.owner == None:
+                    not_owned.append(cell)
+                else:
+                    owned_by_others.append(cell)
+
+            # If there properties to buy - no trades
+            if not_owned:
+                continue
+            # If I own 1: I am ready to sell it
+            if len(owned_by_me) == 1:
+                self.wants_to_sell.append(owned_by_me[0])
+            # If someone owns 1 (and I own the rest): I want to buy it
+            if len(owned_by_others) == 1:
+                self.wants_to_buy.append(owned_by_others[0])
