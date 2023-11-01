@@ -27,7 +27,9 @@ class Analyzer:
             SimulationSettings.n_games - sum(remaining_players.values())
 
         # Games with clear winner (1 player remains)
-        clear_winner = remaining_players[1]
+        clear_winner = 0
+        if 1 in remaining_players:
+            clear_winner = remaining_players[1]
         print(f"Games that had clear winner: {clear_winner} / {SimulationSettings.n_games} " +
                f"({100 * clear_winner / SimulationSettings.n_games:.1f}%)")
 
