@@ -27,8 +27,8 @@ class Player:
 
         # List of properties player wants to sell / buy
         # through trading with other players
-        self.wants_to_sell = []
-        self.wants_to_buy = []
+        self.wants_to_sell = set()
+        self.wants_to_buy = set()
 
         # Bankrupt (game ended for thi player)
         self.is_bankrupt = False
@@ -49,6 +49,9 @@ class Player:
             return None
 
         log.add(f"=== Player {self.name}'s move ===")
+
+        # Look for a trade opportunity
+        self.look_for_a_two_way_trade(players, log)
 
         # Improve any properties, if needed
         self.improve_properties(log)
@@ -152,7 +155,6 @@ class Player:
 
             # Paying for the improvement
             self.money -= cell_to_improve.cost_house
-
 
     def get_salary(self, board, log):
         ''' Adding Salary to the player's money, according to the game's settings
@@ -300,8 +302,8 @@ class Player:
         '''
 
         # Reset the lists
-        self.wants_to_sell = []
-        self.wants_to_buy = []
+        self.wants_to_sell = set()
+        self.wants_to_buy = set()
 
         # Go through each group
         for group_cells in board.groups.values():
@@ -314,7 +316,7 @@ class Player:
             for cell in group_cells:
                 if cell.owner == self:
                     owned_by_me.append(cell)
-                elif cell.owner == None:
+                elif cell.owner is None:
                     not_owned.append(cell)
                 else:
                     owned_by_others.append(cell)
@@ -324,7 +326,20 @@ class Player:
                 continue
             # If I own 1: I am ready to sell it
             if len(owned_by_me) == 1:
-                self.wants_to_sell.append(owned_by_me[0])
+                self.wants_to_sell.add(owned_by_me[0])
             # If someone owns 1 (and I own the rest): I want to buy it
             if len(owned_by_others) == 1:
-                self.wants_to_buy.append(owned_by_others[0])
+                self.wants_to_buy.add(owned_by_others[0])
+
+    def look_for_a_two_way_trade(self, players, log):
+        ''' Look for and perform a two-way trade
+        '''
+        for other_player in players:
+            if self.wants_to_buy.intersection(other_player.wants_to_sell) and \
+               self.wants_to_sell.intersection(other_player.wants_to_buy):
+                player_receives = list(self.wants_to_buy.intersection(other_player.wants_to_sell))
+                player_gives = list(self.wants_to_sell.intersection(other_player.wants_to_buy))
+                log.add(f"Trade match: give {[str(cell) for cell in player_gives]}, " +
+                        f"receive {[str(cell) for cell in player_receives]}")
+
+
