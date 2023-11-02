@@ -51,7 +51,8 @@ class Player:
         log.add(f"=== Player {self.name}'s move ===")
 
         # Look for a trade opportunity
-        self.look_for_a_two_way_trade(players, log)
+        while self.look_for_a_two_way_trade(players, board, log):
+            pass
 
         # Improve any properties, if needed
         self.improve_properties(log)
@@ -70,13 +71,13 @@ class Player:
 
         # Player lands on a property
         if isinstance(board.b[self.position], Property):
-            self.handle_landing_on_property(board, dice, log)
+            self.handle_landing_on_property(board, players, dice, log)
 
         # If player went bankrupt this turn - return string "baknrupt"
         if self.is_bankrupt:
             return "bankrupt"
 
-    def handle_landing_on_property(self, board, dice, log):
+    def handle_landing_on_property(self, board, players, dice, log):
         ''' Landing on property: either buy it or pay rent
         '''
         # Property is not owned by anyone
@@ -84,12 +85,19 @@ class Player:
 
             # Does the player want to buy it?
             if self.is_willing_to_buy_property(board.b[self.position]):
+                # Buy property
                 self.buy_property(board.b[self.position])
                 log.add(f"Player {self.name} bought {board.b[self.position]} " +
                         f"for ${board.b[self.position].cost_base}")
+
+                # Rcalculate all monopoly / can build flags
                 board.recalculate_monopoly_coeffs(board.b[self.position])
-                self.update_lists_of_properties_to_trade(board)
-                log.add(f"- Wants buy: {[str(cell) for cell in self.wants_to_buy]}, sell {[str(cell) for cell in self.wants_to_sell]}")
+
+                # Recalculate who wants to buy what
+                # (for all players, it may affect their decisions too)
+                for player in players:
+                    player.update_lists_of_properties_to_trade(board)
+
             else:
                 log.add(f"Player {self.name} landed on a property, he refuses to buy it")
 
@@ -331,15 +339,79 @@ class Player:
             if len(owned_by_others) == 1:
                 self.wants_to_buy.add(owned_by_others[0])
 
-    def look_for_a_two_way_trade(self, players, log):
+    def look_for_a_two_way_trade(self, players, board, log):
         ''' Look for and perform a two-way trade
         '''
         for other_player in players:
+            # Selling/buying thing matches
             if self.wants_to_buy.intersection(other_player.wants_to_sell) and \
                self.wants_to_sell.intersection(other_player.wants_to_buy):
                 player_receives = list(self.wants_to_buy.intersection(other_player.wants_to_sell))
                 player_gives = list(self.wants_to_sell.intersection(other_player.wants_to_buy))
-                log.add(f"Trade match: give {[str(cell) for cell in player_gives]}, " +
-                        f"receive {[str(cell) for cell in player_receives]}")
+
+                # Filter items that belong to the same group (don't trade A1 for A2)
+                # TODO: more nuanced way, you should be able to trade A1 for B1
+                group_receives = [cell.group for cell in player_receives]
+                group_gives = [cell.group for cell in player_gives]
+
+                player_receives = [cell for cell in player_receives if cell.group not in group_gives]
+                player_gives = [cell for cell in player_gives if cell.group not in group_receives]
 
 
+                if player_receives and player_gives:
+
+                    # Trade only one-to-one, starting from the most expensive
+                    player_receives.sort(key=lambda x: -x.cost_base)
+                    player_gives.sort(key=lambda x: -x.cost_base)
+
+                    # Price difference in traded properties
+                    price_difference = player_gives[0].cost_base - player_receives[0].cost_base
+
+                    # Player gives await more expensive item, other play has to pay
+                    if price_difference > 0:
+                        # Other guy can't pay
+                        if other_player.money - price_difference < \
+                           other_player.settings.unspendable_cash:
+                            return False
+                        other_player.money -= price_difference
+                        self.money += price_difference
+
+                    # This player has top pay
+                    if price_difference < 0:
+                        # This player can't pay
+                        if self.money - abs(price_difference) < \
+                           self.settings.unspendable_cash:
+                            return False
+                        other_player.money += abs(price_difference)
+                        self.money -= abs(price_difference)
+
+                    # Propery changes hands
+
+                    log.add(f"Trade: {self} gives {player_gives[0]}, " +
+                            f"receives {player_receives[0]} from {other_player}")
+                    if price_difference > 0:
+                        log.add(f"{self} receive from {other_player} price difference compensation {abs(price_difference)}")
+                    if price_difference < 0:
+                        log.add(f"{other_player} receive from {self} price difference compensation {abs(price_difference)}")
+
+                    other_player.owned.remove(player_receives[0])
+                    player_receives[0].owner = self
+                    self.owned.append(player_receives[0])
+
+                    self.owned.remove(player_gives[0])
+                    player_gives[0].owner = other_player
+                    other_player.owned.append(player_gives[0])
+                    
+                    # Recalculate monopoly and improvement status
+                    board.recalculate_monopoly_coeffs(player_gives[0])
+                    board.recalculate_monopoly_coeffs(player_receives[0])
+
+                    # Recalculate who wants to buy what
+                    # (for all players, it may affect their decisions too)
+                    for player in players:
+                        player.update_lists_of_properties_to_trade(board)
+
+                    # Return True, to run trading function again
+                    return True
+
+        return False
