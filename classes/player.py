@@ -51,7 +51,7 @@ class Player:
         log.add(f"=== Player {self.name}'s move ===")
 
         # Look for a trade opportunity
-        while self.look_for_a_two_way_trade(players, board, log):
+        while self.do_a_two_way_trade(players, board, log):
             pass
 
         # Improve any properties, if needed
@@ -354,7 +354,27 @@ class Player:
             if len(owned_by_others) == 1:
                 self.wants_to_buy.add(owned_by_others[0])
 
-    def look_for_a_two_way_trade(self, players, board, log):
+    def fair_deal(self, player_gives, player_receives):
+        ''' Remove properties from to_sell and to_buy to make it as fair as possible
+        '''
+        # Filter items that belong to the same group (don't trade A1 for A2)
+        # TODO: more nuanced way, you should be able to trade A1 for B1
+        group_receives = [cell.group for cell in player_receives]
+        group_gives = [cell.group for cell in player_gives]
+
+        player_receives = [cell for cell in player_receives if cell.group not in group_gives]
+        player_gives = [cell for cell in player_gives if cell.group not in group_receives]
+
+        # Trade only one-to-one, starting from the most expensive
+        player_receives.sort(key=lambda x: -x.cost_base)
+        player_gives.sort(key=lambda x: -x.cost_base)
+
+        player_receives = player_receives[:1]
+        player_gives = player_gives[:1]
+
+        return player_gives, player_receives
+
+    def do_a_two_way_trade(self, players, board, log):
         ''' Look for and perform a two-way trade
         '''
         for other_player in players:
@@ -364,23 +384,14 @@ class Player:
                 player_receives = list(self.wants_to_buy.intersection(other_player.wants_to_sell))
                 player_gives = list(self.wants_to_sell.intersection(other_player.wants_to_buy))
 
-                # Filter items that belong to the same group (don't trade A1 for A2)
-                # TODO: more nuanced way, you should be able to trade A1 for B1
-                group_receives = [cell.group for cell in player_receives]
-                group_gives = [cell.group for cell in player_gives]
-
-                player_receives = [cell for cell in player_receives if cell.group not in group_gives]
-                player_gives = [cell for cell in player_gives if cell.group not in group_receives]
-
+                player_gives, player_receives = self.fair_deal(player_gives, player_receives)
 
                 if player_receives and player_gives:
 
-                    # Trade only one-to-one, starting from the most expensive
-                    player_receives.sort(key=lambda x: -x.cost_base)
-                    player_gives.sort(key=lambda x: -x.cost_base)
-
                     # Price difference in traded properties
-                    price_difference = player_gives[0].cost_base - player_receives[0].cost_base
+                    price_difference = \
+                        sum(cell.cost_base for cell in player_gives) - \
+                        sum(cell.cost_base for cell in player_receives)
 
                     # Player gives await more expensive item, other play has to pay
                     if price_difference > 0:
@@ -391,7 +402,7 @@ class Player:
                         other_player.money -= price_difference
                         self.money += price_difference
 
-                    # This player has top pay
+                    # Player gives cheaper stuff, has to pay
                     if price_difference < 0:
                         # This player can't pay
                         if self.money - abs(price_difference) < \
@@ -399,25 +410,28 @@ class Player:
                             return False
                         other_player.money += abs(price_difference)
                         self.money -= abs(price_difference)
-
+                        
                     # Propery changes hands
+                    for cell_to_receive in player_receives:
+                        cell_to_receive.owner = self
+                        self.owned.append(cell_to_receive)
+                        other_player.owned.remove(cell_to_receive)
+                    for cell_to_give in player_gives:
+                        cell_to_give.owner = other_player
+                        other_player.owned.append(cell_to_give)
+                        self.owned.remove(cell_to_give)
 
-                    log.add(f"Trade: {self} gives {player_gives[0]}, " +
-                            f"receives {player_receives[0]} from {other_player}")
+                    # Log the trade and compensation payment
+                    log.add(f"Trade: {self} gives {[str(cell) for cell in player_gives]}, " +
+                            f"receives {[str(cell) for cell in player_receives]} from {other_player}")
 
                     if price_difference > 0:
-                        log.add(f"{self} receive from {other_player} price difference compensation {abs(price_difference)}")
+                        log.add(f"{self} receive from {other_player} " +
+                                f"price difference compensation {abs(price_difference)}")
                     if price_difference < 0:
-                        log.add(f"{other_player} receive from {self} price difference compensation {abs(price_difference)}")
-
-                    player_receives[0].owner = self
-                    self.owned.append(player_receives[0])
-                    other_player.owned.remove(player_receives[0])
-
-                    player_gives[0].owner = other_player
-                    other_player.owned.append(player_gives[0])
-                    self.owned.remove(player_gives[0])
-
+                        log.add(f"{other_player} receive from {self} " +
+                                f"price difference compensation {abs(price_difference)}")
+                        
                     # Recalculate monopoly and improvement status
                     board.recalculate_monopoly_coeffs(player_gives[0])
                     board.recalculate_monopoly_coeffs(player_receives[0])
