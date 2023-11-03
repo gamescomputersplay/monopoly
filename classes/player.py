@@ -245,6 +245,7 @@ class Player:
         '''
         while self.owned:
             cell_to_transfer = self.owned.pop()
+            cell_to_transfer.owner = payee
             payee.owned.append(cell_to_transfer)
             board.recalculate_monopoly_coeffs(cell_to_transfer)
             log.add(f"{self} transfers {cell_to_transfer} to {payee}")
@@ -389,19 +390,20 @@ class Player:
 
                     log.add(f"Trade: {self} gives {player_gives[0]}, " +
                             f"receives {player_receives[0]} from {other_player}")
+
                     if price_difference > 0:
                         log.add(f"{self} receive from {other_player} price difference compensation {abs(price_difference)}")
                     if price_difference < 0:
                         log.add(f"{other_player} receive from {self} price difference compensation {abs(price_difference)}")
 
-                    other_player.owned.remove(player_receives[0])
                     player_receives[0].owner = self
                     self.owned.append(player_receives[0])
+                    other_player.owned.remove(player_receives[0])
 
-                    self.owned.remove(player_gives[0])
                     player_gives[0].owner = other_player
                     other_player.owned.append(player_gives[0])
-                    
+                    self.owned.remove(player_gives[0])
+
                     # Recalculate monopoly and improvement status
                     board.recalculate_monopoly_coeffs(player_gives[0])
                     board.recalculate_monopoly_coeffs(player_receives[0])
