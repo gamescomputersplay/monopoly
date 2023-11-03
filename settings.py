@@ -34,15 +34,20 @@ class StandardPlayer:
     ''' Settings for a Standard Player
     '''
     # Amount of money player wants to keep unspent (money safety pillow)
-    unspendable_cash = 500
+    unspendable_cash = 200
 
     # Group of properties, player refuse to buy (set, as there may be several)
     ignore_property_groups = {}
 
+    # Willing to participate in trades
+    participates_in_trades = True
+
 class ExperimentPlayer(StandardPlayer):
     ''' Changed settings for the Experiement Player
     '''
-    #unspendable_cash = 1500
+    #unspendable_cash = 100
+    #ignore_property_groups = {}
+    #participates_in_trades = False
 
 class GameSettings():
     ''' Setting for the game (rules + player list)

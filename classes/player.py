@@ -273,11 +273,19 @@ class Player:
             log.add(f"{self} has to pay ${amount}, max they can raise is ${max_raisable_money}")
             self.is_bankrupt = True
             log.add(f"{self} is bankrupt")
+
+            # Raise as much cash as possible to give payee
             self.raise_money(amount, board, log)
             log.add(f"{self} gave {payee} all their remaining money (${self.money})")
             payee.money += self.money
             self.money = 0
+
+            # Transfer all property (mortgaged at this point) to payee
             self.transfer_all_properties(payee, board, log)
+
+            # Reset all trade settings
+            self.wants_to_sell = set()
+            self.wants_to_buy = set()
 
     def is_willing_to_buy_property(self, property_to_buy):
         ''' Check if the player is willing to buy an onowned property
@@ -309,6 +317,12 @@ class Player:
     def update_lists_of_properties_to_trade(self, board):
         ''' Updtate list of properies player is willing to sell / buy
         '''
+
+        # If player is not willing to trade, he would
+        # have not declare his offered and desired properties,
+        # thus stopping any trade with them
+        if not self.settings.participates_in_trades:
+            return
 
         # Reset the lists
         self.wants_to_sell = set()
