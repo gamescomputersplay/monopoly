@@ -60,7 +60,10 @@ class Analyzer:
         survival_rate = {row['player']: row['count']
                              for index, row in loses_counts.iterrows()}
         print("Players' survival rate:")
-        for player_name, loses in sorted(survival_rate.items()):
+        for player in GameSettings.players_list:
+            player_name = player[0]
+            loses = survival_rate.get(player_name, 0)
+        #for player_name, loses in sorted(survival_rate.items()):
             survivals = SimulationSettings.n_games - loses
             surv_rate = survivals / SimulationSettings.n_games
             margin = 1.96 * (surv_rate * (1 - surv_rate) / SimulationSettings.n_games) ** 0.5

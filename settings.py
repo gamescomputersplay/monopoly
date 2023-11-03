@@ -8,7 +8,7 @@ class SimulationSettings():
     # Number of moves to simulate
     # (if there are more than one player alive after then,
     # the game is considered to have no winner)
-    n_moves = 100
+    n_moves = 1000
 
     # Number of games to simulate
     n_games = 1
@@ -61,7 +61,7 @@ class GameSettings():
 
     # Players and their behaviour settings
     players_list = [
-        ("Experimental", ExperimentPlayer),
+        ("Experiment", ExperimentPlayer),
         ("Standard 1", StandardPlayer),
         ("Standard 2", StandardPlayer),
         ("Standard 3", StandardPlayer),
