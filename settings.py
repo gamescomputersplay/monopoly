@@ -24,10 +24,13 @@ class LogSettings:
     '''
     # Detailed log about all that is going on in th game:
     # movements, purchases, rent, cards, etc
+    # Note that it takes about 5Mb per one 1000-turn game.
+    # Might want to turn it off for large simulations
+    keep_game_log = False
     game_log_file = "gamelog.txt"
 
     # Log that keeps information about on which turn which player went bunkrupt
-    # Base info for most of analysis
+    # Base info for all simulation analysis
     data_log_file = "datalog.txt"
 
 class StandardPlayer:
