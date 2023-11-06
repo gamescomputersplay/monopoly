@@ -410,7 +410,7 @@ class Player:
                             return False
                         other_player.money += abs(price_difference)
                         self.money -= abs(price_difference)
-                        
+
                     # Propery changes hands
                     for cell_to_receive in player_receives:
                         cell_to_receive.owner = self
@@ -423,7 +423,8 @@ class Player:
 
                     # Log the trade and compensation payment
                     log.add(f"Trade: {self} gives {[str(cell) for cell in player_gives]}, " +
-                            f"receives {[str(cell) for cell in player_receives]} from {other_player}")
+                            f"receives {[str(cell) for cell in player_receives]} " +
+                            f"from {other_player}")
 
                     if price_difference > 0:
                         log.add(f"{self} receive from {other_player} " +
@@ -431,7 +432,7 @@ class Player:
                     if price_difference < 0:
                         log.add(f"{other_player} receive from {self} " +
                                 f"price difference compensation {abs(price_difference)}")
-                        
+
                     # Recalculate monopoly and improvement status
                     board.recalculate_monopoly_coeffs(player_gives[0])
                     board.recalculate_monopoly_coeffs(player_receives[0])
