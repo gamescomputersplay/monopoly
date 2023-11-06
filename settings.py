@@ -74,3 +74,6 @@ class GameSettings():
         ("Standard 2", StandardPlayer),
         ("Standard 3", StandardPlayer),
     ]
+
+    # Randomly shuffle order of players each game
+    shuffle_players = True

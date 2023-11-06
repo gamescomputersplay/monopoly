@@ -36,6 +36,9 @@ def one_game(data_for_simulation):
     players = [Player(player_name, player_setting)
                for player_name, player_setting in GameSettings.players_list]
 
+    if GameSettings.shuffle_players:
+        random.shuffle(players)
+
     # Set up players starting money accouding to the game settings
     if isinstance(GameSettings.starting_money, list):
         for player, starting_money in zip(players, GameSettings.starting_money):
