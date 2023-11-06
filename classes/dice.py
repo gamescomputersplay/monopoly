@@ -26,3 +26,9 @@ class Dice:
 
         # Cast, total score, all dice are equal
         return cast, sum(cast), len(set(cast)) == 1
+
+    def shuffle(self, object_to_shuffle):
+        ''' Copy of random.shuffle, but with local
+        random generator (to be thread safe)
+        '''
+        self.local_random.shuffle(object_to_shuffle)

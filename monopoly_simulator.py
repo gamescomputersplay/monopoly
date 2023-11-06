@@ -32,12 +32,20 @@ def one_game(data_for_simulation):
 
     datalog = Log(LogSettings.data_log_file)
 
+    # Initiate the board
+    board = Board(GameSettings)
+
+    # Set up dice (create a separate random generator with initial "game_seed",
+    # to make it thread-safe)
+    dice = Dice(game_seed, GameSettings.dice_count, GameSettings.dice_sides, log)
+
     # Set up players with their behaviour settings
     players = [Player(player_name, player_setting)
                for player_name, player_setting in GameSettings.players_list]
 
     if GameSettings.shuffle_players:
-        random.shuffle(players)
+        # dice has a thread-safe copy of random.shuffle
+        dice.shuffle(players)
 
     # Set up players starting money accouding to the game settings
     if isinstance(GameSettings.starting_money, list):
@@ -46,13 +54,6 @@ def one_game(data_for_simulation):
     else:
         for player in players:
             player.money = GameSettings.starting_money
-
-    # Initiate the board
-    board = Board(GameSettings)
-
-    # Set up dice (create a separate random generator with initial "game_seed",
-    # to make it thread-safe)
-    dice = Dice(game_seed, GameSettings.dice_count, GameSettings.dice_sides, log)
 
     # Play for the required number of turns
     for turn_n in range(1, SimulationSettings.n_moves + 1):
