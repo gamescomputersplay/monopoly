@@ -2,7 +2,7 @@
 '''
 
 from classes.board import Property
-
+from settings import GameSettings
 
 class Player:
     ''' Class to contain player-replated into and actions:
@@ -52,6 +52,10 @@ class Player:
 
         # Look for a trade opportunity
         while self.do_a_two_way_trade(players, board, log):
+            pass
+
+        # Unmortgage, if there is enough money for it
+        while self.unmortgage_a_property(board, log):
             pass
 
         # Improve any properties, if needed
@@ -206,7 +210,7 @@ class Player:
         list_to_mortgage = []
         for cell in self.owned:
             if not cell.is_mortgaged:
-                list_to_mortgage.append((cell.cost_base // 2, cell))
+                list_to_mortgage.append((cell.cost_base * GameSettings.mortgage_value, cell))
 
         # It will be popped from the end, so first to sell should be last
         list_to_mortgage.sort(key = lambda x: -x[0])
@@ -443,6 +447,27 @@ class Player:
                         player.update_lists_of_properties_to_trade(board)
 
                     # Return True, to run trading function again
+                    return True
+
+        return False
+
+    def unmortgage_a_property(self, board, log):
+        ''' Go through the list of properties and unmortgage one,
+        if there is wnough moeny to do so. Return True, if any unmortgaging
+        took p;lace (to call it again)
+        '''
+
+        for cell in self.owned:
+            if cell.is_mortgaged:
+                mooney_to_unmortgage = \
+                    cell.cost_base * GameSettings.mortgage_value + \
+                    cell.cost_base * GameSettings.mortgage_fee
+                if self.money - mooney_to_unmortgage >= self.settings.unspendable_cash:
+                    log.add(f"{self} unmortgages {cell} for ${mooney_to_unmortgage}")
+                    self.money -= mooney_to_unmortgage
+                    cell.is_mortgaged = False
+                    board.recalculate_monopoly_coeffs(cell)
+                    self.update_lists_of_properties_to_trade(board)
                     return True
 
         return False

@@ -77,3 +77,10 @@ class GameSettings():
 
     # Randomly shuffle order of players each game
     shuffle_players = True
+
+    # Mortgage value: how much cash player get's for mortgaging a property
+    # Default is 0.5
+    mortgage_value = 0.5
+    # Mortgage fee is an extra they need to pay to unmortgage
+    # Default is 0.1
+    mortgage_fee = 0.1
