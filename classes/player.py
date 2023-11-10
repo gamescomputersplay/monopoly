@@ -361,20 +361,45 @@ class Player:
     def fair_deal(self, player_gives, player_receives):
         ''' Remove properties from to_sell and to_buy to make it as fair as possible
         '''
+
+        def remove_by_color(cells, color):
+            new_cells = [cell for cell in cells if cell.group != color]
+            return new_cells
+            
         # Filter items that belong to the same group (don't trade A1 for A2)
         # TODO: more nuanced way, you should be able to trade A1 for B1
-        group_receives = [cell.group for cell in player_receives]
-        group_gives = [cell.group for cell in player_gives]
+        color_receives = [cell.group for cell in player_receives]
+        color_gives = [cell.group for cell in player_gives]
 
-        player_receives = [cell for cell in player_receives if cell.group not in group_gives]
-        player_gives = [cell for cell in player_gives if cell.group not in group_receives]
+        # If there are only properies from size-2 groups, no trade
+        both_colors = set(color_receives + color_gives)
+        if both_colors.issubset({"Utilities", "Indigo", "Brown"}):
+            return [], []
+
+        # Look at "Indigo", "Brown", "Utilities"
+        # If they are present, remove it from the guy who has longer list
+        # If list has the same length, remove both questionable items
+
+        for questionable_color in ["Utilities", "Indigo", "Brown"]:
+            if questionable_color in color_receives and questionable_color in color_gives:
+                if len(player_receives) > len(player_gives):
+                    player_receives = remove_by_color(player_receives, questionable_color)
+                elif len(player_receives) < len(player_gives):
+                    player_gives = remove_by_color(player_gives, questionable_color)
+                else:
+                    player_receives = remove_by_color(player_receives, questionable_color)
+                    player_gives = remove_by_color(player_gives, questionable_color)
+
+
+        #player_receives = [cell for cell in player_receives if cell.group not in color_gives]
+        #player_gives = [cell for cell in player_gives if cell.group not in color_receives]
 
         # Trade only one-to-one, starting from the most expensive
         player_receives.sort(key=lambda x: -x.cost_base)
         player_gives.sort(key=lambda x: -x.cost_base)
 
-        player_receives = player_receives[:1]
-        player_gives = player_gives[:1]
+        #player_receives = player_receives[:1]
+        #player_gives = player_gives[:1]
 
         return player_gives, player_receives
 
