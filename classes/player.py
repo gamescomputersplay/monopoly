@@ -295,11 +295,19 @@ class Player:
     def transfer_all_properties(self, payee, board, log):
         ''' Part of bankruptcy procedure, transfer all mortgaged property to the creditor
         '''
-        # TODO: handle transfer to the bank
+
         while self.owned:
             cell_to_transfer = self.owned.pop()
-            cell_to_transfer.owner = payee
-            payee.owned.append(cell_to_transfer)
+
+            # Transfer to a player
+            if isinstance(payee, Player):
+                cell_to_transfer.owner = payee
+                payee.owned.append(cell_to_transfer)
+            # Transfer to the bank. TODO: Auction the property
+            else:
+                cell_to_transfer.owner = None
+                cell_to_transfer.is_mortgaged = False
+
             board.recalculate_monopoly_coeffs(cell_to_transfer)
             log.add(f"{self} transfers {cell_to_transfer} to {payee}")
 
