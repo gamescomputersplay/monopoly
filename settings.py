@@ -45,6 +45,11 @@ class StandardPlayer:
     # Willing to participate in trades
     participates_in_trades = True
 
+    # Only agree to trade if value difference is within these limits
+    # (Asolute and relative)
+    trade_max_diff_abs = 200 # More expensive - less espensive
+    trade_max_diff_rel = 1.5 # More expensive / less espensive
+
 class ExperimentPlayer(StandardPlayer):
     ''' Changed settings for the Experiement Player
     '''

@@ -358,16 +358,35 @@ class Player:
             if len(owned_by_others) == 1:
                 self.wants_to_buy.add(owned_by_others[0])
 
-    def fair_deal(self, player_gives, player_receives):
+    def get_price_difference(self, gives, receives):
+        ''' Calcualte price difference between items player
+        is about to give minus what he is about to receive.
+        >0 means player gives away more
+        Return both absolute (in $), relative for a giver, relative for a receiver
+        '''
+
+        cost_gives = sum(cell.cost_base for cell in gives)
+        cost_receives = sum(cell.cost_base for cell in receives)
+
+        diff_abs = cost_gives - cost_receives
+
+        diff_giver, diff_receiver = float("inf"), float("inf")
+        if receives:
+            diff_giver = cost_gives / cost_receives
+        if gives:
+            diff_receiver = cost_receives / cost_gives
+
+        return diff_abs, diff_giver, diff_receiver
+
+    def fair_deal(self, player_gives, player_receives, other_player):
         ''' Remove properties from to_sell and to_buy to make it as fair as possible
         '''
 
         def remove_by_color(cells, color):
             new_cells = [cell for cell in cells if cell.group != color]
             return new_cells
-            
-        # Filter items that belong to the same group (don't trade A1 for A2)
-        # TODO: more nuanced way, you should be able to trade A1 for B1
+
+        # First, get all colors in both sides of the deal
         color_receives = [cell.group for cell in player_receives]
         color_gives = [cell.group for cell in player_gives]
 
@@ -376,7 +395,8 @@ class Player:
         if both_colors.issubset({"Utilities", "Indigo", "Brown"}):
             return [], []
 
-        # Look at "Indigo", "Brown", "Utilities"
+        # Look at "Indigo", "Brown", "Utilities". These have 2 properties,
+        # so both players would want to receive them
         # If they are present, remove it from the guy who has longer list
         # If list has the same length, remove both questionable items
 
@@ -391,15 +411,28 @@ class Player:
                     player_gives = remove_by_color(player_gives, questionable_color)
 
 
-        #player_receives = [cell for cell in player_receives if cell.group not in color_gives]
-        #player_gives = [cell for cell in player_gives if cell.group not in color_receives]
-
-        # Trade only one-to-one, starting from the most expensive
+        # Sort, starting from the most expensive
         player_receives.sort(key=lambda x: -x.cost_base)
         player_gives.sort(key=lambda x: -x.cost_base)
 
-        #player_receives = player_receives[:1]
-        #player_gives = player_gives[:1]
+
+        # Check the difference in value and make sure it is not larger that player's preference
+        while player_gives and player_receives:
+
+            diff_abs, diff_giver, diff_receiver = \
+                self.get_price_difference(player_gives, player_receives)
+
+            # This player gives too much
+            if diff_abs > self.settings.trade_max_diff_abs or \
+               diff_giver > self.settings.trade_max_diff_rel:
+                player_gives.pop()
+                continue
+            # Other player gives too much
+            if -diff_abs > other_player.settings.trade_max_diff_abs or \
+               -diff_receiver > other_player.settings.trade_max_diff_rel:
+                player_receives.pop()
+                continue
+            break
 
         return player_gives, player_receives
 
@@ -413,14 +446,17 @@ class Player:
                 player_receives = list(self.wants_to_buy.intersection(other_player.wants_to_sell))
                 player_gives = list(self.wants_to_sell.intersection(other_player.wants_to_buy))
 
-                player_gives, player_receives = self.fair_deal(player_gives, player_receives)
+                # Work out a fair deal (don't trade same color,
+                # get value difference within the limit)
+                player_gives, player_receives = \
+                    self.fair_deal(player_gives, player_receives, other_player)
 
+                # If ther deal is not empty, go on
                 if player_receives and player_gives:
 
                     # Price difference in traded properties
-                    price_difference = \
-                        sum(cell.cost_base for cell in player_gives) - \
-                        sum(cell.cost_base for cell in player_receives)
+                    price_difference, _, _ = \
+                        self.get_price_difference(player_gives, player_receives)
 
                     # Player gives await more expensive item, other play has to pay
                     if price_difference > 0:
