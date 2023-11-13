@@ -8,6 +8,12 @@ class Cell:
     def __init__(self, name):
         self.name = name
 
+class GoToJail(Cell):
+    ''' Class for Go To Jail cell
+    not much going on here
+    '''
+    def __init__(self, name):
+        super().__init__(name)
 
 class Property(Cell):
     ''' Property Class (for Properties, Rails, Utilities)
@@ -91,7 +97,7 @@ class Board:
             "B3 Connecticut Avenue",120,8,50,(40, 100, 300, 450, 600),"Lightblue"))
 
         # 10-14
-        self.b.append(Cell("PR Prison"))
+        self.b.append(Cell("JL Jail"))
         self.b.append(Property(
             "C1 St.Charle's Place", 140, 10, 100, (50, 150, 450, 625, 750), "Pink"))
         self.b.append(Property(
@@ -135,7 +141,7 @@ class Board:
             "F3 Martin Gardens", 280, 24, 150, (120, 360, 850, 1025, 1200), "Yellow"))
 
         # 30-34
-        self.b.append(Cell("GTJ Go To Jail"))
+        self.b.append(GoToJail("GTJ Go To Jail"))
         self.b.append(Property(
             "G1 Pacific Avenue", 300, 26, 200, (130, 390, 900, 1100, 1275), "Green"))
         self.b.append(Property(

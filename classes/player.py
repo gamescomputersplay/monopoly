@@ -1,7 +1,7 @@
 ''' Player Class
 '''
 
-from classes.board import Property
+from classes.board import Property, GoToJail
 from settings import GameSettings
 
 class Player:
@@ -73,11 +73,7 @@ class Player:
 
         # Doubles for the third time: go to jail
         if dice_roll_is_double and self.had_doubles == 2:
-            log.add(f"{self} rolled a double (3 times in a row) " +
-                    "so they go to jail.")
-            self.position = 10
-            self.in_jail = True
-            self.had_doubles = 0
+            self.go_to_jail("rolled 3 doubles in a row", log)
             return
 
         # Player is currently in jail
@@ -113,6 +109,11 @@ class Player:
         if isinstance(board.b[self.position], Property):
             self.handle_landing_on_property(board, players, dice, log)
 
+        # Player lands on "Go To Jail"
+        if isinstance(board.b[self.position], GoToJail):
+            self.go_to_jail("landed on Go To Jail", log)
+            return
+
         # If player went bankrupt this turn - return string "baknrupt"
         if self.is_bankrupt:
             return "bankrupt"
@@ -121,7 +122,7 @@ class Player:
         if dice_roll_is_double:
             # Keep track of doubles in a row
             self.had_doubles += 1
-            # We already handles sending to jail, so just go again
+            # We already handled sending to jail, so player just goes again
             log.add(f"{self} rolled a double ({self.had_doubles} in a row) so they go again.")
             self.make_a_move(board, players, dice, log)
         # If now a double: reset double counter
@@ -583,3 +584,12 @@ class Player:
                     return True
 
         return False
+
+    def go_to_jail(self, message, log):
+        ''' Start the jail time
+        '''
+        log.add(f"{self} {message}, and goes to Jail.")
+        self.position = 10
+        self.in_jail = True
+        self.had_doubles = 0
+        self.days_in_jail = 0
