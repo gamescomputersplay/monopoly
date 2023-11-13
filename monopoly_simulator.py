@@ -66,7 +66,7 @@ def one_game(data_for_simulation):
         for player_n, player in enumerate(players):
             if not player.is_bankrupt:
                 alive += 1
-                log.add(f"- Player {player_n}, '{player.name}': " +
+                log.add(f"- Player '{player.name}': " +
                         f"${player.money}, at {player.position} ({board.b[player.position].name})")
             else:
                 log.add(f"- Player {player_n}, '{player.name}': Bankrupt")
