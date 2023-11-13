@@ -429,7 +429,7 @@ class Player:
                 continue
             # Other player gives too much
             if -diff_abs > other_player.settings.trade_max_diff_abs or \
-               -diff_receiver > other_player.settings.trade_max_diff_rel:
+               diff_receiver > other_player.settings.trade_max_diff_rel:
                 player_receives.pop()
                 continue
             break

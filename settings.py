@@ -48,14 +48,11 @@ class StandardPlayer:
     # Only agree to trade if value difference is within these limits
     # (Asolute and relative)
     trade_max_diff_abs = 200 # More expensive - less espensive
-    trade_max_diff_rel = 1.5 # More expensive / less espensive
+    trade_max_diff_rel = 2 # More expensive / less espensive
 
 class ExperimentPlayer(StandardPlayer):
     ''' Changed settings for the Experiement Player
     '''
-    #unspendable_cash = 100
-    #ignore_property_groups = {}
-    #participates_in_trades = False
 
 class GameSettings():
     ''' Setting for the game (rules + player list)
