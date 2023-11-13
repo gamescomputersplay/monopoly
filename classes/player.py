@@ -22,6 +22,11 @@ class Player:
         # Player's position
         self.position = 0
 
+        # Person's roll double and jail status
+        self.in_jail = False
+        self.had_doubles = 0
+        self.days_in_jail = 0
+
         # Owned properties
         self.owned = []
 
@@ -61,8 +66,39 @@ class Player:
         # Improve any properties, if needed
         self.improve_properties(log)
 
+
+
         # Player rolls the dice
         _, dice_roll_score, dice_roll_is_double = dice.cast()
+
+        # Doubles for the third time: go to jail
+        if dice_roll_is_double and self.had_doubles == 2:
+            log.add(f"{self} rolled a double (3 times in a row) " +
+                    "so they go to jail.")
+            self.position = 10
+            self.in_jail = True
+            self.had_doubles = 0
+            return
+
+        # Player is currently in jail
+        if self.in_jail:
+            # Get out of jail on rolling double
+            if dice_roll_is_double:
+                log.add(f"{self} rolled a double, a leaves jail for free")
+                self.in_jail = False
+                self.days_in_jail = 0
+            # Get out of jail and pay fine
+            elif self.days_in_jail == 2: # It's your third day
+                log.add(f"{self} did not rolled a double for the third time, " +
+                        f"pays {GameSettings.exit_jail_fine} and leaves jail")
+                self.pay_money(GameSettings.exit_jail_fine, "bank", board, log)
+                self.in_jail = False
+                self.days_in_jail = 0
+            # Stay in jail for another turn
+            else:
+                log.add(f"{self} stays in jail")
+                self.days_in_jail  += 1
+                return
 
         # Player moves to the new cell
         self.position += dice_roll_score
@@ -80,6 +116,17 @@ class Player:
         # If player went bankrupt this turn - return string "baknrupt"
         if self.is_bankrupt:
             return "bankrupt"
+
+        # If the roll was a double
+        if dice_roll_is_double:
+            # Keep track of doubles in a row
+            self.had_doubles += 1
+            # We already handles sending to jail, so just go again
+            log.add(f"{self} rolled a double ({self.had_doubles} in a row) so they go again.")
+            self.make_a_move(board, players, dice, log)
+        # If now a double: reset double counter
+        else:
+            self.had_doubles = 0
 
     def handle_landing_on_property(self, board, players, dice, log):
         ''' Landing on property: either buy it or pay rent
@@ -247,6 +294,7 @@ class Player:
     def transfer_all_properties(self, payee, board, log):
         ''' Part of bankruptcy procedure, transfer all mortgaged property to the creditor
         '''
+        # TODO: handle transfer to the bank
         while self.owned:
             cell_to_transfer = self.owned.pop()
             cell_to_transfer.owner = payee
@@ -261,7 +309,8 @@ class Player:
         # Regular transaction
         if amount < self.money:
             self.money -= amount
-            payee.money += amount
+            if payee != "bank":
+                payee.money += amount
             return
 
         max_raisable_money = self.max_raisable_money()
@@ -270,7 +319,8 @@ class Player:
             log.add(f"{self} can pay ${amount}, but needs to sell some things for that")
             self.raise_money(amount, board, log)
             self.money -= amount
-            payee.money += amount
+            if payee != "bank":
+                payee.money += amount
 
         # Bunkruptcy (can't pay even after selling and morgtgaging all)
         else:
@@ -281,7 +331,8 @@ class Player:
             # Raise as much cash as possible to give payee
             self.raise_money(amount, board, log)
             log.add(f"{self} gave {payee} all their remaining money (${self.money})")
-            payee.money += self.money
+            if payee != "bank":
+                payee.money += self.money
             self.money = 0
 
             # Transfer all property (mortgaged at this point) to payee

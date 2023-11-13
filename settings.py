@@ -26,7 +26,7 @@ class LogSettings:
     # movements, purchases, rent, cards, etc
     # Note that it takes about 5Mb per one 1000-turn game.
     # Might want to turn it off for large simulations
-    keep_game_log = False
+    keep_game_log = True
     game_log_file = "gamelog.txt"
 
     # Log that keeps information about on which turn which player went bunkrupt
@@ -86,3 +86,6 @@ class GameSettings():
     # Mortgage fee is an extra they need to pay to unmortgage
     # Default is 0.1
     mortgage_fee = 0.1
+
+    # Fine to get out of jail without rolling doubles
+    exit_jail_fine = 50
