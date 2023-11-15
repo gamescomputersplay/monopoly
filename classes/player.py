@@ -137,6 +137,21 @@ class Player:
         else:
             self.had_doubles = 0
 
+    def net_worth(self):
+        ''' Calculte player's net worth (cache + property + houses)
+        '''
+        net_worth = self.money
+
+        for cell in self.owned:
+
+            if cell.is_mortgaged:
+                continue
+
+            net_worth += cell.cost_base
+            net_worth += (cell.has_houses + cell.has_hotel) * cell.cost_house
+
+        return net_worth
+
     def handle_landing_on_property(self, board, players, dice, log):
         ''' Landing on property: either buy it or pay rent
         '''
