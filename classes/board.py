@@ -15,6 +15,12 @@ class GoToJail(Cell):
     def __init__(self, name):
         super().__init__(name)
 
+class LuxuryTax(Cell):
+    ''' Class for LuxuryTax
+    '''
+    def __init__(self, name):
+        super().__init__(name)
+
 class Property(Cell):
     ''' Property Class (for Properties, Rails, Utilities)
     '''
@@ -83,7 +89,7 @@ class Board:
         self.b.append(Cell("COM1 Community Chest"))
         self.b.append(Property(
             "A2 Baltic Avenue", 60, 4, 50, (20, 60, 180, 320, 450), "Brown"))
-        self.b.append(Cell("PT Property Tax"))
+        self.b.append(Cell("IT Income Tax"))
 
         # 5-9
         self.b.append(Property(
@@ -156,7 +162,7 @@ class Board:
         self.b.append(Cell("CH3 Chance"))
         self.b.append(Property(
             "H1 Park Place", 350, 35, 200, (175, 500, 1100, 1300, 1500), "Indigo"))
-        self.b.append(Cell("LT Luxury Tax"))
+        self.b.append(LuxuryTax("LT Luxury Tax"))
         self.b.append(Property(
             "H2 Boardwalk", 400, 50, 200, (200, 600, 1400, 1700, 2000), "Indigo"))
 

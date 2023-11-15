@@ -1,7 +1,7 @@
 ''' Player Class
 '''
 
-from classes.board import Property, GoToJail
+from classes.board import Property, GoToJail, LuxuryTax
 from settings import GameSettings
 
 class Player:
@@ -105,6 +105,8 @@ class Player:
         self.position %= 40
         log.add(f"Player {self.name} goes to: {board.b[self.position].name}")
 
+        # Handle various types of cells player may land on
+
         # Player lands on a property
         if isinstance(board.b[self.position], Property):
             self.handle_landing_on_property(board, players, dice, log)
@@ -112,7 +114,13 @@ class Player:
         # Player lands on "Go To Jail"
         if isinstance(board.b[self.position], GoToJail):
             self.go_to_jail("landed on Go To Jail", log)
+            # End turn for this player, even if it was a double 
             return
+
+        # Player lands on "Luxury Tax"
+        if isinstance(board.b[self.position], LuxuryTax):
+            self.pay_money(GameSettings.luxury_tax, "bank", board, log)
+
 
         # If player went bankrupt this turn - return string "baknrupt"
         if self.is_bankrupt:

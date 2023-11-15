@@ -61,14 +61,6 @@ class GameSettings():
     dice_count = 2
     dice_sides = 6
 
-    # Initial money (a single integer if it is same
-    # for everybody or a list of values for individual values)
-    starting_money = 1500
-    # starting_money = [1370, 1460, 1540, 1630]
-
-    # Game mechanics settings
-    salary = 200
-
     # Players and their behaviour settings
     players_list = [
         ("Experiment", ExperimentPlayer),
@@ -79,6 +71,19 @@ class GameSettings():
 
     # Randomly shuffle order of players each game
     shuffle_players = True
+
+    # Initial money (a single integer if it is same
+    # for everybody or a list of values for individual values)
+    starting_money = 1500
+    # starting_money = [1370, 1460, 1540, 1630]
+
+    # Game mechanics settings
+
+    # Passing Go salary
+    salary = 200
+
+    # Luxury tax
+    luxury_tax = 0
 
     # Mortgage value: how much cash player get's for mortgaging a property
     # Default is 0.5
