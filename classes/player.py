@@ -181,7 +181,7 @@ class Player:
             # It is mortgaged: no action
             if board.b[self.position].is_mortgaged:
                 log.add("Property is mortgaged, no rent")
-            # It is mortgaged: no action
+            # It is player's own property
             elif board.b[self.position].owner == self:
                 log.add("Own property, no rent")
             # Handle rent payments
@@ -190,7 +190,8 @@ class Player:
                         f"owned by {board.b[self.position].owner}")
                 rent_amount = board.b[self.position].calculate_rent(dice)
                 self.pay_money(rent_amount, board.b[self.position].owner, board, log)
-                log.add(f"{self} pays {board.b[self.position].owner} rent ${rent_amount}")
+                if not self.is_bankrupt:
+                    log.add(f"{self} pays {board.b[self.position].owner} rent ${rent_amount}")
 
     def get_list_of_properties_to_improve(self):
         ''' Put together a list of properties a player wants to improve, in order.
