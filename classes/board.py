@@ -12,20 +12,14 @@ class GoToJail(Cell):
     ''' Class for Go To Jail cell
     not much going on here
     '''
-    def __init__(self, name):
-        super().__init__(name)
 
 class LuxuryTax(Cell):
     ''' Class for LuxuryTax
     '''
-    def __init__(self, name):
-        super().__init__(name)
 
 class IncomeTax(Cell):
     ''' Class for IncomeTax
     '''
-    def __init__(self, name):
-        super().__init__(name)
 
 class Property(Cell):
     ''' Property Class (for Properties, Rails, Utilities)
