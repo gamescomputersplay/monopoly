@@ -21,6 +21,12 @@ class LuxuryTax(Cell):
     def __init__(self, name):
         super().__init__(name)
 
+class IncomeTax(Cell):
+    ''' Class for IncomeTax
+    '''
+    def __init__(self, name):
+        super().__init__(name)
+
 class Property(Cell):
     ''' Property Class (for Properties, Rails, Utilities)
     '''
@@ -89,7 +95,7 @@ class Board:
         self.b.append(Cell("COM1 Community Chest"))
         self.b.append(Property(
             "A2 Baltic Avenue", 60, 4, 50, (20, 60, 180, 320, 450), "Brown"))
-        self.b.append(Cell("IT Income Tax"))
+        self.b.append(IncomeTax("IT Income Tax"))
 
         # 5-9
         self.b.append(Property(

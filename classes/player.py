@@ -1,7 +1,7 @@
 ''' Player Class
 '''
 
-from classes.board import Property, GoToJail, LuxuryTax
+from classes.board import Property, GoToJail, LuxuryTax, IncomeTax
 from settings import GameSettings
 
 class Player:
@@ -120,6 +120,21 @@ class Player:
         # Player lands on "Luxury Tax"
         if isinstance(board.b[self.position], LuxuryTax):
             self.pay_money(GameSettings.luxury_tax, "bank", board, log)
+            if not self.is_bankrupt:
+                log.add(f"{self} pays Luxury Tax ${GameSettings.luxury_tax}")
+
+        # Player lands on "Income Tax"
+        if isinstance(board.b[self.position], IncomeTax):
+            # Choose smaller between fixed rate and percentage
+            tax_to_pay = min(
+                GameSettings.income_tax,
+                int(GameSettings.income_tax_percentage * self.net_worth()))
+
+            if tax_to_pay == GameSettings.income_tax:
+                log.add(f"{self} pays fixed Income tax {GameSettings.income_tax}")
+            else:
+                log.add(f"{self} pays {GameSettings.income_tax_percentage * 100:.0f}% Income tax {tax_to_pay}")
+            self.pay_money(tax_to_pay, "bank", board, log)
 
 
         # If player went bankrupt this turn - return string "baknrupt"
@@ -144,11 +159,14 @@ class Player:
 
         for cell in self.owned:
 
+            # This is against "classic rules", where mortgages property
+            # calculated as 100% for net worth
+            # But it doesn't make sence!
             if cell.is_mortgaged:
-                continue
-
-            net_worth += cell.cost_base
-            net_worth += (cell.has_houses + cell.has_hotel) * cell.cost_house
+                net_worth += cell.cost_base * (1 - GameSettings.mortgage_value)
+            else:
+                net_worth += cell.cost_base
+                net_worth += (cell.has_houses + cell.has_hotel) * cell.cost_house
 
         return net_worth
 

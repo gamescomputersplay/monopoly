@@ -83,7 +83,11 @@ class GameSettings():
     salary = 200
 
     # Luxury tax
-    luxury_tax = 0
+    luxury_tax = 100
+
+    # Income tax (cash or share of net worth)
+    income_tax = 200
+    income_tax_percentage = .1
 
     # Mortgage value: how much cash player get's for mortgaging a property
     # Default is 0.5
