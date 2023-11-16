@@ -1,4 +1,4 @@
-''' Class for Dice (thread safe seed based, with adjutable number of dice and sides)
+''' Class for Dice (thread safe seed based, with adjustable number of dice and sides)
 '''
 
 import random

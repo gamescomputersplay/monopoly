@@ -7,7 +7,7 @@ from settings import SimulationSettings, GameSettings, LogSettings
 
 
 class Analyzer:
-    ''' Functions to analized games after the simulation
+    ''' Functions to analyzed games after the simulation
     '''
 
     def __init__(self):
@@ -38,8 +38,8 @@ class Analyzer:
         for remaining, count in sorted(remaining_players.items()):
             print(f"  - {remaining}: {count} ({count * 100 / SimulationSettings.n_games:.1f}%)")
 
-    def median_gamelength(self):
-        ''' Median gamelength (for all an dfinite games)
+    def median_game_length(self):
+        ''' Median game length (for all finite games)
         '''
         grouped = self.df.groupby('game_number')
         filtered_groups = grouped.filter(lambda x: len(x) == len(GameSettings.players_list) - 1)
@@ -70,4 +70,3 @@ class Analyzer:
             print(f"  - {player_name}: {survivals} " +
                   f"({surv_rate * 100:.1f} "
                   f"+- {margin * 100:.1f}%)")
-

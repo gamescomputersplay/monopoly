@@ -7,7 +7,7 @@ from settings import GameSettings
 class Player:
     ''' Class to contain player-replated into and actions:
     - money, position, owned property
-    - actions to buy property of hadle Chance cards etc
+    - actions to buy property of handle Chance cards etc
     '''
 
     def __init__(self, name, settings):
@@ -114,7 +114,7 @@ class Player:
         # Player lands on "Go To Jail"
         if isinstance(board.b[self.position], GoToJail):
             self.go_to_jail("landed on Go To Jail", log)
-            # End turn for this player, even if it was a double 
+            # End turn for this player, even if it was a double
             return
 
         # Player lands on "Luxury Tax"
@@ -133,11 +133,12 @@ class Player:
             if tax_to_pay == GameSettings.income_tax:
                 log.add(f"{self} pays fixed Income tax {GameSettings.income_tax}")
             else:
-                log.add(f"{self} pays {GameSettings.income_tax_percentage * 100:.0f}% Income tax {tax_to_pay}")
+                log.add(f"{self} pays {GameSettings.income_tax_percentage * 100:.0f}% " +
+                        f"Income tax {tax_to_pay}")
             self.pay_money(tax_to_pay, "bank", board, log)
 
 
-        # If player went bankrupt this turn - return string "baknrupt"
+        # If player went bankrupt this turn - return string "bankrupt"
         if self.is_bankrupt:
             return "bankrupt"
 
@@ -153,7 +154,7 @@ class Player:
             self.had_doubles = 0
 
     def net_worth(self):
-        ''' Calculte player's net worth (cache + property + houses)
+        ''' Calculate player's net worth (cache + property + houses)
         '''
         net_worth = self.money
 
@@ -161,7 +162,7 @@ class Player:
 
             # This is against "classic rules", where mortgages property
             # calculated as 100% for net worth
-            # But it doesn't make sence!
+            # But it doesn't make sense!
             if cell.is_mortgaged:
                 net_worth += cell.cost_base * (1 - GameSettings.mortgage_value)
             else:
@@ -183,7 +184,7 @@ class Player:
                 log.add(f"Player {self.name} bought {board.b[self.position]} " +
                         f"for ${board.b[self.position].cost_base}")
 
-                # Rcalculate all monopoly / can build flags
+                # Recalculate all monopoly / can build flags
                 board.recalculate_monopoly_coeffs(board.b[self.position])
 
                 # Recalculate who wants to buy what
@@ -222,7 +223,7 @@ class Player:
                 for i in range(cell.has_houses + 1, 6):
                     list_to_improve.append((i, cell.cost_house, cell))
         # It will be popped from the end, so first to build should be last
-        # in the list (by default, least developed and cheaperst)
+        # in the list (by default, least developed and cheapest)
         list_to_improve.sort(key = lambda x: (-x[0], -x[1]))
         return list_to_improve
 
@@ -252,7 +253,7 @@ class Player:
                 cell_to_improve.has_houses = 0
                 cell_to_improve.has_hotel = 1
                 log.add(f"{self} built a hotel on {cell_to_improve}")
-                # Should not be improved beyong hotel
+                # Should not be improved beyond hotel
                 cell_to_improve.can_be_improved = False
 
             # Paying for the improvement
@@ -355,7 +356,7 @@ class Player:
 
     def pay_money(self, amount, payee, board, log):
         ''' Function to pay money to another player (or bank)
-        This is where Bankrupcy will be triggered.
+        This is where Bankruptcy will be triggered.
         '''
         # Regular transaction
         if amount < self.money:
@@ -373,7 +374,7 @@ class Player:
             if payee != "bank":
                 payee.money += amount
 
-        # Bunkruptcy (can't pay even after selling and morgtgaging all)
+        # Bunkruptcy (can't pay even after selling and mortgaging all)
         else:
             log.add(f"{self} has to pay ${amount}, max they can raise is ${max_raisable_money}")
             self.is_bankrupt = True
@@ -394,9 +395,9 @@ class Player:
             self.wants_to_buy = set()
 
     def is_willing_to_buy_property(self, property_to_buy):
-        ''' Check if the player is willing to buy an onowned property
+        ''' Check if the player is willing to buy an unowned property
         '''
-        # Player has money lower than unspendable minumum
+        # Player has money lower than unspendable minimum
         if self.money - property_to_buy.cost_base < self.settings.unspendable_cash:
             return False
 
@@ -421,7 +422,7 @@ class Player:
         self.money -= property_to_buy.cost_base
 
     def update_lists_of_properties_to_trade(self, board):
-        ''' Updtate list of properies player is willing to sell / buy
+        ''' Update list of properties player is willing to sell / buy
         '''
 
         # If player is not willing to trade, he would
@@ -461,7 +462,7 @@ class Player:
                 self.wants_to_buy.add(owned_by_others[0])
 
     def get_price_difference(self, gives, receives):
-        ''' Calcualte price difference between items player
+        ''' Calculate price difference between items player
         is about to give minus what he is about to receive.
         >0 means player gives away more
         Return both absolute (in $), relative for a giver, relative for a receiver
@@ -492,7 +493,7 @@ class Player:
         color_receives = [cell.group for cell in player_receives]
         color_gives = [cell.group for cell in player_gives]
 
-        # If there are only properies from size-2 groups, no trade
+        # If there are only properties from size-2 groups, no trade
         both_colors = set(color_receives + color_gives)
         if both_colors.issubset({"Utilities", "Indigo", "Brown"}):
             return [], []
@@ -553,7 +554,7 @@ class Player:
                 player_gives, player_receives = \
                     self.fair_deal(player_gives, player_receives, other_player)
 
-                # If ther deal is not empty, go on
+                # If their deal is not empty, go on
                 if player_receives and player_gives:
 
                     # Price difference in traded properties
@@ -578,7 +579,7 @@ class Player:
                         other_player.money += abs(price_difference)
                         self.money -= abs(price_difference)
 
-                    # Propery changes hands
+                    # Property changes hands
                     for cell_to_receive in player_receives:
                         cell_to_receive.owner = self
                         self.owned.append(cell_to_receive)
@@ -616,7 +617,7 @@ class Player:
 
     def unmortgage_a_property(self, board, log):
         ''' Go through the list of properties and unmortgage one,
-        if there is wnough moeny to do so. Return True, if any unmortgaging
+        if there is enough money to do so. Return True, if any unmortgaging
         took p;lace (to call it again)
         '''
 

@@ -37,7 +37,7 @@ class Property(Cell):
 
         # Multiplier to calculate rent(1 - no monopoly, 2 - monopoly,
         # 2/4/8 - railways, 4/10 - utilities)
-        self.monopoly_coeff = 1
+        self.monopoly_coef = 1
 
         # Flag that indicates that a property can be built on
         self.can_be_improved = False
@@ -63,14 +63,14 @@ class Property(Cell):
         if self.group != "Utilities":
             # Monopoly: double rent on undeveloped properties
             # Rails: multiply rent depending on how many owned
-            return self.rent_base * self.monopoly_coeff
+            return self.rent_base * self.monopoly_coef
 
         # Utilities: Dice roll * 4/10
         _, dice_points, _ = dice.cast()
-        return dice_points * self.monopoly_coeff
+        return dice_points * self.monopoly_coef
 
 class Board:
-    ''' Class collecting board repalted information:
+    ''' Class collecting board related information:
     properties and their owners, build houses, etc
     '''
 
@@ -85,7 +85,7 @@ class Board:
         # 0-4
         self.b.append(Cell("GO"))
         self.b.append(Property(
-            "A1 Mediterraneal Avenue", 60, 2, 50, (10, 30, 90, 160, 250), "Brown"))
+            "A1 Mediterranean Avenue", 60, 2, 50, (10, 30, 90, 160, 250), "Brown"))
         self.b.append(Cell("COM1 Community Chest"))
         self.b.append(Property(
             "A2 Baltic Avenue", 60, 4, 50, (20, 60, 180, 320, 450), "Brown"))
@@ -166,7 +166,7 @@ class Board:
         self.b.append(Property(
             "H2 Boardwalk", 400, 50, 200, (200, 600, 1400, 1700, 2000), "Indigo"))
 
-        # Board fields, groupped by group self.groups["Green"] - list of all greens
+        # Board fields, grouped by group self.groups["Green"] - list of all greens
         self.groups = self.property_groups()
 
     def property_groups(self):
@@ -183,7 +183,7 @@ class Board:
             groups[cell.group].append(cell)
         return groups
 
-    def log_curent_state(self, log):
+    def log_current_state(self, log):
         ''' Log current situation on the board,
         who owns what, monopolies, improvements, etc
         '''
@@ -197,13 +197,13 @@ class Board:
             if cell.has_houses > 0:
                 improvements = f"{cell.has_houses} house(s)"
             log.add(f"- {cell.name}, Owner: {cell.owner}, " +
-                    f"Rent coeff: {cell.monopoly_coeff}, Can improve: {cell.can_be_improved}, " +
+                    f"Rent coef: {cell.monopoly_coef}, Can improve: {cell.can_be_improved}, " +
                     f"Improvements: {improvements}")
 
     def recalculate_monopoly_coeffs(self, changed_cell):
-        ''' Go through all properties and set monopoly_coeff,
+        ''' Go through all properties and set monopoly_coef,
         depending of how many properties in teh same group players own.
-        Whould be run every time, when propery ownership change.
+        Would be run every time, when property ownership change.
         '''
 
         # Create and populate list of owners for this group

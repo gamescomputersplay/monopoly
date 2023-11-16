@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from settings import SimulationSettings, GameSettings, LogSettings
 
-from classes.analize import Analyzer
+from classes.analyze import Analyzer
 from classes.player import Player
 from classes.board import Board
 from classes.dice import Dice
@@ -19,8 +19,8 @@ from classes.log import Log
 def one_game(data_for_simulation):
     ''' Simulation of one game
     For convenience to set up a multi-thread, all data packed into a tuple:
-    - game number (to dicplay it in the log)
-    - seed to intialize the log
+    - game number (to display it in the log)
+    - seed to initialize the log
     '''
     game_number, game_seed = data_for_simulation
 
@@ -39,7 +39,7 @@ def one_game(data_for_simulation):
     # to make it thread-safe)
     dice = Dice(game_seed, GameSettings.dice_count, GameSettings.dice_sides, log)
 
-    # Set up players with their behaviour settings
+    # Set up players with their behavior settings
     players = [Player(player_name, player_setting)
                for player_name, player_setting in GameSettings.players_list]
 
@@ -47,7 +47,7 @@ def one_game(data_for_simulation):
         # dice has a thread-safe copy of random.shuffle
         dice.shuffle(players)
 
-    # Set up players starting money accouding to the game settings
+    # Set up players starting money according to the game settings
     if isinstance(GameSettings.starting_money, list):
         for player, starting_money in zip(players, GameSettings.starting_money):
             player.money = starting_money
@@ -67,7 +67,8 @@ def one_game(data_for_simulation):
             if not player.is_bankrupt:
                 alive += 1
                 log.add(f"- Player '{player.name}': " +
-                        f"${player.money} (net {player.net_worth()}), at {player.position} ({board.b[player.position].name})")
+                        f"${player.money} (net {player.net_worth()}), " +
+                        f"at {player.position} ({board.b[player.position].name})")
             else:
                 log.add(f"- Player {player_n}, '{player.name}': Bankrupt")
 
@@ -85,7 +86,7 @@ def one_game(data_for_simulation):
             if result == "bankrupt":
                 datalog.add(f"{game_number}\t{player}\t{turn_n}")
 
-    board.log_curent_state(log)
+    board.log_current_state(log)
 
     # Save the logs
     log.save()
@@ -96,7 +97,7 @@ def one_game(data_for_simulation):
 
 def run_simulation(config):
     ''' Run the simulation
-    In: Simulation parateters (number of games, seed etc)
+    In: Simulation parameters (number of games, seed etc)
     '''
 
     # Empty the log file
@@ -126,7 +127,7 @@ def run_simulation(config):
     # Print analysis of the simulation
     analysis = Analyzer()
     analysis.remaining_players()
-    analysis.median_gamelength()
+    analysis.median_game_length()
     analysis.winning_rate()
 
 

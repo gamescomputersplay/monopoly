@@ -46,12 +46,12 @@ class StandardPlayer:
     participates_in_trades = True
 
     # Only agree to trade if value difference is within these limits
-    # (Asolute and relative)
-    trade_max_diff_abs = 200 # More expensive - less espensive
-    trade_max_diff_rel = 2 # More expensive / less espensive
+    # (Absolute and relative)
+    trade_max_diff_abs = 200 # More expensive - less expensive
+    trade_max_diff_rel = 2 # More expensive / less expensive
 
 class ExperimentPlayer(StandardPlayer):
-    ''' Changed settings for the Experiement Player
+    ''' Changed settings for the Experiment Player
     '''
 
 class GameSettings():
@@ -61,7 +61,7 @@ class GameSettings():
     dice_count = 2
     dice_sides = 6
 
-    # Players and their behaviour settings
+    # Players and their behavior settings
     players_list = [
         ("Experiment", ExperimentPlayer),
         ("Standard 1", StandardPlayer),
