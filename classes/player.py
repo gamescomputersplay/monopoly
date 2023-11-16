@@ -1,7 +1,7 @@
 ''' Player Class
 '''
 
-from classes.board import Property, GoToJail, LuxuryTax, IncomeTax
+from classes.board import Property, GoToJail, LuxuryTax, IncomeTax, FreeParking
 from settings import GameSettings
 
 class Player:
@@ -116,6 +116,14 @@ class Player:
             self.go_to_jail("landed on Go To Jail", log)
             # End turn for this player, even if it was a double
             return
+
+        # Player lands on "Free Parking"
+        if isinstance(board.b[self.position], FreeParking):
+            # If Free Parking Money house rule is on: get the money
+            if GameSettings.free_parking_money:
+                log.add(f"{self} gets ${board.free_parking_money} from Free Parking")
+                self.money += board.free_parking_money
+                board.free_parking_money = 0
 
         # Player lands on "Luxury Tax"
         if isinstance(board.b[self.position], LuxuryTax):
@@ -363,6 +371,8 @@ class Player:
             self.money -= amount
             if payee != "bank":
                 payee.money += amount
+            elif payee == "bank" and GameSettings.free_parking_money:
+                board.free_parking_money += amount
             return
 
         max_raisable_money = self.max_raisable_money()
@@ -373,6 +383,9 @@ class Player:
             self.money -= amount
             if payee != "bank":
                 payee.money += amount
+            elif payee == "bank" and GameSettings.free_parking_money:
+                board.free_parking_money += amount
+
 
         # Bunkruptcy (can't pay even after selling and mortgaging all)
         else:
@@ -385,6 +398,9 @@ class Player:
             log.add(f"{self} gave {payee} all their remaining money (${self.money})")
             if payee != "bank":
                 payee.money += self.money
+            elif payee == "bank" and GameSettings.free_parking_money:
+                board.free_parking_money += amount
+
             self.money = 0
 
             # Transfer all property (mortgaged at this point) to payee

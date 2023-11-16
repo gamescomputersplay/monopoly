@@ -21,6 +21,10 @@ class IncomeTax(Cell):
     ''' Class for IncomeTax
     '''
 
+class FreeParking(Cell):
+    ''' Class for IncomeTax
+    '''
+
 class Property(Cell):
     ''' Property Class (for Properties, Rails, Utilities)
     '''
@@ -125,7 +129,7 @@ class Board:
             "D3 New York Avenue", 200, 16, 100, (80, 220, 600, 800, 1000), "Orange"))
 
         # 20-24
-        self.b.append(Cell("FP Free Parking"))
+        self.b.append(FreeParking("FP Free Parking"))
         self.b.append(Property(
             "E1 Kentucky Avenue", 220, 18, 150, (90, 250, 700, 875, 1050), "Red"))
         self.b.append(Cell("CH2 Chance"))
@@ -168,6 +172,9 @@ class Board:
 
         # Board fields, grouped by group self.groups["Green"] - list of all greens
         self.groups = self.property_groups()
+
+        # For "Free parking money" rule. How much money are on "Free Parking"
+        self.free_parking_money = 0
 
     def property_groups(self):
         ''' self.groups is a convenient way to group cells by the group,

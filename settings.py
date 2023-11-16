@@ -98,3 +98,7 @@ class GameSettings():
 
     # Fine to get out of jail without rolling doubles
     exit_jail_fine = 50
+
+    # Controversial house rule to collect fines on
+    # Free Parking and give to whoever lands there
+    free_parking_money = False
