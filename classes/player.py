@@ -64,7 +64,7 @@ class Player:
             pass
 
         # Improve any properties, if needed
-        self.improve_properties(log)
+        self.improve_properties(board, log)
 
 
 
@@ -231,11 +231,11 @@ class Player:
                 for i in range(cell.has_houses + 1, 6):
                     list_to_improve.append((i, cell.cost_house, cell))
         # It will be popped from the end, so first to build should be last
-        # in the list (by default, least developed and cheapest)
-        list_to_improve.sort(key = lambda x: (-x[0], -x[1]))
+        # in the list (most developed)
+        list_to_improve.sort(key = lambda x: (x[0], -x[1]))
         return list_to_improve
 
-    def improve_properties(self, log):
+    def improve_properties(self, board, log):
         ''' While there is money to spend and properties to improve,
         keep building houses/hotels
         '''
@@ -251,21 +251,26 @@ class Player:
             # Building a house
             ordinal = {1: "1st", 2: "2nd", 3: "3rd", 4:"4th"}
 
-            if cell_to_improve.has_houses != 4:
+            if cell_to_improve.has_houses != 4 and board.available_houses > 0:
                 cell_to_improve.has_houses += 1
+                board.available_houses -= 1
                 log.add(f"{self} built {ordinal[cell_to_improve.has_houses]} " +
                         f"house on {cell_to_improve}")
+                # Paying for the improvement
+                self.money -= cell_to_improve.cost_house
 
             # Building a hotel
-            else:
+            elif cell_to_improve.has_houses == 4 and board.available_hotels > 0:
                 cell_to_improve.has_houses = 0
                 cell_to_improve.has_hotel = 1
+                board.available_houses += 4
+                board.available_hotels -= 1
+                # Paying for the improvement
+                self.money -= cell_to_improve.cost_house
                 log.add(f"{self} built a hotel on {cell_to_improve}")
                 # Should not be improved beyond hotel
                 cell_to_improve.can_be_improved = False
 
-            # Paying for the improvement
-            self.money -= cell_to_improve.cost_house
 
     def get_salary(self, board, log):
         ''' Adding Salary to the player's money, according to the game's settings
@@ -290,17 +295,25 @@ class Player:
 
     def get_list_of_properties_to_deimprove(self):
         ''' Put together a list of properties a player can sell houses from.
+        [(n_of_houses, cost_of_house, cell), ...]
+        List will be sorted to have less developed properties first
         '''
-        list_to_deimprove = []
+        list_of_hotels = []
         for cell in self.owned:
             if cell.has_hotel == 1:
                 for i in range(1, 6):
-                    list_to_deimprove.append((i, cell.cost_house // 2, cell))
+                    list_of_hotels.append((i, cell.cost_house // 2, cell))
+        list_of_houses = []
+        for cell in self.owned:
             if cell.has_houses > 0:
                 for i in range(1, cell.has_houses + 1):
-                    list_to_deimprove.append((i, cell.cost_house // 2, cell))
+                    list_of_houses.append((i, cell.cost_house // 2, cell))
+
         # It will be popped from the end, so first to sell should be last
-        list_to_deimprove.sort(key = lambda x: (x[0], x[1]))
+        # Selling order - first properties with only houses, then hotels
+        list_of_hotels.sort(key = lambda x: (x[0], x[1]))
+        list_of_houses.sort(key = lambda x: (x[0], x[1]))
+        list_to_deimprove = list_of_hotels + list_of_houses
         return list_to_deimprove
 
     def get_list_of_properties_to_mortgage(self):
@@ -324,14 +337,32 @@ class Player:
         while list_to_deimprove and self.money < required_amount:
             order, sell_price, cell_to_deimprove = list_to_deimprove.pop()
             if order == 5:
-                cell_to_deimprove.has_hotel = 0
-                cell_to_deimprove.has_houses = 4
-                cell_to_deimprove.can_be_improved = True
-                log.add(f"{self} sells hotel on {cell_to_deimprove}, raising ${sell_price}")
+                # Selling hotel: can replace with 4 houses
+                if board.available_houses >= 4:
+                    cell_to_deimprove.has_hotel = 0
+                    cell_to_deimprove.has_houses = 4
+                    board.available_hotels += 1
+                    board.available_houses -= 4
+                    cell_to_deimprove.can_be_improved = True
+                    log.add(f"{self} sells a hotel on {cell_to_deimprove}, raising ${sell_price}")
+                    self.money += sell_price
+                # Selling hotel, must tear down all 5 houses from one plot
+                else:
+                    cell_to_deimprove.has_hotel = 0
+                    cell_to_deimprove.has_houses = 0
+                    board.available_hotels += 1
+                    cell_to_deimprove.can_be_improved = True
+                    log.add(f"{self} sells a hotel and all houses on {cell_to_deimprove}, " +
+                            f"raising ${sell_price * 5}")
+                    self.money += sell_price * 5
+                    # Recalculate the list of properties to sell, start over
+                    list_to_deimprove = self.get_list_of_properties_to_deimprove()
+                    continue
             else:
                 cell_to_deimprove.has_houses -= 1
+                board.available_houses += 1
                 log.add(f"{self} sells a house on {cell_to_deimprove}, raising ${sell_price}")
-            self.money += sell_price
+                self.money += sell_price
 
         # Mortgage properties
         list_to_mortgage = self.get_list_of_properties_to_mortgage()

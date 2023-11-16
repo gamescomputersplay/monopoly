@@ -1,6 +1,8 @@
 ''' Class to hold board information
 '''
 
+from settings import GameSettings
+
 class Cell:
     """ Generic Cell Class, base for other classes
     """
@@ -176,6 +178,10 @@ class Board:
         # For "Free parking money" rule. How much money are on "Free Parking"
         self.free_parking_money = 0
 
+        # Available houses and hotels
+        self.available_houses = GameSettings.available_houses
+        self.available_hotels = GameSettings.available_hotels
+
     def property_groups(self):
         ''' self.groups is a convenient way to group cells by the group,
         so we don't have to check all properties on the board, to, for example,
@@ -191,6 +197,13 @@ class Board:
         return groups
 
     def log_current_state(self, log):
+        ''' Log current state of the houses/hotels, free parking money
+        '''
+        log.add(f"Available houses/hotels: {self.available_houses}/{self.available_hotels}")
+        if GameSettings.free_parking_money:
+            log.add(f"Free Parking Money: ${self.free_parking_money}")
+
+    def log_current_map(self, log):
         ''' Log current situation on the board,
         who owns what, monopolies, improvements, etc
         '''

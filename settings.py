@@ -77,6 +77,10 @@ class GameSettings():
     starting_money = 1500
     # starting_money = [1370, 1460, 1540, 1630]
 
+    # Houses and hotel available for development
+    available_houses = 36
+    available_hotels = 12
+
     # Game mechanics settings
 
     # Passing Go salary

@@ -72,6 +72,10 @@ def one_game(data_for_simulation):
             else:
                 log.add(f"- Player {player_n}, '{player.name}': Bankrupt")
 
+        # Available Houses/Hotels etc
+        board.log_current_state(log)
+        log.add("")
+
         # If there are less than 2 alive players
         # (I guess 0 alive is possible but quite unlikely)
         # End the game
@@ -86,7 +90,7 @@ def one_game(data_for_simulation):
             if result == "bankrupt":
                 datalog.add(f"{game_number}\t{player}\t{turn_n}")
 
-    board.log_current_state(log)
+    board.log_current_map(log)
 
     # Save the logs
     log.save()
