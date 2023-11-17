@@ -37,6 +37,7 @@ def monopoly_game(data_for_simulation):
     # Shuffle chance and community chest cards
     # (using thread-safe random generator)
     board.chance.shuffle(dice)
+    board.chest.shuffle(dice)
 
     # Set up players with their behavior settings
     players = [Player(player_name, player_setting)

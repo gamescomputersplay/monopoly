@@ -1,7 +1,7 @@
 ''' Player Class
 '''
 
-from classes.board import Property, GoToJail, LuxuryTax, IncomeTax, FreeParking, Chance
+from classes.board import Property, GoToJail, LuxuryTax, IncomeTax, FreeParking, Chance, CommunityChest
 from settings import GameSettings
 
 class Player:
@@ -125,6 +125,10 @@ class Player:
         if isinstance(board.b[self.position], Chance):
             self.handle_chance(board, log)
 
+        # Player lands on "Community Chest"
+        if isinstance(board.b[self.position], CommunityChest):
+            self.handle_community_chest(board, log)
+
         # If player went bankrupt this turn - return string "bankrupt"
         if self.is_bankrupt:
             return "bankrupt"
@@ -187,6 +191,12 @@ class Player:
         '''
         card = board.chance.draw()
         log.add(f"{self} drew Chance card: '{card}'")
+
+    def handle_community_chest(self, board, log):
+        ''' Draw and act on a Community Chest card
+        '''
+        card = board.chest.draw()
+        log.add(f"{self} drew Community Chest card: '{card}'")
 
 
     def handle_income_tax(self, board, log):

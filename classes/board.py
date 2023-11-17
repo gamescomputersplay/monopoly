@@ -31,6 +31,10 @@ class Chance(Cell):
     ''' Class for Chance
     '''
 
+class CommunityChest(Cell):
+    ''' Class for Chance
+    '''
+
 class Property(Cell):
     ''' Property Class (for Properties, Rails, Utilities)
     '''
@@ -120,7 +124,7 @@ class Board:
         self.b.append(Cell("GO"))
         self.b.append(Property(
             "A1 Mediterranean Avenue", 60, 2, 50, (10, 30, 90, 160, 250), "Brown"))
-        self.b.append(Cell("COM1 Community Chest"))
+        self.b.append(CommunityChest("COM1 Community Chest"))
         self.b.append(Property(
             "A2 Baltic Avenue", 60, 4, 50, (20, 60, 180, 320, 450), "Brown"))
         self.b.append(IncomeTax("IT Income Tax"))
@@ -152,7 +156,7 @@ class Board:
             "R2 Pennsylvania Railroad", 200, 25, 0, (0, 0, 0, 0, 0), "Railroads"))
         self.b.append(Property(
             "D1 St.James Place", 180, 14, 100, (70, 200, 550, 700, 950), "Orange"))
-        self.b.append(Cell("COM2 Community Chest"))
+        self.b.append(CommunityChest("COM2 Community Chest"))
         self.b.append(Property(
             "D2 Tennessee Avenue", 180, 14, 100, (70, 200, 550, 700, 950), "Orange"))
         self.b.append(Property(
@@ -186,7 +190,7 @@ class Board:
             "G1 Pacific Avenue", 300, 26, 200, (130, 390, 900, 1100, 1275), "Green"))
         self.b.append(Property(
             "G2 North Carolina Avenue", 300, 26, 200, (130, 390, 900, 1100, 1275), "Green"))
-        self.b.append(Cell("COM3 Community Chest"))
+        self.b.append(CommunityChest("COM3 Community Chest"))
         self.b.append(Property(
             "G3 Pennsylvania Avenue", 320, 28, 200, (150, 450, 100, 1200, 1400), "Green"))
 
@@ -218,6 +222,13 @@ class Board:
             "Chance 4"
         ])
 
+        # Community Chest deck
+        self.chest = Deck([
+            "Community Chest 1",
+            "Community Chest 2",
+            "Community Chest 3",
+            "Community Chest 4"
+        ])
 
     def property_groups(self):
         ''' self.groups is a convenient way to group cells by the group,
