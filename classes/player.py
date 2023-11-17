@@ -71,29 +71,15 @@ class Player:
         # Player rolls the dice
         _, dice_roll_score, dice_roll_is_double = dice.cast()
 
-        # Doubles for the third time: go to jail
+        # Get doubles for the third time: go to jail
         if dice_roll_is_double and self.had_doubles == 2:
             self.go_to_jail("rolled 3 doubles in a row", log)
             return
 
         # Player is currently in jail
         if self.in_jail:
-            # Get out of jail on rolling double
-            if dice_roll_is_double:
-                log.add(f"{self} rolled a double, a leaves jail for free")
-                self.in_jail = False
-                self.days_in_jail = 0
-            # Get out of jail and pay fine
-            elif self.days_in_jail == 2: # It's your third day
-                log.add(f"{self} did not rolled a double for the third time, " +
-                        f"pays {GameSettings.exit_jail_fine} and leaves jail")
-                self.pay_money(GameSettings.exit_jail_fine, "bank", board, log)
-                self.in_jail = False
-                self.days_in_jail = 0
-            # Stay in jail for another turn
-            else:
-                log.add(f"{self} stays in jail")
-                self.days_in_jail  += 1
+            # Will return True if player stays in jail and move ends
+            if self.handle_jail(dice_roll_is_double, board, log):
                 return
 
         # Player moves to the new cell
@@ -133,18 +119,7 @@ class Player:
 
         # Player lands on "Income Tax"
         if isinstance(board.b[self.position], IncomeTax):
-            # Choose smaller between fixed rate and percentage
-            tax_to_pay = min(
-                GameSettings.income_tax,
-                int(GameSettings.income_tax_percentage * self.net_worth()))
-
-            if tax_to_pay == GameSettings.income_tax:
-                log.add(f"{self} pays fixed Income tax {GameSettings.income_tax}")
-            else:
-                log.add(f"{self} pays {GameSettings.income_tax_percentage * 100:.0f}% " +
-                        f"Income tax {tax_to_pay}")
-            self.pay_money(tax_to_pay, "bank", board, log)
-
+            self.handle_income_tax(board, log)
 
         # If player went bankrupt this turn - return string "bankrupt"
         if self.is_bankrupt:
@@ -178,6 +153,45 @@ class Player:
                 net_worth += (cell.has_houses + cell.has_hotel) * cell.cost_house
 
         return net_worth
+
+    def handle_jail(self, dice_roll_is_double, board, log):
+        ''' Handle player being in Jail
+        Return True if the player stays in jail (to end his turn)
+        '''
+        # Get out of jail on rolling double
+        if dice_roll_is_double:
+            log.add(f"{self} rolled a double, a leaves jail for free")
+            self.in_jail = False
+            self.days_in_jail = 0
+        # Get out of jail and pay fine
+        elif self.days_in_jail == 2: # It's your third day
+            log.add(f"{self} did not rolled a double for the third time, " +
+                    f"pays {GameSettings.exit_jail_fine} and leaves jail")
+            self.pay_money(GameSettings.exit_jail_fine, "bank", board, log)
+            self.in_jail = False
+            self.days_in_jail = 0
+        # Stay in jail for another turn
+        else:
+            log.add(f"{self} stays in jail")
+            self.days_in_jail  += 1
+            return True
+        return False
+
+    def handle_income_tax(self, board, log):
+        ''' Handle Income tax: choose which option
+        (fix or %) is less money and go with it
+        '''
+        # Choose smaller between fixed rate and percentage
+        tax_to_pay = min(
+            GameSettings.income_tax,
+            int(GameSettings.income_tax_percentage * self.net_worth()))
+
+        if tax_to_pay == GameSettings.income_tax:
+            log.add(f"{self} pays fixed Income tax {GameSettings.income_tax}")
+        else:
+            log.add(f"{self} pays {GameSettings.income_tax_percentage * 100:.0f}% " +
+                    f"Income tax {tax_to_pay}")
+        self.pay_money(tax_to_pay, "bank", board, log)
 
     def handle_landing_on_property(self, board, players, dice, log):
         ''' Landing on property: either buy it or pay rent
@@ -347,6 +361,7 @@ class Player:
                     log.add(f"{self} sells a hotel on {cell_to_deimprove}, raising ${sell_price}")
                     self.money += sell_price
                 # Selling hotel, must tear down all 5 houses from one plot
+                # TODO: I think we need to tear down all 3 hotels?
                 else:
                     cell_to_deimprove.has_hotel = 0
                     cell_to_deimprove.has_houses = 0
