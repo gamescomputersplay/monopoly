@@ -27,6 +27,10 @@ class FreeParking(Cell):
     ''' Class for IncomeTax
     '''
 
+class Chance(Cell):
+    ''' Class for Chance
+    '''
+
 class Property(Cell):
     ''' Property Class (for Properties, Rails, Utilities)
     '''
@@ -75,6 +79,30 @@ class Property(Cell):
         _, dice_points, _ = dice.cast()
         return dice_points * self.monopoly_coef
 
+class Deck:
+    ''' Parent for Community Chest and Chance cards
+    '''
+    def __init__(self, cards):
+        # List of cards
+        self.cards = cards
+        # Pointer to a next card to draw
+        self.pointer = 0
+
+    def draw(self):
+        ''' Draw one card from the deck
+        (and put it underneath, so the deck will cycle through the same cycle)
+        '''
+        drawn_card = self.cards[self.pointer]
+        self.pointer += 1
+        if self.pointer == len(self.cards):
+            self.pointer = 0
+        return drawn_card
+    
+    def shuffle(self, random_thing):
+        ''' Shuffle the cards. Uses random thing, so we could use thread-safe random generator
+        '''
+        random_thing.shuffle(self.cards)
+
 class Board:
     ''' Class collecting board related information:
     properties and their owners, build houses, etc
@@ -102,7 +130,7 @@ class Board:
             "R1 Reading railroad", 200, 25, 0, (0, 0, 0, 0, 0), "Railroads"))
         self.b.append(Property(
             "B1 Oriental Avenue", 100, 6, 50, (30, 90, 270, 400, 550), "Lightblue"))
-        self.b.append(Cell("CH1 Chance"))
+        self.b.append(Chance("CH1 Chance"))
         self.b.append(Property(
             "B2 Vermont Avenue", 100, 6, 50, (30, 90, 270, 400, 550), "Lightblue"))
         self.b.append(Property(
@@ -134,7 +162,7 @@ class Board:
         self.b.append(FreeParking("FP Free Parking"))
         self.b.append(Property(
             "E1 Kentucky Avenue", 220, 18, 150, (90, 250, 700, 875, 1050), "Red"))
-        self.b.append(Cell("CH2 Chance"))
+        self.b.append(Chance("CH2 Chance"))
         self.b.append(Property(
             "E2 Indiana Avenue", 220, 18, 150, (90, 250, 700, 875, 1050), "Red"))
         self.b.append(Property(
@@ -165,7 +193,7 @@ class Board:
         # 35-39
         self.b.append(Property(
             "R4 Short Line", 200, 25, 0, (0, 0, 0, 0, 0), "Railroads"))
-        self.b.append(Cell("CH3 Chance"))
+        self.b.append(Chance("CH3 Chance"))
         self.b.append(Property(
             "H1 Park Place", 350, 35, 200, (175, 500, 1100, 1300, 1500), "Indigo"))
         self.b.append(LuxuryTax("LT Luxury Tax"))
@@ -181,6 +209,15 @@ class Board:
         # Available houses and hotels
         self.available_houses = GameSettings.available_houses
         self.available_hotels = GameSettings.available_hotels
+
+        # Chance deck
+        self.chance = Deck([
+            "Chance 1",
+            "Chance 2",
+            "Chance 3",
+            "Chance 4"
+        ])
+
 
     def property_groups(self):
         ''' self.groups is a convenient way to group cells by the group,

@@ -1,7 +1,7 @@
 ''' Player Class
 '''
 
-from classes.board import Property, GoToJail, LuxuryTax, IncomeTax, FreeParking
+from classes.board import Property, GoToJail, LuxuryTax, IncomeTax, FreeParking, Chance
 from settings import GameSettings
 
 class Player:
@@ -121,6 +121,10 @@ class Player:
         if isinstance(board.b[self.position], IncomeTax):
             self.handle_income_tax(board, log)
 
+        # Player lands on "Chance"
+        if isinstance(board.b[self.position], Chance):
+            self.handle_chance(board, log)
+
         # If player went bankrupt this turn - return string "bankrupt"
         if self.is_bankrupt:
             return "bankrupt"
@@ -139,13 +143,13 @@ class Player:
     def net_worth(self):
         ''' Calculate player's net worth (cache + property + houses)
         '''
-        net_worth = self.money
+        net_worth = int(self.money)
 
         for cell in self.owned:
 
             # This is against "classic rules", where mortgages property
             # calculated as 100% for net worth
-            # But it doesn't make sense!
+            # But it doesn't make sense! So I use 1 - mortgage
             if cell.is_mortgaged:
                 net_worth += cell.cost_base * (1 - GameSettings.mortgage_value)
             else:
@@ -176,6 +180,14 @@ class Player:
             self.days_in_jail  += 1
             return True
         return False
+
+
+    def handle_chance(self, board, log):
+        ''' Draw and act on a Chance card
+        '''
+        card = board.chance.draw()
+        log.add(f"{self} drew Chance card: '{card}'")
+
 
     def handle_income_tax(self, board, log):
         ''' Handle Income tax: choose which option

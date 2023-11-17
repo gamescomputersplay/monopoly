@@ -34,6 +34,10 @@ def monopoly_game(data_for_simulation):
     # to make it thread-safe)
     dice = Dice(game_seed, GameSettings.dice_count, GameSettings.dice_sides, log)
 
+    # Shuffle chance and community chest cards
+    # (using thread-safe random generator)
+    board.chance.shuffle(dice)
+
     # Set up players with their behavior settings
     players = [Player(player_name, player_setting)
                for player_name, player_setting in GameSettings.players_list]
@@ -62,7 +66,7 @@ def monopoly_game(data_for_simulation):
             if not player.is_bankrupt:
                 alive += 1
                 log.add(f"- Player '{player.name}': " +
-                        f"${player.money} (net {player.net_worth()}), " +
+                        f"${int(player.money)} (net ${player.net_worth()}), " +
                         f"at {player.position} ({board.b[player.position].name})")
             else:
                 log.add(f"- Player {player_n}, '{player.name}': Bankrupt")
