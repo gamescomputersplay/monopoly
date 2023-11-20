@@ -93,6 +93,18 @@ class Player:
 
         # Handle various types of cells player may land on
 
+        # Both cards should be before landing on property
+        # (as they may send player to a property)
+
+        # Player lands on "Chance"
+        if isinstance(board.b[self.position], Chance):
+            self.handle_chance(board, log)
+
+        # Player lands on "Community Chest"
+        if isinstance(board.b[self.position], CommunityChest):
+            self.handle_community_chest(board, log)
+
+
         # Player lands on a property
         if isinstance(board.b[self.position], Property):
             self.handle_landing_on_property(board, players, dice, log)
@@ -120,14 +132,6 @@ class Player:
         # Player lands on "Income Tax"
         if isinstance(board.b[self.position], IncomeTax):
             self.handle_income_tax(board, log)
-
-        # Player lands on "Chance"
-        if isinstance(board.b[self.position], Chance):
-            self.handle_chance(board, log)
-
-        # Player lands on "Community Chest"
-        if isinstance(board.b[self.position], CommunityChest):
-            self.handle_community_chest(board, log)
 
         # If player went bankrupt this turn - return string "bankrupt"
         if self.is_bankrupt:
@@ -191,6 +195,15 @@ class Player:
         '''
         card = board.chance.draw()
         log.add(f"{self} drew Chance card: '{card}'")
+        if card == "Advance to Boardwalk":
+            log.add(f"{self} goes to {board.b[39]}")
+            self.position = 39
+
+        elif card == "Advance to Go (Collect $200)":
+            log.add(f"{self} goes to {board.b[0]}")
+            self.position = 0
+            self.get_salary(board, log)
+
 
     def handle_community_chest(self, board, log):
         ''' Draw and act on a Community Chest card
