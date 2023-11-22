@@ -235,6 +235,17 @@ class Player:
             self.position = nearest_railroad
             self.other_notes = "double rent"
 
+        elif card == "Advance token to nearest Utility. " + \
+             "If owned, throw dice and pay owner a total ten times amount thrown.":
+            nearest_utility = self.position
+            while nearest_utility != 12 and nearest_utility != 28:
+                nearest_utility += 1
+                nearest_utility %= 40
+            log.add(f"{self} goes to {board.b[nearest_utility]}")
+            if self.position > nearest_utility:
+                self.get_salary(board, log)
+            self.position = nearest_utility
+            self.other_notes = "10 times dice"
 
     def handle_community_chest(self, board, log):
         ''' Draw and act on a Community Chest card
@@ -298,7 +309,12 @@ class Player:
                 rent_amount = board.b[self.position].calculate_rent(dice)
                 if self.other_notes == "double rent":
                     rent_amount *= 2
-                    log.add("Per Chance card, rent is doubled.")
+                    log.add(f"Per Chance card, rent is doubled (${rent_amount}).")
+                if self.other_notes == "10 times dice":
+                    # Divide by monopoly_coef to restore the dice throw
+                    # Multiply that by 10
+                    rent_amount = rent_amount // board.b[self.position].monopoly_coef * 10
+                    log.add(f"Per Chance card, rent is 10x dice throw (${rent_amount}).")
                 self.pay_money(rent_amount, board.b[self.position].owner, board, log)
                 if not self.is_bankrupt:
                     log.add(f"{self} pays {board.b[self.position].owner} rent ${rent_amount}")

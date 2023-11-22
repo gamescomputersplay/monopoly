@@ -225,7 +225,7 @@ class Board:
                 "the rental to which they are otherwise entitled",
             "Advance to the nearest Railroad. If owned, pay owner twice " + \
                 "the rental to which they are otherwise entitled",
-            "Advance token to nearest Utility. If unowned, you may buy it from the Bank. " + \
+            "Advance token to nearest Utility. " + \
                 "If owned, throw dice and pay owner a total ten times amount thrown.",
             "Bank pays you dividend of $50",
             "Get Out of Jail Free",
