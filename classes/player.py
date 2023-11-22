@@ -1,7 +1,8 @@
 ''' Player Class
 '''
 
-from classes.board import Property, GoToJail, LuxuryTax, IncomeTax, FreeParking, Chance, CommunityChest
+from classes.board import Property, GoToJail, LuxuryTax, IncomeTax
+from classes.board import FreeParking, Chance, CommunityChest
 from settings import GameSettings
 
 class Player:
@@ -222,11 +223,12 @@ class Player:
                 self.get_salary(board, log)
             self.position = 11
 
-        elif card == "Advance to the nearest Railroad. If unowned, you may buy it from the Bank. If owned, pay owner twice the rental to which they are otherwise entitled":
+        elif card == "Advance to the nearest Railroad. " + \
+                     "If owned, pay owner twice the rental to which they are otherwise entitled":
             nearest_railroad = self.position
             while (nearest_railroad - 5) % 10 != 0:
                 nearest_railroad += 1
-                nearest_railroad %= 40 
+                nearest_railroad %= 40
             log.add(f"{self} goes to {board.b[nearest_railroad]}")
             if self.position > nearest_railroad:
                 self.get_salary(board, log)
@@ -296,7 +298,7 @@ class Player:
                 rent_amount = board.b[self.position].calculate_rent(dice)
                 if self.other_notes == "double rent":
                     rent_amount *= 2
-                    log.add(f"Per Chance card, rent is doubled.")
+                    log.add("Per Chance card, rent is doubled.")
                 self.pay_money(rent_amount, board.b[self.position].owner, board, log)
                 if not self.is_bankrupt:
                     log.add(f"{self} pays {board.b[self.position].owner} rent ${rent_amount}")
