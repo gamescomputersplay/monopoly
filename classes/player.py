@@ -38,6 +38,9 @@ class Player:
         # Bankrupt (game ended for thi player)
         self.is_bankrupt = False
 
+        # Placeholder for various flags used throughout the game
+        self.other_notes = ""
+
     def __str__(self):
         return self.name
 
@@ -133,6 +136,9 @@ class Player:
         if isinstance(board.b[self.position], IncomeTax):
             self.handle_income_tax(board, log)
 
+        # Reset Other notes flag
+        self.other_notes = ""
+
         # If player went bankrupt this turn - return string "bankrupt"
         if self.is_bankrupt:
             return "bankrupt"
@@ -204,6 +210,29 @@ class Player:
             self.position = 0
             self.get_salary(board, log)
 
+        elif card == "Advance to Illinois Avenue. If you pass Go, collect $200":
+            log.add(f"{self} goes to {board.b[24]}")
+            if self.position > 24:
+                self.get_salary(board, log)
+            self.position = 24
+
+        elif card == "Advance to St. Charles Place. If you pass Go, collect $200":
+            log.add(f"{self} goes to {board.b[11]}")
+            if self.position > 11:
+                self.get_salary(board, log)
+            self.position = 11
+
+        elif card == "Advance to the nearest Railroad. If unowned, you may buy it from the Bank. If owned, pay owner twice the rental to which they are otherwise entitled":
+            nearest_railroad = self.position
+            while (nearest_railroad - 5) % 10 != 0:
+                nearest_railroad += 1
+                nearest_railroad %= 40 
+            log.add(f"{self} goes to {board.b[nearest_railroad]}")
+            if self.position > nearest_railroad:
+                self.get_salary(board, log)
+            self.position = nearest_railroad
+            self.other_notes = "double rent"
+
 
     def handle_community_chest(self, board, log):
         ''' Draw and act on a Community Chest card
@@ -265,6 +294,9 @@ class Player:
                 log.add(f"Player {self.name} landed on a property, " +
                         f"owned by {board.b[self.position].owner}")
                 rent_amount = board.b[self.position].calculate_rent(dice)
+                if self.other_notes == "double rent":
+                    rent_amount *= 2
+                    log.add(f"Per Chance card, rent is doubled.")
                 self.pay_money(rent_amount, board.b[self.position].owner, board, log)
                 if not self.is_bankrupt:
                     log.add(f"{self} pays {board.b[self.position].owner} rent ${rent_amount}")

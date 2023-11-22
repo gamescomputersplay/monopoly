@@ -10,6 +10,9 @@ class Cell:
     def __init__(self, name):
         self.name = name
 
+    def __str__(self):
+        return self.name
+
 class GoToJail(Cell):
     ''' Class for Go To Jail cell
     not much going on here
@@ -59,8 +62,6 @@ class Property(Cell):
         self.has_houses = 0
         self.has_hotel = 0
 
-    def __str__(self):
-        return self.name
 
     def calculate_rent(self, dice):
         ''' Calculate the rent amount for this property, including monopoly, houses etc.
@@ -316,14 +317,14 @@ class Board:
 
             # For railroad it is 1/2/4/8 (or 2**(n-1))
             if cell.group == "Railroads":
-                cell.monopoly_coeff = 2 ** (ownership_count - 1)
+                cell.monopoly_coef = 2 ** (ownership_count - 1)
 
             # For Utilities it is either 4 or 10
             elif cell.group == "Utilities":
                 if ownership_count == 2:
-                    cell.monopoly_coeff = 10
+                    cell.monopoly_coef = 10
                 else:
-                    cell.monopoly_coeff = 4
+                    cell.monopoly_coef = 4
 
             # For all other properties it is 1 or 2
             else:
@@ -333,12 +334,12 @@ class Board:
                 # This is a monopoly (owner owns all properties of this color)
                 if ownership_count == len(self.groups[changed_cell.group]):
                     # Rent coefficient for unimproved cells is 2
-                    cell.monopoly_coeff = 2
+                    cell.monopoly_coef = 2
                     # And, unless it already has a hotel, it can be improved
                     # And unless one of the properties of this group is mortgaged
                     if cell.has_hotel == 0 and not has_mortgages:
                         cell.can_be_improved = True
                 else:
-                    cell.monopoly_coeff = 1
+                    cell.monopoly_coef = 1
 
         return
