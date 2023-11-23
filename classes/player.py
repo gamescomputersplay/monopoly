@@ -108,11 +108,15 @@ class Player:
 
         # Player lands on "Chance"
         if isinstance(board.b[self.position], Chance):
-            self.handle_chance(board, log)
+            # returning True means the move is over (even if it was a double)
+            if self.handle_chance(board, log):
+                return
 
         # Player lands on "Community Chest"
+        # Community chest is after chance, as Chance can send player to Community Chest
         if isinstance(board.b[self.position], CommunityChest):
-            self.handle_community_chest(board, log)
+            if self.handle_community_chest(board, log):
+                return
 
 
         # Player lands on a property
@@ -122,7 +126,6 @@ class Player:
         # Player lands on "Go To Jail"
         if isinstance(board.b[self.position], GoToJail):
             self.go_to_jail("landed on Go To Jail", log)
-            # End turn for this player, even if it was a double
             return
 
         # Player lands on "Free Parking"
@@ -218,6 +221,7 @@ class Player:
 
     def handle_chance(self, board, log):
         ''' Draw and act on a Chance card
+        Return True if the move should be over (go to jail)
         '''
         card = board.chance.draw()
         log.add(f"{self} drew Chance card: '{card}'")
@@ -257,7 +261,7 @@ class Player:
         elif card == "Advance token to nearest Utility. " + \
              "If owned, throw dice and pay owner a total ten times amount thrown.":
             nearest_utility = self.position
-            while nearest_utility != 12 and nearest_utility != 28:
+            while nearest_utility not in  (12, 28):
                 nearest_utility += 1
                 nearest_utility %= 40
             log.add(f"{self} goes to {board.b[nearest_utility]}")
@@ -276,12 +280,25 @@ class Player:
             # Remove the card from the deck
             board.chance.remove("Get Out of Jail Free")
 
+        elif card == "Go Back 3 Spaces":
+            self.position -= 3
+            log.add(f"{self} goes to {board.b[self.position]}")
+
+        elif card == "Go to Jail. Go directly to Jail, do not pass Go, do not collect $200":
+            self.go_to_jail("got GTJ Chance card", log)
+            return True
+
+        return False
+
     def handle_community_chest(self, board, log):
         ''' Draw and act on a Community Chest card
+        Return True if the move should be over (go to jail)
         '''
-        #card = board.chest.draw()
-        #log.add(f"{self} drew Community Chest card: '{card}'")
 
+        card = board.chest.draw()
+        log.add(f"{self} drew Community Chest card: '{card}'")
+
+        return False
 
     def handle_income_tax(self, board, log):
         ''' Handle Income tax: choose which option
