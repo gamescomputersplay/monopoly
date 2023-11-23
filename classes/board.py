@@ -35,7 +35,7 @@ class Chance(Cell):
     '''
 
 class CommunityChest(Cell):
-    ''' Class for Chance
+    ''' Class for Community Chest
     '''
 
 class Property(Cell):
@@ -102,6 +102,19 @@ class Deck:
         if self.pointer == len(self.cards):
             self.pointer = 0
         return drawn_card
+
+    def remove(self, card_to_remove):
+        ''' Remove a card (used for GOOJF)
+        '''
+        self.cards.remove(card_to_remove)
+        # Make sure the pointer is still okay
+        if self.pointer == len(self.cards):
+            self.pointer = 0
+
+    def add(self, card_to_add):
+        ''' Add card (to put removed card back in)
+        '''
+        self.cards.insert(self.pointer - 1, card_to_add)
 
     def shuffle(self, random_thing):
         ''' Shuffle the cards. Uses random thing, so we could use thread-safe random generator

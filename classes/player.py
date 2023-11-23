@@ -31,7 +31,8 @@ class Player:
         # How many days in jail player spent so far
         self.days_in_jail = 0
         # Does player have a GOOJF card
-        self.get_out_of_jail = False
+        self.get_out_of_jail_chance = False
+        self.get_out_of_jail_comm_chest = False
 
         # Owned properties
         self.owned = []
@@ -183,11 +184,18 @@ class Player:
         Return True if the player stays in jail (to end his turn)
         '''
         # Get out of jail on rolling double
-        if self.get_out_of_jail:
+        if self.get_out_of_jail_chance or self.get_out_of_jail_comm_chest:
             log.add(f"{self} uses a GOOJF card")
-            self.get_out_of_jail = False
             self.in_jail = False
             self.days_in_jail = 0
+            # Return the card to the deck
+            if self.get_out_of_jail_chance:
+                board.chance.add("Get Out of Jail Free")
+                self.get_out_of_jail_chance = False
+            else:
+                board.chest.add("Get Out of Jail Free")
+                self.get_out_of_jail_comm_chest = False
+
         # Get out of jail on rolling double
         elif dice_roll_is_double:
             log.add(f"{self} rolled a double, a leaves jail for free")
@@ -264,13 +272,15 @@ class Player:
 
         elif card == "Get Out of Jail Free":
             log.add(f"{self} now has a 'Get Out of Jail Free' card")
-            self.get_out_of_jail = True
+            self.get_out_of_jail_chance = True
+            # Remove the card from the deck
+            board.chance.remove("Get Out of Jail Free")
 
     def handle_community_chest(self, board, log):
         ''' Draw and act on a Community Chest card
         '''
-        card = board.chest.draw()
-        log.add(f"{self} drew Community Chest card: '{card}'")
+        #card = board.chest.draw()
+        #log.add(f"{self} drew Community Chest card: '{card}'")
 
 
     def handle_income_tax(self, board, log):
