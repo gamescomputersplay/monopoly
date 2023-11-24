@@ -108,7 +108,7 @@ class Player:
         # Player lands on "Chance"
         if isinstance(board.b[self.position], Chance):
             # returning True means the move is over (even if it was a double)
-            if self.handle_chance(board, log):
+            if self.handle_chance(board, players, log):
                 return
 
         # Player lands on "Community Chest"
@@ -216,12 +216,15 @@ class Player:
         return False
 
 
-    def handle_chance(self, board, log):
+    def handle_chance(self, board, players, log):
         ''' Draw and act on a Chance card
         Return True if the move should be over (go to jail)
         '''
         card = board.chance.draw()
         log.add(f"{self} drew Chance card: '{card}'")
+
+        # Cards that send you to a certain location on board
+
         if card == "Advance to Boardwalk":
             log.add(f"{self} goes to {board.b[39]}")
             self.position = 39
@@ -242,6 +245,20 @@ class Player:
             if self.position > 11:
                 self.get_salary(board, log)
             self.position = 11
+
+        elif card == "Take a trip to Reading Railroad. If you pass Go, collect $200":
+            log.add(f"{self} goes to {board.b[5]}")
+            if self.position > 5:
+                self.get_salary(board, log)
+            self.position = 5
+
+        # Going backwards
+
+        elif card == "Go Back 3 Spaces":
+            self.position -= 3
+            log.add(f"{self} goes to {board.b[self.position]}")
+
+        # Sends to a type of location, and affects the rent amount
 
         elif card == "Advance to the nearest Railroad. " + \
                      "If owned, pay owner twice the rental to which they are otherwise entitled":
@@ -267,9 +284,7 @@ class Player:
             self.position = nearest_utility
             self.other_notes = "10 times dice"
 
-        elif card == "Bank pays you dividend of $50":
-            log.add(f"{self} gets $50")
-            self.money += 50
+        # Jail related (go to jail or GOOJF card)
 
         elif card == "Get Out of Jail Free":
             log.add(f"{self} now has a 'Get Out of Jail Free' card")
@@ -277,13 +292,37 @@ class Player:
             # Remove the card from the deck
             board.chance.remove("Get Out of Jail Free")
 
-        elif card == "Go Back 3 Spaces":
-            self.position -= 3
-            log.add(f"{self} goes to {board.b[self.position]}")
-
         elif card == "Go to Jail. Go directly to Jail, do not pass Go, do not collect $200":
             self.go_to_jail("got GTJ Chance card", log)
             return True
+
+        # Receiving money
+
+        elif card == "Bank pays you dividend of $50":
+            log.add(f"{self} gets $50")
+            self.money += 50
+
+        elif card == "Your building loan matures. Collect $150":
+            log.add(f"{self} gets $150")
+            self.money += 150
+
+        # Paying money (+ depending on property + to other players)
+
+        elif card == "Speeding fine $15":
+            self.pay_money(15, "bank", board, log)
+
+        elif card == "Make general repairs on all your property. For each house pay $25. " + \
+                "For each hotel pay $100":
+            repair_cost = sum(cell.has_houses * 25 + cell.has_hotel * 100 for cell in self.owned)
+            log.add(f"Repair cost: ${repair_cost}")
+            self.pay_money(repair_cost, "bank", board, log)
+
+        elif card == "You have been elected Chairman of the Board. Pay each player $50":
+            for player in players:
+                if player != self:
+                    self.pay_money(50, player, board, log)
+                    if not self.is_bankrupt:
+                        log.add(f"{self} pays {player} $50")
 
         return False
 
@@ -512,7 +551,7 @@ class Player:
             list_to_mortgage = []
             for cell in self.owned:
                 if not cell.is_mortgaged:
-                    list_to_mortgage.append((cell.cost_base * GameSettings.mortgage_value, cell))
+                    list_to_mortgage.append((int(cell.cost_base * GameSettings.mortgage_value), cell))
 
             # It will be popped from the end, so first to sell should be last
             list_to_mortgage.sort(key = lambda x: -x[0])
@@ -613,7 +652,7 @@ class Player:
         max_raisable_money = count_max_raisable_money()
         # Can pay but need to sell some things first
         if amount < max_raisable_money:
-            log.add(f"{self} can pay ${amount}, but needs to sell some things for that")
+            log.add(f"{self} can pay ${amount}, but needs to mortgage/sell some things for that")
             self.raise_money(amount, board, log)
             self.money -= amount
             if payee != "bank":
