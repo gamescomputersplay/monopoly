@@ -113,7 +113,7 @@ class Player:
 
         # Player lands on "Community Chest"
         if isinstance(board.b[self.position], CommunityChest):
-            if self.handle_community_chest(board, log):
+            if self.handle_community_chest(board, players, log):
                 return
 
         # Player lands on a property
@@ -318,21 +318,99 @@ class Player:
             self.pay_money(repair_cost, "bank", board, log)
 
         elif card == "You have been elected Chairman of the Board. Pay each player $50":
-            for player in players:
-                if player != self:
-                    self.pay_money(50, player, board, log)
+            for other_player in players:
+                if other_player != self and not other_player.is_bankrupt:
+                    self.pay_money(50, other_player, board, log)
                     if not self.is_bankrupt:
-                        log.add(f"{self} pays {player} $50")
+                        log.add(f"{self} pays {other_player} $50")
 
         return False
 
-    def handle_community_chest(self, board, log):
+    def handle_community_chest(self, board, players, log):
         ''' Draw and act on a Community Chest card
         Return True if the move should be over (go to jail)
         '''
 
         card = board.chest.draw()
         log.add(f"{self} drew Community Chest card: '{card}'")
+
+        # Moving to Go
+
+        if card == "Advance to Go (Collect $200)":
+            log.add(f"{self} goes to {board.b[0]}")
+            self.position = 0
+            self.get_salary(board, log)
+
+        # Jail related
+
+        elif card == "Get Out of Jail Free":
+            log.add(f"{self} now has a 'Get Out of Jail Free' card")
+            self.get_out_of_jail_comm_chest = True
+            # Remove the card from the deck
+            board.chest.remove("Get Out of Jail Free")
+
+        elif card == "Go to Jail. Go directly to Jail, do not pass Go, do not collect $200":
+            self.go_to_jail("got GTJ Community Chest card", log)
+            return True
+
+        # Paying money
+
+        elif card == "Doctor's fee. Pay $50":
+            self.pay_money(50, "bank", board, log)
+
+        elif card == "Pay hospital fees of $100":
+            self.pay_money(100, "bank", board, log)
+
+        elif card == "Pay school fees of $50":
+            self.pay_money(50, "bank", board, log)
+
+        elif card == "You are assessed for street repair. $40 per house. $115 per hotel":
+            repair_cost = sum(cell.has_houses * 40 + cell.has_hotel * 115 for cell in self.owned)
+            log.add(f"Repair cost: ${repair_cost}")
+            self.pay_money(repair_cost, "bank", board, log)
+
+        # Receive money
+
+        elif card == "Bank error in your favor. Collect $200":
+            log.add(f"{self} gets $200")
+            self.money += 200
+
+        elif card == "From sale of stock you get $50":
+            log.add(f"{self} gets $50")
+            self.money += 50
+
+        elif card == "Holiday fund matures. Receive $100":
+            log.add(f"{self} gets $100")
+            self.money += 100
+
+        elif card == "Income tax refund. Collect $20":
+            log.add(f"{self} gets $20")
+            self.money += 20
+
+        elif card == "Life insurance matures. Collect $100":
+            log.add(f"{self} gets $100")
+            self.money += 100
+
+        elif card == "Receive $25 consultancy fee":
+            log.add(f"{self} gets $25")
+            self.money += 25
+
+        elif card == "You have won second prize in a beauty contest. Collect $10":
+            log.add(f"{self} gets $10")
+            self.money += 10
+
+        elif card == "You inherit $100""You inherit $100":
+            log.add(f"{self} gets $100")
+            self.money += 100
+
+        # Receiving money from other players
+
+        elif card == "It is your birthday. Collect $10 from every player":
+            for other_player in players:
+                if other_player != self and not other_player.is_bankrupt:
+                    other_player.pay_money(50, self, board, log)
+                    if not other_player.is_bankrupt:
+                        log.add(f"{other_player} pays {self} $10")
 
         return False
 
@@ -551,7 +629,8 @@ class Player:
             list_to_mortgage = []
             for cell in self.owned:
                 if not cell.is_mortgaged:
-                    list_to_mortgage.append((int(cell.cost_base * GameSettings.mortgage_value), cell))
+                    list_to_mortgage.append(
+                        (int(cell.cost_base * GameSettings.mortgage_value), cell))
 
             # It will be popped from the end, so first to sell should be last
             list_to_mortgage.sort(key = lambda x: -x[0])
