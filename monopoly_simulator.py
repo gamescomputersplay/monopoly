@@ -18,22 +18,25 @@ def run_simulation(config):
     In: Simulation parameters (number of games, seed etc)
     '''
 
-    # Empty the log file
+    # Empty the game log file (list of all player actions)
     log = Log(LogSettings.game_log_file)
     log.reset()
     log.save()
 
-    # Empty and prepare headers for the data output
+    # Empty the data log (list of bankruptcy turns for each player)
     datalog = Log(LogSettings.data_log_file)
     datalog.reset()
     datalog.add("game_number\tplayer\tturn")
     datalog.save()
 
-    # Initiate RNG with the seed in config
+    # Initiate overall random generator with the seed from config file
     if config.seed is not None:
         random.seed(config.seed)
 
-    # Pre-generate game seeds (to have simulation multi-thread safe)
+    # With that overall random generator, pre-generate
+    # game seeds (to have simulation multi-thread safe).
+    # data_for_simulation is a list of tuples: (game_number, game_seed)
+    # it is packed together to be able to use multi-threading
     data_for_simulation = [
         (i + 1, random.random())
         for i in range(config.n_games)]
@@ -42,7 +45,7 @@ def run_simulation(config):
     with concurrent.futures.ProcessPoolExecutor(max_workers=config.multi_process) as executor:
         list(tqdm(executor.map(monopoly_game, data_for_simulation), total=len(data_for_simulation)))
 
-    # Print analysis of the simulation
+    # Print analysis of the simulation (data is read from datalog file)
     analysis = Analyzer()
     analysis.remaining_players()
     analysis.median_game_length()

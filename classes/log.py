@@ -1,4 +1,7 @@
-''' Class to keep a log of the game
+''' Class to keep a log of the game.
+Challenge here was to make it thread-safe: simulator plays several games at a time,
+but the game log should be written by "whole game" chunks. This is the reason games
+will not be in order, as the order games start is not the same as the order they finish.
 '''
 
 import multiprocessing

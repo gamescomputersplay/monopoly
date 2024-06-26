@@ -98,7 +98,7 @@ class Player:
             self.get_salary(board, log)
         # Get the correct position, if we passed GO
         self.position %= 40
-        log.add(f"Player {self.name} goes to: {board.b[self.position].name}")
+        log.add(f"Player {self.name} goes to: {board.cells[self.position].name}")
 
         # Handle various types of cells player may land on
 
@@ -106,27 +106,27 @@ class Player:
         # and Chance is before "Community Chest" as Chance can send to Community Chest
 
         # Player lands on "Chance"
-        if isinstance(board.b[self.position], Chance):
+        if isinstance(board.cells[self.position], Chance):
             # returning True means the move is over (even if it was a double)
             if self.handle_chance(board, players, log):
                 return
 
         # Player lands on "Community Chest"
-        if isinstance(board.b[self.position], CommunityChest):
+        if isinstance(board.cells[self.position], CommunityChest):
             if self.handle_community_chest(board, players, log):
                 return
 
         # Player lands on a property
-        if isinstance(board.b[self.position], Property):
+        if isinstance(board.cells[self.position], Property):
             self.handle_landing_on_property(board, players, dice, log)
 
         # Player lands on "Go To Jail"
-        if isinstance(board.b[self.position], GoToJail):
+        if isinstance(board.cells[self.position], GoToJail):
             self.go_to_jail("landed on Go To Jail", log)
             return
 
         # Player lands on "Free Parking"
-        if isinstance(board.b[self.position], FreeParking):
+        if isinstance(board.cells[self.position], FreeParking):
             # If Free Parking Money house rule is on: get the money
             if GameSettings.free_parking_money:
                 log.add(f"{self} gets ${board.free_parking_money} from Free Parking")
@@ -134,13 +134,13 @@ class Player:
                 board.free_parking_money = 0
 
         # Player lands on "Luxury Tax"
-        if isinstance(board.b[self.position], LuxuryTax):
+        if isinstance(board.cells[self.position], LuxuryTax):
             self.pay_money(GameSettings.luxury_tax, "bank", board, log)
             if not self.is_bankrupt:
                 log.add(f"{self} pays Luxury Tax ${GameSettings.luxury_tax}")
 
         # Player lands on "Income Tax"
-        if isinstance(board.b[self.position], IncomeTax):
+        if isinstance(board.cells[self.position], IncomeTax):
             self.handle_income_tax(board, log)
 
         # Reset Other notes flag
@@ -226,28 +226,28 @@ class Player:
         # Cards that send you to a certain location on board
 
         if card == "Advance to Boardwalk":
-            log.add(f"{self} goes to {board.b[39]}")
+            log.add(f"{self} goes to {board.cells[39]}")
             self.position = 39
 
         elif card == "Advance to Go (Collect $200)":
-            log.add(f"{self} goes to {board.b[0]}")
+            log.add(f"{self} goes to {board.cells[0]}")
             self.position = 0
             self.get_salary(board, log)
 
         elif card == "Advance to Illinois Avenue. If you pass Go, collect $200":
-            log.add(f"{self} goes to {board.b[24]}")
+            log.add(f"{self} goes to {board.cells[24]}")
             if self.position > 24:
                 self.get_salary(board, log)
             self.position = 24
 
         elif card == "Advance to St. Charles Place. If you pass Go, collect $200":
-            log.add(f"{self} goes to {board.b[11]}")
+            log.add(f"{self} goes to {board.cells[11]}")
             if self.position > 11:
                 self.get_salary(board, log)
             self.position = 11
 
         elif card == "Take a trip to Reading Railroad. If you pass Go, collect $200":
-            log.add(f"{self} goes to {board.b[5]}")
+            log.add(f"{self} goes to {board.cells[5]}")
             if self.position > 5:
                 self.get_salary(board, log)
             self.position = 5
@@ -256,7 +256,7 @@ class Player:
 
         elif card == "Go Back 3 Spaces":
             self.position -= 3
-            log.add(f"{self} goes to {board.b[self.position]}")
+            log.add(f"{self} goes to {board.cells[self.position]}")
 
         # Sends to a type of location, and affects the rent amount
 
@@ -266,7 +266,7 @@ class Player:
             while (nearest_railroad - 5) % 10 != 0:
                 nearest_railroad += 1
                 nearest_railroad %= 40
-            log.add(f"{self} goes to {board.b[nearest_railroad]}")
+            log.add(f"{self} goes to {board.cells[nearest_railroad]}")
             if self.position > nearest_railroad:
                 self.get_salary(board, log)
             self.position = nearest_railroad
@@ -278,7 +278,7 @@ class Player:
             while nearest_utility not in  (12, 28):
                 nearest_utility += 1
                 nearest_utility %= 40
-            log.add(f"{self} goes to {board.b[nearest_utility]}")
+            log.add(f"{self} goes to {board.cells[nearest_utility]}")
             if self.position > nearest_utility:
                 self.get_salary(board, log)
             self.position = nearest_utility
@@ -337,7 +337,7 @@ class Player:
         # Moving to Go
 
         if card == "Advance to Go (Collect $200)":
-            log.add(f"{self} goes to {board.b[0]}")
+            log.add(f"{self} goes to {board.cells[0]}")
             self.position = 0
             self.get_salary(board, log)
 
@@ -462,17 +462,17 @@ class Player:
             self.money -= property_to_buy.cost_base
 
         # Property is not owned by anyone
-        if board.b[self.position].owner is None:
+        if board.cells[self.position].owner is None:
 
             # Does the player want to buy it?
-            if is_willing_to_buy_property(board.b[self.position]):
+            if is_willing_to_buy_property(board.cells[self.position]):
                 # Buy property
-                buy_property(board.b[self.position])
-                log.add(f"Player {self.name} bought {board.b[self.position]} " +
-                        f"for ${board.b[self.position].cost_base}")
+                buy_property(board.cells[self.position])
+                log.add(f"Player {self.name} bought {board.cells[self.position]} " +
+                        f"for ${board.cells[self.position].cost_base}")
 
                 # Recalculate all monopoly / can build flags
-                board.recalculate_monopoly_coeffs(board.b[self.position])
+                board.recalculate_monopoly_coeffs(board.cells[self.position])
 
                 # Recalculate who wants to buy what
                 # (for all players, it may affect their decisions too)
@@ -485,27 +485,27 @@ class Player:
         # Property has an owner
         else:
             # It is mortgaged: no action
-            if board.b[self.position].is_mortgaged:
+            if board.cells[self.position].is_mortgaged:
                 log.add("Property is mortgaged, no rent")
             # It is player's own property
-            elif board.b[self.position].owner == self:
+            elif board.cells[self.position].owner == self:
                 log.add("Own property, no rent")
             # Handle rent payments
             else:
                 log.add(f"Player {self.name} landed on a property, " +
-                        f"owned by {board.b[self.position].owner}")
-                rent_amount = board.b[self.position].calculate_rent(dice)
+                        f"owned by {board.cells[self.position].owner}")
+                rent_amount = board.cells[self.position].calculate_rent(dice)
                 if self.other_notes == "double rent":
                     rent_amount *= 2
                     log.add(f"Per Chance card, rent is doubled (${rent_amount}).")
                 if self.other_notes == "10 times dice":
                     # Divide by monopoly_coef to restore the dice throw
                     # Multiply that by 10
-                    rent_amount = rent_amount // board.b[self.position].monopoly_coef * 10
+                    rent_amount = rent_amount // board.cells[self.position].monopoly_coef * 10
                     log.add(f"Per Chance card, rent is 10x dice throw (${rent_amount}).")
-                self.pay_money(rent_amount, board.b[self.position].owner, board, log)
+                self.pay_money(rent_amount, board.cells[self.position].owner, board, log)
                 if not self.is_bankrupt:
-                    log.add(f"{self} pays {board.b[self.position].owner} rent ${rent_amount}")
+                    log.add(f"{self} pays {board.cells[self.position].owner} rent ${rent_amount}")
 
     def improve_properties(self, board, log):
         ''' While there is money to spend and properties to improve,

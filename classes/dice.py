@@ -1,4 +1,7 @@
-''' Class for Dice (thread safe seed based, with adjustable number of dice and sides)
+''' Class for Dice, a thread-safe seed-based random generator,
+that can:
+- cast dice (with adjustable number of dice and sides)
+- shuffle a deck (community chest and chance)
 '''
 
 import random
@@ -11,6 +14,7 @@ class Dice:
         self.dice_count = dice_count
         self.dice_sides = dice_sides
 
+        # Create a local random generator, that can be thread-safe
         self.local_random = random.Random()
         self.local_random.seed(seed)
 
@@ -24,7 +28,8 @@ class Dice:
         self.log.add(f"Dice roll: {cast} " +
                 f"(score {sum(cast)}{', double' if len(set(cast)) == 1 else ''})")
 
-        # Cast, total score, all dice are equal
+        # Return individual dice values, the sum of the cast and
+        # if values are the same (double in case of 2 dice)
         return cast, sum(cast), len(set(cast)) == 1
 
     def shuffle(self, object_to_shuffle):

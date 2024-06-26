@@ -17,13 +17,13 @@ Game related:
 Simulation replated:
 - log out players net worth
 
-Behaviour related:
+Behavior related:
 - three-way trade
 - Auctions
 
-Experiemnts:
+Experiments:
 - ignore property
-- jail behaviour
+- jail behavior
 - unspendable cache
 - negative unspendable cache
 - fair starting money
