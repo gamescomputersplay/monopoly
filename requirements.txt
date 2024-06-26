@@ -1,7 +1,0 @@
-# SPDX-FileCopyrightText: 2021 Games Computers Play and nopeless
-#
-# SPDX-License-Identifier: CC0-1.0
-
-matplotlib
-numpy
-progressbar2
