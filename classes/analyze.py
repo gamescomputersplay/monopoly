@@ -38,9 +38,10 @@ class Analyzer:
         for remaining, count in sorted(remaining_players.items()):
             print(f"  - {remaining}: {count} ({count * 100 / SimulationSettings.n_games:.1f}%)")
 
-    def median_game_length(self):
+    def game_length(self):
         ''' Median game length (for all finite games)
         '''
+        # Calculate median game length, which is highest bankruptcy turn within a game
         grouped = self.df.groupby('game_number')
         filtered_groups = grouped.filter(lambda x: len(x) == len(GameSettings.players_list) - 1)
         lengths_df = filtered_groups.groupby('game_number')['turn'].max().reset_index()
@@ -50,6 +51,10 @@ class Analyzer:
         if lengths:
             print(f"Median game length (for finished games): {lengths[len(lengths)//2]}")
         print(f"Median game length (for all games): {all_lengths[len(all_lengths)//2]}")
+
+        # Calculate average survival time (for those who goes bankrupt)
+        survival_average = lengths_df["turn"].mean()
+        print(f"Average survival time (for bunkrupt players): {survival_average:.1f} turns")
 
     def winning_rate(self):
         ''' Display winning (survival) rate of players

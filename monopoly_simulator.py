@@ -45,7 +45,7 @@ def run_simulation(config):
     # Print analysis of the simulation (data is read from datalog file)
     analysis = Analyzer()
     analysis.remaining_players()
-    analysis.median_game_length()
+    analysis.game_length()
     analysis.winning_rate()
 
 
