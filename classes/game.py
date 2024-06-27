@@ -33,14 +33,14 @@ def monopoly_game(data_for_simulation):
     # Initialize the board (plots, chance, community chest etc)
     board = Board(GameSettings)
 
-    # Set up dice (create a separate random generator with initial "game_seed",
-    # to make it thread-safe)
+    # Set up dice (it creates a separate random generator with initial "game_seed",
+    # to have thread-safe shuffling and dice throws)
     dice = Dice(game_seed, GameSettings.dice_count, GameSettings.dice_sides, log)
 
     # Shuffle chance and community chest cards
     # (using thread-safe random generator)
-    board.chance.shuffle(dice)
-    board.chest.shuffle(dice)
+    dice.shuffle(board.chance.cards)
+    dice.shuffle(board.chest.cards)
 
     # Set up players with their behavior settings
     players = [Player(player_name, player_setting)

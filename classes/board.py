@@ -138,11 +138,6 @@ class Deck:
         '''
         self.cards.insert(self.pointer - 1, card_to_add)
 
-    def shuffle(self, random_thing):
-        ''' Shuffle the cards. Uses random thing, so we could use thread-safe random generator
-        '''
-        random_thing.shuffle(self.cards)
-
 class Board:
     ''' Class collecting board related information:
     properties and their owners, build houses, etc
