@@ -44,7 +44,7 @@ class Analyzer:
         grouped = self.df.groupby('game_number')
         filtered_groups = grouped.filter(lambda x: len(x) == len(GameSettings.players_list) - 1)
         lengths_df = filtered_groups.groupby('game_number')['turn'].max().reset_index()
-        lengths = lengths_df["turn"].tolist()
+        lengths = sorted(lengths_df["turn"].tolist())
         all_lengths = lengths + [SimulationSettings.n_moves
                                  for _ in range(SimulationSettings.n_games - len(lengths))]
         if lengths:
