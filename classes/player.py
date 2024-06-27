@@ -51,6 +51,24 @@ class Player:
     def __str__(self):
         return self.name
 
+    def net_worth(self):
+        ''' Calculate player's net worth (cache + property + houses)
+        '''
+        net_worth = int(self.money)
+
+        for cell in self.owned:
+
+            # This is against "classic rules", where mortgages property
+            # calculated as 100% for net worth
+            # But it doesn't make sense! So I use 1 - mortgage
+            if cell.is_mortgaged:
+                net_worth += cell.cost_base * (1 - GameSettings.mortgage_value)
+            else:
+                net_worth += cell.cost_base
+                net_worth += (cell.has_houses + cell.has_hotel) * cell.cost_house
+
+        return net_worth
+
     def make_a_move(self, board, players, dice, log):
         ''' Main function for a player to make a move
         Receives:
@@ -66,54 +84,60 @@ class Player:
 
         log.add(f"=== Player {self.name}'s move ===")
 
-        # Look for a trade opportunity
+
+        # Things to do before the throwing of the dice:
+        # Trade with other players. Keep trading until no trades are possible
         while self.do_a_two_way_trade(players, board, log):
             pass
 
-        # Unmortgage, if there is enough money for it
+        # Unmortgage a property. Keep doing it until possible
         while self.unmortgage_a_property(board, log):
             pass
 
-        # Improve any properties, if needed
+        # Improve all properties that can be improved
         self.improve_properties(board, log)
 
+
+        # The move itself:
         # Player rolls the dice
         _, dice_roll_score, dice_roll_is_double = dice.cast()
 
         # Get doubles for the third time: just go to jail
         if dice_roll_is_double and self.had_doubles == 2:
-            self.go_to_jail("rolled 3 doubles in a row", log)
+            self.handle_going_to_jail("rolled 3 doubles in a row", log)
             return
 
         # Player is currently in jail
         if self.in_jail:
             # Will return True if player stays in jail and move ends
-            if self.handle_jail(dice_roll_is_double, board, log):
+            if self.handle_being_in_jail(dice_roll_is_double, board, log):
                 return
 
         # Player moves to a cell
         self.position += dice_roll_score
         # Get salary if we passed go on the way
         if self.position >= 40:
-            self.get_salary(board, log)
+            self.handle_salary(board, log)
         # Get the correct position, if we passed GO
         self.position %= 40
         log.add(f"Player {self.name} goes to: {board.cells[self.position].name}")
 
+
         # Handle various types of cells player may land on
 
-        # Both cards are before landing on property, as they may send player to a property
+        # Both cards are processed first, as they may send player to a property
         # and Chance is before "Community Chest" as Chance can send to Community Chest
 
         # Player lands on "Chance"
         if isinstance(board.cells[self.position], Chance):
-            # returning True means the move is over (even if it was a double)
-            if self.handle_chance(board, players, log):
+            # returning "move is over" means the move is over (even if it was a double)
+            if self.handle_chance(board, players, log) == "move is over":
                 return
 
         # Player lands on "Community Chest"
         if isinstance(board.cells[self.position], CommunityChest):
-            if self.handle_community_chest(board, players, log):
+            # returning "move is over" means the move is over (even if it was a double)
+            if self.handle_community_chest(board, players, log) == "move is over":
                 return
 
         # Player lands on a property
@@ -122,7 +146,7 @@ class Player:
 
         # Player lands on "Go To Jail"
         if isinstance(board.cells[self.position], GoToJail):
-            self.go_to_jail("landed on Go To Jail", log)
+            self.handle_going_to_jail("landed on Go To Jail", log)
             return
 
         # Player lands on "Free Parking"
@@ -161,25 +185,24 @@ class Player:
         else:
             self.had_doubles = 0
 
-    def net_worth(self):
-        ''' Calculate player's net worth (cache + property + houses)
+
+    def handle_salary(self, board, log):
+        ''' Adding Salary to the player's money, according to the game's settings
         '''
-        net_worth = int(self.money)
+        self.money += board.settings.salary
+        log.add(f"Player {self.name} receives salary ${board.settings.salary}")
 
-        for cell in self.owned:
+    def handle_going_to_jail(self, message, log):
+        ''' Start the jail time
+        '''
+        log.add(f"{self} {message}, and goes to Jail.")
+        self.position = 10
+        self.in_jail = True
+        self.had_doubles = 0
+        self.days_in_jail = 0
 
-            # This is against "classic rules", where mortgages property
-            # calculated as 100% for net worth
-            # But it doesn't make sense! So I use 1 - mortgage
-            if cell.is_mortgaged:
-                net_worth += cell.cost_base * (1 - GameSettings.mortgage_value)
-            else:
-                net_worth += cell.cost_base
-                net_worth += (cell.has_houses + cell.has_hotel) * cell.cost_house
 
-        return net_worth
-
-    def handle_jail(self, dice_roll_is_double, board, log):
+    def handle_being_in_jail(self, dice_roll_is_double, board, log):
         ''' Handle player being in Jail
         Return True if the player stays in jail (to end his turn)
         '''
@@ -232,24 +255,24 @@ class Player:
         elif card == "Advance to Go (Collect $200)":
             log.add(f"{self} goes to {board.cells[0]}")
             self.position = 0
-            self.get_salary(board, log)
+            self.handle_salary(board, log)
 
         elif card == "Advance to Illinois Avenue. If you pass Go, collect $200":
             log.add(f"{self} goes to {board.cells[24]}")
             if self.position > 24:
-                self.get_salary(board, log)
+                self.handle_salary(board, log)
             self.position = 24
 
         elif card == "Advance to St. Charles Place. If you pass Go, collect $200":
             log.add(f"{self} goes to {board.cells[11]}")
             if self.position > 11:
-                self.get_salary(board, log)
+                self.handle_salary(board, log)
             self.position = 11
 
         elif card == "Take a trip to Reading Railroad. If you pass Go, collect $200":
             log.add(f"{self} goes to {board.cells[5]}")
             if self.position > 5:
-                self.get_salary(board, log)
+                self.handle_salary(board, log)
             self.position = 5
 
         # Going backwards
@@ -268,7 +291,7 @@ class Player:
                 nearest_railroad %= 40
             log.add(f"{self} goes to {board.cells[nearest_railroad]}")
             if self.position > nearest_railroad:
-                self.get_salary(board, log)
+                self.handle_salary(board, log)
             self.position = nearest_railroad
             self.other_notes = "double rent"
 
@@ -280,7 +303,7 @@ class Player:
                 nearest_utility %= 40
             log.add(f"{self} goes to {board.cells[nearest_utility]}")
             if self.position > nearest_utility:
-                self.get_salary(board, log)
+                self.handle_salary(board, log)
             self.position = nearest_utility
             self.other_notes = "10 times dice"
 
@@ -293,8 +316,8 @@ class Player:
             board.chance.remove("Get Out of Jail Free")
 
         elif card == "Go to Jail. Go directly to Jail, do not pass Go, do not collect $200":
-            self.go_to_jail("got GTJ Chance card", log)
-            return True
+            self.handle_going_to_jail("got GTJ Chance card", log)
+            return "move is over"
 
         # Receiving money
 
@@ -324,7 +347,8 @@ class Player:
                     if not self.is_bankrupt:
                         log.add(f"{self} pays {other_player} $50")
 
-        return False
+        return ""
+
 
     def handle_community_chest(self, board, players, log):
         ''' Draw and act on a Community Chest card
@@ -339,7 +363,7 @@ class Player:
         if card == "Advance to Go (Collect $200)":
             log.add(f"{self} goes to {board.cells[0]}")
             self.position = 0
-            self.get_salary(board, log)
+            self.handle_salary(board, log)
 
         # Jail related
 
@@ -350,8 +374,8 @@ class Player:
             board.chest.remove("Get Out of Jail Free")
 
         elif card == "Go to Jail. Go directly to Jail, do not pass Go, do not collect $200":
-            self.go_to_jail("got GTJ Community Chest card", log)
-            return True
+            self.handle_going_to_jail("got GTJ Community Chest card", log)
+            return "move is over"
 
         # Paying money
 
@@ -412,7 +436,8 @@ class Player:
                     if not other_player.is_bankrupt:
                         log.add(f"{other_player} pays {self} $10")
 
-        return False
+        return ""
+
 
     def handle_income_tax(self, board, log):
         ''' Handle Income tax: choose which option
@@ -429,6 +454,7 @@ class Player:
             log.add(f"{self} pays {GameSettings.income_tax_percentage * 100:.0f}% " +
                     f"Income tax {tax_to_pay}")
         self.pay_money(tax_to_pay, "bank", board, log)
+
 
     def handle_landing_on_property(self, board, players, dice, log):
         ''' Landing on property: either buy it or pay rent
@@ -461,18 +487,21 @@ class Player:
             self.owned.append(property_to_buy)
             self.money -= property_to_buy.cost_base
 
+        # This is the property a player landed on
+        landed_property = board.cells[self.position]
+
         # Property is not owned by anyone
-        if board.cells[self.position].owner is None:
+        if landed_property.owner is None:
 
             # Does the player want to buy it?
-            if is_willing_to_buy_property(board.cells[self.position]):
+            if is_willing_to_buy_property(landed_property):
                 # Buy property
-                buy_property(board.cells[self.position])
-                log.add(f"Player {self.name} bought {board.cells[self.position]} " +
-                        f"for ${board.cells[self.position].cost_base}")
+                buy_property(landed_property)
+                log.add(f"Player {self.name} bought {landed_property} " +
+                        f"for ${landed_property.cost_base}")
 
                 # Recalculate all monopoly / can build flags
-                board.recalculate_monopoly_coeffs(board.cells[self.position])
+                board.recalculate_monopoly_coeffs(landed_property)
 
                 # Recalculate who wants to buy what
                 # (for all players, it may affect their decisions too)
@@ -480,32 +509,34 @@ class Player:
                     player.update_lists_of_properties_to_trade(board)
 
             else:
-                log.add(f"Player {self.name} landed on a property, he refuses to buy it")
+                log.add(f"Player {self.name} landed on a {landed_property}, he refuses to buy it")
+                # TODO: Bank auctions the property
 
         # Property has an owner
         else:
             # It is mortgaged: no action
-            if board.cells[self.position].is_mortgaged:
+            if landed_property.is_mortgaged:
                 log.add("Property is mortgaged, no rent")
             # It is player's own property
-            elif board.cells[self.position].owner == self:
+            elif landed_property.owner == self:
                 log.add("Own property, no rent")
             # Handle rent payments
             else:
                 log.add(f"Player {self.name} landed on a property, " +
-                        f"owned by {board.cells[self.position].owner}")
-                rent_amount = board.cells[self.position].calculate_rent(dice)
+                        f"owned by {landed_property.owner}")
+                rent_amount = landed_property.calculate_rent(dice)
                 if self.other_notes == "double rent":
                     rent_amount *= 2
                     log.add(f"Per Chance card, rent is doubled (${rent_amount}).")
                 if self.other_notes == "10 times dice":
                     # Divide by monopoly_coef to restore the dice throw
                     # Multiply that by 10
-                    rent_amount = rent_amount // board.cells[self.position].monopoly_coef * 10
+                    rent_amount = rent_amount // landed_property.monopoly_coef * 10
                     log.add(f"Per Chance card, rent is 10x dice throw (${rent_amount}).")
-                self.pay_money(rent_amount, board.cells[self.position].owner, board, log)
+                self.pay_money(rent_amount, landed_property.owner, board, log)
                 if not self.is_bankrupt:
-                    log.add(f"{self} pays {board.cells[self.position].owner} rent ${rent_amount}")
+                    log.add(f"{self} pays {landed_property.owner} rent ${rent_amount}")
+
 
     def improve_properties(self, board, log):
         ''' While there is money to spend and properties to improve,
@@ -567,33 +598,18 @@ class Player:
 
         for cell in self.owned:
             if cell.is_mortgaged:
-                mooney_to_unmortgage = \
+                cost_to_unmortgage = \
                     cell.cost_base * GameSettings.mortgage_value + \
                     cell.cost_base * GameSettings.mortgage_fee
-                if self.money - mooney_to_unmortgage >= self.settings.unspendable_cash:
-                    log.add(f"{self} unmortgages {cell} for ${mooney_to_unmortgage}")
-                    self.money -= mooney_to_unmortgage
+                if self.money - cost_to_unmortgage >= self.settings.unspendable_cash:
+                    log.add(f"{self} unmortgages {cell} for ${cost_to_unmortgage}")
+                    self.money -= cost_to_unmortgage
                     cell.is_mortgaged = False
                     board.recalculate_monopoly_coeffs(cell)
                     self.update_lists_of_properties_to_trade(board)
                     return True
 
         return False
-
-    def get_salary(self, board, log):
-        ''' Adding Salary to the player's money, according to the game's settings
-        '''
-        self.money += board.settings.salary
-        log.add(f"Player {self.name} receives salary ${board.settings.salary}")
-
-    def go_to_jail(self, message, log):
-        ''' Start the jail time
-        '''
-        log.add(f"{self} {message}, and goes to Jail.")
-        self.position = 10
-        self.in_jail = True
-        self.had_doubles = 0
-        self.days_in_jail = 0
 
     def raise_money(self, required_amount, board, log):
         ''' Part of "Pay money" method. If there is not enough cash, player has to 
@@ -652,7 +668,7 @@ class Player:
                     log.add(f"{self} sells a hotel on {cell_to_deimprove}, raising ${sell_price}")
                     self.money += sell_price
                 # Selling hotel, must tear down all 5 houses from one plot
-                # TODO: I think we need to tear down all 3 hotels?
+                # TODO: I think we need to tear down all 3 hotels in this situation?
                 else:
                     cell_to_deimprove.has_hotel = 0
                     cell_to_deimprove.has_houses = 0
@@ -708,10 +724,12 @@ class Player:
                 cell_to_transfer = self.owned.pop()
 
                 # Transfer to a player
+                # TODO: Unmortgage the property right away, or pay more
                 if isinstance(payee, Player):
                     cell_to_transfer.owner = payee
                     payee.owned.append(cell_to_transfer)
-                # Transfer to the bank. TODO: Auction the property
+                # Transfer to the bank
+                # TODO: Auction the property
                 else:
                     cell_to_transfer.owner = None
                     cell_to_transfer.is_mortgaged = False
