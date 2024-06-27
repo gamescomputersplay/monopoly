@@ -37,8 +37,9 @@ class Log:
                 if self.content:
                     logfile.write("\n")
 
-    def reset(self):
-        ''' Empty the log file
+    def reset(self, first_line=""):
+        ''' Empty the log file, write first_line if provided
         '''
-        with open(self.log_file_name, "w", encoding="utf-8") as _:
-            pass
+        with self.lock:
+            with open(self.log_file_name, "w", encoding="utf-8") as logfile:
+                logfile.write(f"{first_line}\n")

@@ -21,13 +21,10 @@ def run_simulation(config):
     # Empty the game log file (list of all player actions)
     log = Log(LogSettings.game_log_file)
     log.reset()
-    log.save()
 
     # Empty the data log (list of bankruptcy turns for each player)
     datalog = Log(LogSettings.data_log_file)
-    datalog.reset()
-    datalog.add("game_number\tplayer\tturn")
-    datalog.save()
+    datalog.reset("game_number\tplayer\tturn")
 
     # Initiate overall random generator with the seed from config file
     if config.seed is not None:
