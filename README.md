@@ -1,4 +1,4 @@
-# Monopoly simulator
+# Monopoly Simulator
 
 _This is Monopoly Simulator version 2, rewritten from scratch. For the previous version of the simulator, check the "version-1" branch. This one is much better, though._
 
@@ -8,100 +8,103 @@ The simulator allows for assigning different behavior rules to each player, such
 
 The simulator is a hobby project. There are still many things I am working on, and I hope to improve them someday.
 
-## How to use
+## How to Use
 
-1. Edit setting.py for whatever parameters you want to have in your simulation
-2. Run monopoly_simulator.py
-3. Marvel at the results
+1. Edit settings.py to set the parameters you want for your simulation.
+2. Run monopoly_simulator.py.
+3. Marvel at the results.
 
+## Implemented Rules
 
-## Implemented rules
+The rules in this simulation are based on Hasbro's official manual for playing Monopoly, with the potential for tweaking parameters here and there to see how they affect the game's results. Some of the more complex rules are still a "Work In Progress"; see the TODO section for details.
 
-The rules in this simulation are based on official Hasbro's manual for playing monopoly with potential of tweaking parameters here and there to see how they affect the results of the game. Some of the more complex rules are still "Work In progress", see the TODO section for details
+## Player Behavior
 
-## Player behavior
+Players in the simulation follow the most common-sense logic to play, which is:
 
-Players in the simulation follow the most common sense logic to play, which is:
-- Buy whatever you have landed on
-- Build at first opportunity
-- Unmortgage the property as soon as possible
-- Get out of jail on doubles, do not pay the fine until you have to
-- Have a certain threshold of cash that the player wouldn't want to go below (he would not buy, improve, unmortgage property if it puts him below the threshold).
-- Trade 1-on-1, with the goal of complete player's monopoly. Players who give cheaper property, should provide compensation, equal to the difference of the official price. Don't agree to a trade if the properties are too unequal.
+- Buy whatever you land on.
+- Build at the first opportunity.
+- Unmortgage property as soon as possible.
+- Get out of jail on doubles; do not pay the fine until you have to.
+- Maintain a certain cash threshold below which the player won't buy, improve, or unmortgage property.
+- Trade 1-on-1 with the goal of completing the player's monopoly. Players who give cheaper property should provide compensation equal to the difference in the official price. Don't agree to a trade if the properties are too unequal.
 
 ## Experiments
 
-The main use of the simulator is to run experiments - either testing game rules or player behaviors.
+The main use of the simulator is to run experiments, either testing game rules or player behaviors.
 
-### Testing game rules
+### Testing Game Rules
 
-For that we can run 2 simulations with different game rules, and see if the outcome is different.
+You can run two simulations with different game rules and see if the outcomes are different.
 For example:
-- will Free parking rule affect the average player survival time (answer: not really)
-- will reducing salary reduce number of draw games (answer, yes, very much so)
 
-### Testing player behavior
+- Will the Free Parking rule affect the average player survival time? (Answer: Not really)
+- Will reducing salary reduce the number of draw games? (Answer: Yes, very much so)
 
-Another way to use the simulator is to test various player behavior traits to see if it affects this player winning rate (or, to be precise, survival rate). For that we run a simulation for three "Standard" players and one "Experiment" player that follows different rules. The difference in the survival rate would answer if this behavior was beneficial.
+### Testing Player Behavior
+
+Another way to use the simulator is to test various player behavior traits to see if they affect a player's winning rate (or, to be precise, survival rate). For that, you run a simulation with three "Standard" players and one "Experiment" player that follows different rules. The difference in the survival rate would indicate if this behavior was beneficial.
 For example:
-- Is ignoring Indigo properties a good idea? (answer: no, it would lower survival rate by about 10-12%)
-- Is it better to have $500 unspendable threshold or $0 (answer: $0 is better, it raises survival rate by about 15-20%)
 
-## Adjustable parameters (and their defaults)
+- Is ignoring Indigo properties a good idea? (Answer: No, it would lower the survival rate by about 10-12%)
+- Is it better to have a $500 unspendable threshold or $0? (Answer: $0 is better, it raises the survival rate by about 15-20%)
 
-### Simulation related:
+## Adjustable Parameters (and Their Defaults)
+
+### Simulation-Related:
 - Number of games to play (1000)
 
-### Game related:
+### Game-Related:
+
 - Max number of turns (1000)
 - Random seed to start with, for replicable simulations
 - Number of dice (2)
-- Number of sides on a dice (6)
+- Number of sides on a die (6)
 - Number of players (4)
 - Shuffling player order between simulations (True)
-- Starting money, either same for all or per player going 1st, 2nd etc ($1500 for all)
+- Starting money, either the same for all or per player going 1st, 2nd, etc. ($1500 for all)
 - Available houses (36)
 - Available hotels (12)
-- Salary, i.e. money for passing GO ($200)
+- Salary, i.e., money for passing GO ($200)
 - Luxury Tax ($200)
-- Income tax (2$00 or 10%)
+- Income tax ($200 or 10%)
 - Mortgage value (50%)
 - Mortgage cost (10%)
 - Exit Jail fine ($50)
-- Free Parking accumulate all player fines to give to whoever lands on it (False)
+- Free Parking accumulates all player fines to give to whoever lands on it (False)
 
-### Player Behavior related:
-- Threshold, below which not to spend money ($200)
-- Ignore property of certain color (None)
+### Player Behavior-Related:
+
+- Threshold below which not to spend money ($200)
+- Ignore property of a certain color (None)
 - Participate in trades (True)
-- Maximum difference between to property value to agree to trade ($200 or 2x)
-
+- Maximum difference between property values to agree to a trade ($200 or 2x)
 
 ## TODOs:
 
-As I mentioned, it's a hobby project, so no guarantees here. But if I ever get to improve on this simulator these are the things I'd do:
+As I mentioned, it's a hobby project, so no guarantees here. But if I ever get to improve on this simulator, these are the things I'd do:
 
-### Game rules, that are still not perfectly in line with official rules:
+### Game Rules That Are Still Not Perfectly in Line with Official Rules:
 - Auctions (none right now)
-- Whoever buys bankrupt's player property has to unmortgage it right away or pay more
-- How to mortgage property with hotels on it (this of is somewhat ambiguous in official rules)
+- Whoever buys a bankrupt player's property has to unmortgage it right away or pay more.
+- How to mortgage property with hotels on it (this is somewhat ambiguous in official rules).
 
-### Simulation replated:
-- log out players net worth
+### Simulation-Related:
+- Log out players' net worth.
 
-### Game related
-- Adjustable max jail time
+### Game-Related:
+- Adjustable max jail time.
 
-### Player Behavior related:
-- Three-way trades
-- Different building strategies
-- Auctioning strategies
+### Player Behavior-Related:
+- Three-way trades.
+- Different building strategies.
+- Auctioning strategies.
 
-### Experiments to set up:
-- is ignoring property ever beneficial
-- best jail behavior
-- best unspendable cache
-- is negative unspendable cache beneficial
-- what is fair starting money
-- what is fair trade price
-- what is fair auction price
+### Experiments to Set Up:
+- Is ignoring property ever beneficial?
+- Best jail behavior.
+- Best unspendable cash threshold.
+- Is a negative unspendable cash threshold beneficial?
+- What is fair starting money?
+- What is a fair trade price?
+- What is a fair auction price?
