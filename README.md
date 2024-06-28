@@ -79,9 +79,9 @@ For example:
 
 ## TODOs:
 
-As I mentioned, it's a hobby project, so no guarantees here. But if I ever get to improve on this simulator these are the things I'd do
+As I mentioned, it's a hobby project, so no guarantees here. But if I ever get to improve on this simulator these are the things I'd do:
 
-### Game rules, that are still not perfectly in line:
+### Game rules, that are still not perfectly in line with official rules:
 - Auctions (none right now)
 - Whoever buys bankrupt's player property has to unmortgage it right away or pay more
 - How to mortgage property with hotels on it (this of is somewhat ambiguous in official rules)
@@ -89,7 +89,7 @@ As I mentioned, it's a hobby project, so no guarantees here. But if I ever get t
 ### Simulation replated:
 - log out players net worth
 
-## Game related
+### Game related
 - Adjustable max jail time
 
 ### Player Behavior related:
