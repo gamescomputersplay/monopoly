@@ -1,6 +1,9 @@
 # Output and log files
 *.txt
 
+# Except for requirements.txt
+!requirements.txt
+
 # Mac stuff
 .DS_Store
 
