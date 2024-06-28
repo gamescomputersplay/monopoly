@@ -688,10 +688,13 @@ class Player:
 
         # Mortgage properties
         list_to_mortgage = get_list_of_properties_to_mortgage()
+        
         while list_to_mortgage and self.money < required_amount:
+            # Pick property to mortgage from the list
             mortgage_price, cell_to_mortgage = list_to_mortgage.pop()
+
             # Mortgage this property
-            cell_to_mortgage.is_mortgages = True
+            cell_to_mortgage.is_mortgaged = True
             self.money += mortgage_price
             board.recalculate_monopoly_coeffs(cell_to_mortgage)
             log.add(f"{self} mortgages {cell_to_mortgage}, raising ${mortgage_price}")
