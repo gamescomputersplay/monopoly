@@ -750,7 +750,7 @@ class Player:
                 if cell.has_hotel > 0:
                     max_raisable += cell.cost_house * 5 // 2
                 if not cell.is_mortgaged:
-                    max_raisable += cell.cost_base // 2
+                    max_raisable += int(cell.cost_base * GameSettings.mortgage_value)
             return max_raisable
 
         def transfer_all_properties(payee, board, log):
