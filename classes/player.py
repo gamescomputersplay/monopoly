@@ -51,17 +51,18 @@ class Player:
     def __str__(self):
         return self.name
 
-    def net_worth(self):
+    def net_worth(self, count_mortgaged_as_full_value=False):
         ''' Calculate player's net worth (cache + property + houses)
+        count_mortgaged_as_full_value determines if we consider property mortgaged status:
+        - True: count as full, for Income Tax calculation
+        - False: count partially, for net worth statistics
         '''
         net_worth = int(self.money)
 
         for cell in self.owned:
 
-            # This is against "classic rules", where mortgages property
-            # calculated as 100% for net worth
-            # But it doesn't make sense! So I use 1 - mortgage
-            if cell.is_mortgaged:
+            if cell.is_mortgaged and not count_mortgaged_as_full_value:
+                # Partially count mortgaged properties
                 net_worth += int(cell.cost_base * (1 - GameSettings.mortgage_value))
             else:
                 net_worth += cell.cost_base
@@ -447,7 +448,8 @@ class Player:
         # Choose smaller between fixed rate and percentage
         tax_to_pay = min(
             GameSettings.income_tax,
-            int(GameSettings.income_tax_percentage * self.net_worth()))
+            int(GameSettings.income_tax_percentage *
+            self.net_worth(count_mortgaged_as_full_value=True)))
 
         if tax_to_pay == GameSettings.income_tax:
             log.add(f"{self} pays fixed Income tax {GameSettings.income_tax}")
