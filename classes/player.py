@@ -616,28 +616,52 @@ class Player:
         sell houses, hotels, mortgage property until you get required_amount of money
         '''
 
-        def get_list_of_properties_to_deimprove():
-            ''' Put together a list of properties a player can sell houses from.
-            [(n_of_houses, cost_of_house, cell), ...]
-            List will be sorted to have less developed properties first
+        def get_next_property_to_deimprove(required_amount):
+            ''' Get the next property to sell houses/hotel from.
+            Logic goes as follows:
+            - if you can sell a house, sell a house (otherwise seel a hotel, if you have no choice)
+            - sell one that would bring you just above the required amount (or the most expensive)
             '''
-            list_of_hotels = []
-            for cell in self.owned:
-                if cell.has_hotel == 1:
-                    for i in range(1, 6):
-                        list_of_hotels.append((i, cell.cost_house // 2, cell))
-            list_of_houses = []
-            for cell in self.owned:
-                if cell.has_houses > 0:
-                    for i in range(1, cell.has_houses + 1):
-                        list_of_houses.append((i, cell.cost_house // 2, cell))
 
-            # It will be popped from the end, so first to sell should be last
-            # Selling order - first properties with only houses, then hotels
-            list_of_hotels.sort(key = lambda x: (x[0], x[1]))
-            list_of_houses.sort(key = lambda x: (x[0], x[1]))
-            list_to_deimprove = list_of_hotels + list_of_houses
-            return list_to_deimprove
+            # 1. let's see which properties CAN be de-improved
+            # The house/hotel count is the highest in the group
+            can_be_deimproved = []
+            can_be_deimproved_has_houses = False
+            for cell in self.owned:
+                if cell.has_houses > 0 or cell.has_hotel > 0:
+                    # Look at other cells in this group
+                    # Do they have more houses or hotels?
+                    # If so this property cannot be de-improved
+                    for other_cell in board.groups[cell.group]:
+                        if cell.has_hotel == 0 and (other_cell.has_houses > cell.has_houses or \
+                           other_cell.has_hotel > 0):
+                            break
+                    else:
+                        can_be_deimproved.append(cell)
+                        if cell.has_houses > 0:
+                            can_be_deimproved_has_houses = True
+
+            # No further de-improvements possible
+            if len(can_be_deimproved) == 0:
+                return None
+
+            # 2. If there are houses and hotels, remove hotels from the list
+            # Selling a hotel is a last resort
+            if can_be_deimproved_has_houses:
+                can_be_deimproved = [x for x in can_be_deimproved if x.has_hotel == 0]
+
+            # 3. Find one that's just above the required amount (or the most expensive one)
+            # Sort potential de-improvements from cheap to expensive
+            can_be_deimproved.sort(key = lambda x: x.cost_house // 2)
+            while True:
+                # Only one possible option left
+                if len(can_be_deimproved) == 1:
+                    return can_be_deimproved[0]
+                # Second expensive option is not enough, sell most expensive
+                if can_be_deimproved[-2].cost_house // 2 < required_amount:
+                    return can_be_deimproved[-1]
+                # Remove most expensive option
+                can_be_deimproved.pop()
 
         def get_list_of_properties_to_mortgage():
             ''' Put together a list of properties a player can sell houses from.
@@ -652,12 +676,19 @@ class Player:
             list_to_mortgage.sort(key = lambda x: -x[0])
             return list_to_mortgage
 
-        # Sell improvements
-        list_to_deimprove = get_list_of_properties_to_deimprove()
+        # Cycle through all possible de-improvements until
+        # all houses/hotels are sold or enough money is raised
+        while True:
+            money_to_raise = required_amount - self.money
+            cell_to_deimprove = get_next_property_to_deimprove(money_to_raise)
 
-        while list_to_deimprove and self.money < required_amount:
-            order, sell_price, cell_to_deimprove = list_to_deimprove.pop()
-            if order == 5:
+            if cell_to_deimprove is None or money_to_raise <= 0:
+                break
+
+            sell_price = cell_to_deimprove.cost_house // 2
+
+            # Selling a hotel
+            if cell_to_deimprove.has_hotel:
                 # Selling hotel: can replace with 4 houses
                 if board.available_houses >= 4:
                     cell_to_deimprove.has_hotel = 0
@@ -677,18 +708,18 @@ class Player:
                     log.add(f"{self} sells a hotel and all houses on {cell_to_deimprove}, " +
                             f"raising ${sell_price * 5}")
                     self.money += sell_price * 5
-                    # Recalculate the list of properties to sell, start over
-                    list_to_deimprove = get_list_of_properties_to_deimprove()
-                    continue
+
+            # Selling a house
             else:
                 cell_to_deimprove.has_houses -= 1
                 board.available_houses += 1
                 log.add(f"{self} sells a house on {cell_to_deimprove}, raising ${sell_price}")
                 self.money += sell_price
 
+
         # Mortgage properties
         list_to_mortgage = get_list_of_properties_to_mortgage()
-        
+
         while list_to_mortgage and self.money < required_amount:
             # Pick property to mortgage from the list
             mortgage_price, cell_to_mortgage = list_to_mortgage.pop()
@@ -752,7 +783,8 @@ class Player:
         max_raisable_money = count_max_raisable_money()
         # Can pay but need to sell some things first
         if amount < max_raisable_money:
-            log.add(f"{self} can pay ${amount}, but needs to mortgage/sell some things for that")
+            log.add(f"{self} has ${self.money}, he can pay ${amount}, " +
+                    "but needs to mortgage/sell some things for that")
             self.raise_money(amount, board, log)
             self.money -= amount
             if payee != "bank":
