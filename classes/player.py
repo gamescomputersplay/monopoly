@@ -62,7 +62,7 @@ class Player:
             # calculated as 100% for net worth
             # But it doesn't make sense! So I use 1 - mortgage
             if cell.is_mortgaged:
-                net_worth += cell.cost_base * (1 - GameSettings.mortgage_value)
+                net_worth += int(cell.cost_base * (1 - GameSettings.mortgage_value))
             else:
                 net_worth += cell.cost_base
                 net_worth += (cell.has_houses + cell.has_hotel) * cell.cost_house
@@ -82,7 +82,8 @@ class Player:
         if self.is_bankrupt:
             return None
 
-        log.add(f"=== Player {self.name}'s move ===")
+        log.add(f"=== Player {self.name} (${self.money}, " +
+                f"at {board.cells[self.position].name}) goes: ===")
 
 
         # Things to do before the throwing of the dice:
@@ -573,10 +574,10 @@ class Player:
             if cell_to_improve.has_houses != 4 and board.available_houses > 0:
                 cell_to_improve.has_houses += 1
                 board.available_houses -= 1
-                log.add(f"{self} built {ordinal[cell_to_improve.has_houses]} " +
-                        f"house on {cell_to_improve}")
                 # Paying for the improvement
                 self.money -= cell_to_improve.cost_house
+                log.add(f"{self} built {ordinal[cell_to_improve.has_houses]} " +
+                        f"house on {cell_to_improve} for ${cell_to_improve.cost_house}")
 
             # Building a hotel
             elif cell_to_improve.has_houses == 4 and board.available_hotels > 0:
@@ -593,7 +594,7 @@ class Player:
     def unmortgage_a_property(self, board, log):
         ''' Go through the list of properties and unmortgage one,
         if there is enough money to do so. Return True, if any unmortgaging
-        took p;lace (to call it again)
+        took place (to call it again)
         '''
 
         for cell in self.owned:
@@ -713,7 +714,9 @@ class Player:
             else:
                 cell_to_deimprove.has_houses -= 1
                 board.available_houses += 1
-                log.add(f"{self} sells a house on {cell_to_deimprove}, raising ${sell_price}")
+                ordinal = {1: "1st", 2: "2nd", 3: "3rd", 4:"4th"}
+                log.add(f"{self} sells {ordinal[cell_to_deimprove.has_houses + 1]} " +
+                        f"house on {cell_to_deimprove}, raising ${sell_price}")
                 self.money += sell_price
 
 
@@ -992,11 +995,13 @@ class Player:
                             f"from {other_player}")
 
                     if price_difference > 0:
-                        log.add(f"{self} receive from {other_player} " +
-                                f"price difference compensation {abs(price_difference)}")
+                        log.add(f"{self} received " +
+                                f"price difference compensation ${abs(price_difference)} " + 
+                                f"from {other_player}")
                     if price_difference < 0:
-                        log.add(f"{other_player} receive from {self} " +
-                                f"price difference compensation {abs(price_difference)}")
+                        log.add(f"{other_player} received " +
+                                f"price difference compensation ${abs(price_difference)} " +
+                                f"from {self}")
 
                     # Recalculate monopoly and improvement status
                     board.recalculate_monopoly_coeffs(player_gives[0])
