@@ -546,25 +546,46 @@ class Player:
         keep building houses/hotels
         '''
 
-        def get_list_of_properties_to_improve():
-            ''' Put together a list of properties a player wants to improve, in order.
-            Properties will appear several times, once for each house/hotel that can be built.
+        def get_next_property_to_improve():
+            ''' Decide what is the next property to improve:
+            - it should be eligible for improvement (is monopoly, not mortgaged,
+            has not more houses than other cells in the group)
+            - start with cheapest
             '''
-            list_to_improve = []
+            can_be_improved = []
             for cell in self.owned:
-                if cell.can_be_improved:
-                    # Number available to build houses from cell.has_houses + 1 to 5
-                    for i in range(cell.has_houses + 1, 6):
-                        list_to_improve.append((i, cell.cost_house, cell))
-            # It will be popped from the end, so first to build should be last
-            # in the list (most developed)
-            list_to_improve.sort(key = lambda x: (x[0], -x[1]))
-            return list_to_improve
+                # Property has to be:
+                # - not maxed out (no hotel)
+                # - not mortgaged
+                # - a part of monopoly, but not railway or utility (so the monopoly_coef is 2)
+                if cell.has_hotel == 0 and not cell.is_mortgaged and cell.monopoly_coef == 2:
+                    # Look at other cells in this group
+                    # If they have fewer houses, this cell can not be improved
+                    # If any cells in the group is mortgaged, this cell can not be improved
+                    for other_cell in board.groups[cell.group]:
+                        if other_cell.has_houses < cell.has_houses or other_cell.is_mortgaged:
+                            break
+                    else:
+                        # Make sure there are available houses/hotel for this improvement
+                        if cell.has_houses != 4 and board.available_houses > 0 or \
+                           cell.has_houses == 4 and board.available_hotels > 0:
+                            can_be_improved.append(cell)
+            # Sort the list by the cost of house
+            can_be_improved.sort(key = lambda x: x.cost_house)
 
-        list_to_improve = get_list_of_properties_to_improve()
-        while list_to_improve:
+            # Return first (the cheapest) property that can be improved
+            if can_be_improved:
+                return can_be_improved[0]
+            return None
 
-            _, improvement_cost, cell_to_improve = list_to_improve.pop()
+        while True:
+            cell_to_improve = get_next_property_to_improve()
+
+            # Nothing to improve anymore
+            if cell_to_improve is None:
+                break
+
+            improvement_cost = cell_to_improve.cost_house
 
             # Don't do it if you don't have money to spend
             if self.money - improvement_cost < self.settings.unspendable_cash:
@@ -573,7 +594,7 @@ class Player:
             # Building a house
             ordinal = {1: "1st", 2: "2nd", 3: "3rd", 4:"4th"}
 
-            if cell_to_improve.has_houses != 4 and board.available_houses > 0:
+            if cell_to_improve.has_houses != 4:
                 cell_to_improve.has_houses += 1
                 board.available_houses -= 1
                 # Paying for the improvement
@@ -582,7 +603,7 @@ class Player:
                         f"house on {cell_to_improve} for ${cell_to_improve.cost_house}")
 
             # Building a hotel
-            elif cell_to_improve.has_houses == 4 and board.available_hotels > 0:
+            elif cell_to_improve.has_houses == 4:
                 cell_to_improve.has_houses = 0
                 cell_to_improve.has_hotel = 1
                 board.available_houses += 4
