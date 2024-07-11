@@ -328,18 +328,15 @@ class Board:
     def recalculate_monopoly_coeffs(self, changed_cell):
         ''' Go through all properties in the property group and update flags:
         - monopoly_coeff
-        - can_be_improved
-        Would be run every time, when property ownership / number of buildings change.
+        Would be run every time, when property ownership.
         '''
 
         # Create and populate list of owners for this group
         owners = []
 
-        has_mortgages = False
+        # To check if this is a monopoly, we need to know how many owners are there in a group
         for cell in self.groups[changed_cell.group]:
             owners.append(cell.owner)
-            if cell.is_mortgaged:
-                has_mortgages = True
 
         # Update monopoly_coeff
         for cell in self.groups[changed_cell.group]:
@@ -359,14 +356,11 @@ class Board:
                 else:
                     cell.monopoly_coef = 4
 
-            # For all other properties it is 1 or 2
+            # For all other properties it is 2 (monopoly) or 1 (no monopoly)
+            # It is a monopoly if player owns as many properties as there are in the group
+            elif ownership_count == len(self.groups[changed_cell.group]):
+                cell.monopoly_coef = 2
             else:
-
-                # This is a monopoly (owner owns all properties of this color)
-                if ownership_count == len(self.groups[changed_cell.group]):
-                    # Rent coefficient for unimproved cells is 2
-                    cell.monopoly_coef = 2
-                else:
-                    cell.monopoly_coef = 1
+                cell.monopoly_coef = 1
 
         return

@@ -627,7 +627,6 @@ class Player:
                     log.add(f"{self} unmortgages {cell} for ${cost_to_unmortgage}")
                     self.money -= cost_to_unmortgage
                     cell.is_mortgaged = False
-                    board.recalculate_monopoly_coeffs(cell)
                     self.update_lists_of_properties_to_trade(board)
                     return True
 
@@ -749,7 +748,6 @@ class Player:
             # Mortgage this property
             cell_to_mortgage.is_mortgaged = True
             self.money += mortgage_price
-            board.recalculate_monopoly_coeffs(cell_to_mortgage)
             log.add(f"{self} mortgages {cell_to_mortgage}, raising ${mortgage_price}")
 
     def pay_money(self, amount, payee, board, log):
