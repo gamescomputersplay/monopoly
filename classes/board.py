@@ -75,10 +75,6 @@ class Property(Cell):
         # 1/2/4/8 for railways, 4/10 for utilities)
         self.monopoly_coef = 1
 
-        # Flag that indicates that a property can be built on
-        # (it is a monopoly, not mortgaged, has no hotel)
-        self.can_be_improved = False
-
         # Number of houses/hotel on the property
         self.has_houses = 0
         self.has_hotel = 0
@@ -327,8 +323,7 @@ class Board:
             # Log property name, owner, rent coefficient, improvements:
             # G1 Pacific Avenue, Owner: Exp, Rent coef: 2, Can improve: False, Improvements: hotel
             log.add(f"- {cell.name}, Owner: {cell.owner}, " +
-                    f"Rent coef: {cell.monopoly_coef}, Can improve: {cell.can_be_improved}, " +
-                    f"Improvements: {improvements}")
+                    f"Rent coef: {cell.monopoly_coef}, Improvements: {improvements}")
 
     def recalculate_monopoly_coeffs(self, changed_cell):
         ''' Go through all properties in the property group and update flags:
@@ -366,17 +361,11 @@ class Board:
 
             # For all other properties it is 1 or 2
             else:
-                # Reset "can improve" flag
-                cell.can_be_improved = False
 
                 # This is a monopoly (owner owns all properties of this color)
                 if ownership_count == len(self.groups[changed_cell.group]):
                     # Rent coefficient for unimproved cells is 2
                     cell.monopoly_coef = 2
-                    # And, unless it already has a hotel, it can be improved
-                    # And unless one of the properties of this group is mortgaged
-                    if cell.has_hotel == 0 and not has_mortgages:
-                        cell.can_be_improved = True
                 else:
                     cell.monopoly_coef = 1
 

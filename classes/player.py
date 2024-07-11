@@ -611,8 +611,6 @@ class Player:
                 # Paying for the improvement
                 self.money -= cell_to_improve.cost_house
                 log.add(f"{self} built a hotel on {cell_to_improve}")
-                # Should not be improved beyond hotel
-                cell_to_improve.can_be_improved = False
 
     def unmortgage_a_property(self, board, log):
         ''' Go through the list of properties and unmortgage one,
@@ -719,7 +717,6 @@ class Player:
                     cell_to_deimprove.has_houses = 4
                     board.available_hotels += 1
                     board.available_houses -= 4
-                    cell_to_deimprove.can_be_improved = True
                     log.add(f"{self} sells a hotel on {cell_to_deimprove}, raising ${sell_price}")
                     self.money += sell_price
                 # Selling hotel, must tear down all 5 houses from one plot
@@ -728,7 +725,6 @@ class Player:
                     cell_to_deimprove.has_hotel = 0
                     cell_to_deimprove.has_houses = 0
                     board.available_hotels += 1
-                    cell_to_deimprove.can_be_improved = True
                     log.add(f"{self} sells a hotel and all houses on {cell_to_deimprove}, " +
                             f"raising ${sell_price * 5}")
                     self.money += sell_price * 5
