@@ -75,7 +75,7 @@ class GameSettings():
     # Initial money (a single integer if it is same
     # for everybody or a list of values for individual values)
     starting_money = 1500
-    # starting_money = [1370, 1460, 1540, 1630]
+    # starting_money = [1415, 1470, 1530, 1585]
 
     # Houses and hotel available for development
     available_houses = 36
