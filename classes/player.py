@@ -1,15 +1,15 @@
-''' Player Class
-'''
+""" Player Class
+"""
 
 from classes.board import Property, GoToJail, LuxuryTax, IncomeTax
 from classes.board import FreeParking, Chance, CommunityChest
 from settings import GameSettings
 
 class Player:
-    ''' Class to contain player-replated into and actions:
+    """ Class to contain player-related into and actions:
     - money, position, owned property
     - actions to buy property of handle Chance cards etc
-    '''
+    """
 
     def __init__(self, name, settings):
 
@@ -52,11 +52,11 @@ class Player:
         return self.name
 
     def net_worth(self, count_mortgaged_as_full_value=False):
-        ''' Calculate player's net worth (cache + property + houses)
+        """ Calculate player's net worth (cache + property + houses)
         count_mortgaged_as_full_value determines if we consider property mortgaged status:
         - True: count as full, for Income Tax calculation
         - False: count partially, for net worth statistics
-        '''
+        """
         net_worth = int(self.money)
 
         for cell in self.owned:
@@ -71,13 +71,13 @@ class Player:
         return net_worth
 
     def make_a_move(self, board, players, dice, log):
-        ''' Main function for a player to make a move
+        """ Main function for a player to make a move
         Receives:
         - a board, with all cells and other things
         - other players (in case we need to make transactions with them)
         - dice (to roll)
         - log handle
-        '''
+        """
 
         # Is player is bankrupt - do nothing
         if self.is_bankrupt:
@@ -189,14 +189,14 @@ class Player:
 
 
     def handle_salary(self, board, log):
-        ''' Adding Salary to the player's money, according to the game's settings
-        '''
+        """ Adding Salary to the player's money, according to the game's settings
+        """
         self.money += board.settings.salary
         log.add(f"Player {self.name} receives salary ${board.settings.salary}")
 
     def handle_going_to_jail(self, message, log):
-        ''' Start the jail time
-        '''
+        """ Start the jail time
+        """
         log.add(f"{self} {message}, and goes to Jail.")
         self.position = 10
         self.in_jail = True
@@ -205,9 +205,9 @@ class Player:
 
 
     def handle_being_in_jail(self, dice_roll_is_double, board, log):
-        ''' Handle player being in Jail
+        """ Handle player being in Jail
         Return True if the player stays in jail (to end his turn)
-        '''
+        """
         # Get out of jail on rolling double
         if self.get_out_of_jail_chance or self.get_out_of_jail_comm_chest:
             log.add(f"{self} uses a GOOJF card")
@@ -242,9 +242,9 @@ class Player:
 
 
     def handle_chance(self, board, players, log):
-        ''' Draw and act on a Chance card
+        """ Draw and act on a Chance card
         Return True if the move should be over (go to jail)
-        '''
+        """
         card = board.chance.draw()
         log.add(f"{self} drew Chance card: '{card}'")
 
@@ -353,9 +353,9 @@ class Player:
 
 
     def handle_community_chest(self, board, players, log):
-        ''' Draw and act on a Community Chest card
+        """ Draw and act on a Community Chest card
         Return True if the move should be over (go to jail)
-        '''
+        """
 
         card = board.chest.draw()
         log.add(f"{self} drew Community Chest card: '{card}'")
@@ -442,9 +442,9 @@ class Player:
 
 
     def handle_income_tax(self, board, log):
-        ''' Handle Income tax: choose which option
+        """ Handle Income tax: choose which option
         (fix or %) is less money and go with it
-        '''
+        """
         # Choose smaller between fixed rate and percentage
         tax_to_pay = min(
             GameSettings.income_tax,
@@ -460,12 +460,12 @@ class Player:
 
 
     def handle_landing_on_property(self, board, players, dice, log):
-        ''' Landing on property: either buy it or pay rent
-        '''
+        """ Landing on property: either buy it or pay rent
+        """
 
         def is_willing_to_buy_property(property_to_buy):
-            ''' Check if the player is willing to buy an unowned property
-            '''
+            """ Check if the player is willing to buy an unowned property
+            """
             # Player has money lower than unspendable minimum
             if self.money - property_to_buy.cost_base < self.settings.unspendable_cash:
                 return False
@@ -484,8 +484,8 @@ class Player:
             return True
 
         def buy_property(property_to_buy):
-            ''' Player buys the property
-            '''
+            """ Player buys the property
+            """
             property_to_buy.owner = self
             self.owned.append(property_to_buy)
             self.money -= property_to_buy.cost_base
@@ -542,16 +542,16 @@ class Player:
 
 
     def improve_properties(self, board, log):
-        ''' While there is money to spend and properties to improve,
+        """ While there is money to spend and properties to improve,
         keep building houses/hotels
-        '''
+        """
 
         def get_next_property_to_improve():
-            ''' Decide what is the next property to improve:
+            """ Decide what is the next property to improve:
             - it should be eligible for improvement (is monopoly, not mortgaged,
             has not more houses than other cells in the group)
             - start with cheapest
-            '''
+            """
             can_be_improved = []
             for cell in self.owned:
                 # Property has to be:
@@ -613,10 +613,10 @@ class Player:
                 log.add(f"{self} built a hotel on {cell_to_improve}")
 
     def unmortgage_a_property(self, board, log):
-        ''' Go through the list of properties and unmortgage one,
+        """ Go through the list of properties and unmortgage one,
         if there is enough money to do so. Return True, if any unmortgaging
         took place (to call it again)
-        '''
+        """
 
         for cell in self.owned:
             if cell.is_mortgaged:
@@ -633,60 +633,59 @@ class Player:
         return False
 
     def raise_money(self, required_amount, board, log):
-        ''' Part of "Pay money" method. If there is not enough cash, player has to 
+        """ Part of "Pay money" method. If there is not enough cash, player has to
         sell houses, hotels, mortgage property until you get required_amount of money
-        '''
+        """
 
-        def get_next_property_to_deimprove(required_amount):
-            ''' Get the next property to sell houses/hotel from.
+        def get_next_property_to_downgrade(required_amount):
+            """ Get the next property to sell houses/hotel from.
             Logic goes as follows:
             - if you can sell a house, sell a house (otherwise seel a hotel, if you have no choice)
             - sell one that would bring you just above the required amount (or the most expensive)
-            '''
+            """
 
             # 1. let's see which properties CAN be de-improved
             # The house/hotel count is the highest in the group
-            can_be_deimproved = []
-            can_be_deimproved_has_houses = False
+            can_be_downgrade = []
+            can_be_downgrade_has_houses = False
             for cell in self.owned:
                 if cell.has_houses > 0 or cell.has_hotel > 0:
                     # Look at other cells in this group
                     # Do they have more houses or hotels?
                     # If so this property cannot be de-improved
                     for other_cell in board.groups[cell.group]:
-                        if cell.has_hotel == 0 and (other_cell.has_houses > cell.has_houses or \
-                           other_cell.has_hotel > 0):
+                        if cell.has_hotel == 0 and (other_cell.has_houses > cell.has_houses or other_cell.has_hotel > 0):
                             break
                     else:
-                        can_be_deimproved.append(cell)
+                        can_be_downgrade.append(cell)
                         if cell.has_houses > 0:
-                            can_be_deimproved_has_houses = True
+                            can_be_downgrade_has_houses = True
 
             # No further de-improvements possible
-            if len(can_be_deimproved) == 0:
+            if len(can_be_downgrade) == 0:
                 return None
 
             # 2. If there are houses and hotels, remove hotels from the list
             # Selling a hotel is a last resort
-            if can_be_deimproved_has_houses:
-                can_be_deimproved = [x for x in can_be_deimproved if x.has_hotel == 0]
+            if can_be_downgrade_has_houses:
+                can_be_downgrade = [x for x in can_be_downgrade if x.has_hotel == 0]
 
             # 3. Find one that's just above the required amount (or the most expensive one)
             # Sort potential de-improvements from cheap to expensive
-            can_be_deimproved.sort(key = lambda x: x.cost_house // 2)
+            can_be_downgrade.sort(key = lambda x: x.cost_house // 2)
             while True:
                 # Only one possible option left
-                if len(can_be_deimproved) == 1:
-                    return can_be_deimproved[0]
+                if len(can_be_downgrade) == 1:
+                    return can_be_downgrade[0]
                 # Second expensive option is not enough, sell most expensive
-                if can_be_deimproved[-2].cost_house // 2 < required_amount:
-                    return can_be_deimproved[-1]
+                if can_be_downgrade[-2].cost_house // 2 < required_amount:
+                    return can_be_downgrade[-1]
                 # Remove most expensive option
-                can_be_deimproved.pop()
+                can_be_downgrade.pop()
 
         def get_list_of_properties_to_mortgage():
-            ''' Put together a list of properties a player can sell houses from.
-            '''
+            """ Put together a list of properties a player can sell houses from.
+            """
             list_to_mortgage = []
             for cell in self.owned:
                 if not cell.is_mortgaged:
@@ -701,7 +700,7 @@ class Player:
         # all houses/hotels are sold or enough money is raised
         while True:
             money_to_raise = required_amount - self.money
-            cell_to_deimprove = get_next_property_to_deimprove(money_to_raise)
+            cell_to_deimprove = get_next_property_to_downgrade(money_to_raise)
 
             if cell_to_deimprove is None or money_to_raise <= 0:
                 break
@@ -751,15 +750,15 @@ class Player:
             log.add(f"{self} mortgages {cell_to_mortgage}, raising ${mortgage_price}")
 
     def pay_money(self, amount, payee, board, log):
-        ''' Function to pay money to another player (or bank)
+        """ Function to pay money to another player (or bank)
         This is where Bankruptcy is triggered.
-        '''
+        """
 
         def count_max_raisable_money():
-            ''' How much cash a plyer can produce?
+            """ How much cash a plyer can produce?
             Used to determine if they should go bankrupt or not.
             Max raisable money are 1/2 of houses cost + 1/2 of unmortgaged properties cost
-            '''
+            """
             max_raisable = self.money
             for cell in self.owned:
                 if cell.has_houses > 0:
@@ -771,8 +770,8 @@ class Player:
             return max_raisable
 
         def transfer_all_properties(payee, board, log):
-            ''' Part of bankruptcy procedure, transfer all mortgaged property to the creditor
-            '''
+            """ Part of bankruptcy procedure, transfer all mortgaged property to the creditor
+            """
 
             while self.owned:
                 cell_to_transfer = self.owned.pop()
@@ -813,7 +812,7 @@ class Player:
                 board.free_parking_money += amount
 
 
-        # Bunkruptcy (can't pay even after selling and mortgaging all)
+        # Bankruptcy (can't pay even after selling and mortgaging all)
         else:
             log.add(f"{self} has to pay ${amount}, max they can raise is ${max_raisable_money}")
             self.is_bankrupt = True
@@ -837,11 +836,11 @@ class Player:
             self.wants_to_buy = set()
 
     def update_lists_of_properties_to_trade(self, board):
-        ''' Update list of properties player is willing to sell / buy
-        '''
+        """ Update list of properties player is willing to sell / buy
+        """
 
         # If player is not willing to trade, he would
-        # have not declare his offered and desired properties,
+        # have not declared his offered and desired properties,
         # thus stopping any trade with them
         if not self.settings.participates_in_trades:
             return
@@ -866,7 +865,7 @@ class Player:
                 else:
                     owned_by_others.append(cell)
 
-            # If there properties to buy - no trades
+            # If there are properties to buy - no trades
             if not_owned:
                 continue
             # If I own 1: I am ready to sell it
@@ -878,15 +877,15 @@ class Player:
 
 
     def do_a_two_way_trade(self, players, board, log):
-        ''' Look for and perform a two-way trade
-        '''
+        """ Look for and perform a two-way trade
+        """
 
         def get_price_difference(gives, receives):
-            ''' Calculate price difference between items player
+            """ Calculate price difference between items player
             is about to give minus what he is about to receive.
             >0 means player gives away more
             Return both absolute (in $), relative for a giver, relative for a receiver
-            '''
+            """
 
             cost_gives = sum(cell.cost_base for cell in gives)
             cost_receives = sum(cell.cost_base for cell in receives)
@@ -906,8 +905,8 @@ class Player:
             return new_cells
 
         def fair_deal(player_gives, player_receives, other_player):
-            ''' Remove properties from to_sell and to_buy to make it as fair as possible
-            '''
+            """ Remove properties from to_sell and to_buy to make it as fair as possible
+            """
 
             # First, get all colors in both sides of the deal
             color_receives = [cell.group for cell in player_receives]

@@ -1,6 +1,8 @@
-''' Function, that wraps one game of monopoly:
-from setting up boards, players etc to making moves by all players
-'''
+""" Function, that wraps one game of monopoly:
+1. setting up the board,
+2. players
+3. making moves by all players
+"""
 
 from settings import SimulationSettings, GameSettings, LogSettings
 
@@ -12,12 +14,12 @@ from classes.log import Log
 
 
 def monopoly_game(data_for_simulation):
-    ''' Simulation of one game.
+    """ Simulation of one game.
     For convenience to set up a multi-thread,
     parameters are packed into a tuple: (game_number, game_seed):
     - "game number" is here to print out in the game log
     - "game_seed" to initialize random generator for the game
-    '''
+    """
     game_number, game_seed = data_for_simulation
 
     # Initialize game log
@@ -30,7 +32,7 @@ def monopoly_game(data_for_simulation):
     # Initialize data log
     datalog = Log(LogSettings.data_log_file)
 
-    # Initialize the board (plots, chance, community chest etc)
+    # Initialize the board (plots, chance, community chest etc.)
     board = Board(GameSettings)
 
     # Set up dice (it creates a separate random generator with initial "game_seed",

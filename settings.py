@@ -1,10 +1,7 @@
-''' Config file for monopoly simulation
-'''
+""" Config file for monopoly simulation
+"""
 
-class SimulationSettings():
-    ''' Simulation settings
-    '''
-
+class SimulationSettings:
     # Number of moves to simulate
     # (if there are more than one player alive after then,
     # the game is considered to have no winner)
@@ -20,22 +17,18 @@ class SimulationSettings():
     multi_process = 4
 
 class LogSettings:
-    ''' Settings for logging
-    '''
     # Detailed log about all that is going on in th game:
-    # movements, purchases, rent, cards, etc
+    # movements, purchases, rent, cards, etc.
     # Note that it takes about 5Mb per one 1000-turn game.
     # Might want to turn it off for large simulations
     keep_game_log = True
     game_log_file = "gamelog.txt"
 
-    # Log that keeps information about on which turn which player went bunkrupt
+    # Log that keeps information about on which turn which player went bankrupt
     # Base info for all simulation analysis
     data_log_file = "datalog.txt"
 
-class StandardPlayer:
-    ''' Settings for a Standard Player
-    '''
+class StandardPlayerSetting:
     # Amount of money player wants to keep unspent (money safety pillow)
     unspendable_cash = 200
 
@@ -50,23 +43,23 @@ class StandardPlayer:
     trade_max_diff_abs = 200 # More expensive - less expensive
     trade_max_diff_rel = 2 # More expensive / less expensive
 
-class ExperimentPlayer(StandardPlayer):
-    ''' Changed settings for the Experiment Player
-    '''
+class ExperimentPlayerSetting(StandardPlayerSetting):
+    """ Changed settings for the Experiment Player
+    """
 
-class GameSettings():
-    ''' Setting for the game (rules + player list)
-    '''
+class GameSettings:
+    """ Setting for the game (rules + player list)
+    """
     # Dice settings
     dice_count = 2
     dice_sides = 6
 
     # Players and their behavior settings
     players_list = [
-        ("Experiment", ExperimentPlayer),
-        ("Standard 1", StandardPlayer),
-        ("Standard 2", StandardPlayer),
-        ("Standard 3", StandardPlayer),
+        ("Experiment", ExperimentPlayerSetting),
+        ("Standard 1", StandardPlayerSetting),
+        ("Standard 2", StandardPlayerSetting),
+        ("Standard 3", StandardPlayerSetting),
     ]
 
     # Randomly shuffle order of players each game
@@ -93,7 +86,7 @@ class GameSettings():
     income_tax = 200
     income_tax_percentage = .1
 
-    # Mortgage value: how much cash player get's for mortgaging a property
+    # Mortgage value: how much cash player gets for mortgaging a property
     # Default is 0.5
     mortgage_value = 0.5
     # Mortgage fee is an extra they need to pay to unmortgage

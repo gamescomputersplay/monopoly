@@ -1,11 +1,12 @@
-''' Class to hold board information.
+""" Class to hold board information.
 That includes:
     - Properties
-    - Special cells (Go, Jail, etc)
+    - Special cells (Go, Jail, etc.)
     - Decks (Chance, Community Chest)
-'''
+"""
 
 from settings import GameSettings
+
 
 class Cell:
     """ Cell Class, base for other classes
@@ -17,40 +18,46 @@ class Cell:
     def __str__(self):
         return self.name
 
+
 class GoToJail(Cell):
-    ''' Class for Go To Jail cell
+    """ Class for Go To Jail cell
     not much going on here
-    '''
+    """
+
 
 class LuxuryTax(Cell):
-    ''' Class for LuxuryTax
-    '''
+    """ Class for LuxuryTax
+    """
+
 
 class IncomeTax(Cell):
-    ''' Class for IncomeTax
-    '''
+    """ Class for IncomeTax
+    """
+
 
 class FreeParking(Cell):
-    ''' Class for IncomeTax
-    '''
+    """ Class for Free Parking """
+
 
 class Chance(Cell):
-    ''' Class for Chance
-    '''
+    """ Class for Chance
+    """
+
 
 class CommunityChest(Cell):
-    ''' Class for Community Chest
-    '''
+    """ Class for Community Chest
+    """
+
 
 class Property(Cell):
-    ''' Property Class (for Properties, Rails, Utilities)
-    '''
+    """ Property Class (for Properties, Rails, Utilities)
+    """
 
     def __init__(self, name, cost_base, rent_base, cost_house, rent_house, group):
-        '''
+        """
         Example of parameters for a property:
         "B2 Vermont Avenue", 100, 6, 50, (30, 90, 270, 400, 550), "Lightblue"
-        '''
+        """
         super().__init__(name)
 
         # Initial parameters (usually found on a property card):
@@ -79,11 +86,10 @@ class Property(Cell):
         self.has_houses = 0
         self.has_hotel = 0
 
-
     def calculate_rent(self, dice):
-        ''' Calculate the rent amount for this property, including monopoly, houses etc.
+        """ Calculate the rent amount for this property, including monopoly, houses etc.
         dice are used to calculate rent for utilities
-        '''
+        """
         # There is a hotel on this property
         if self.has_hotel == 1:
             return self.rent_house[-1]
@@ -101,9 +107,11 @@ class Property(Cell):
         _, dice_points, _ = dice.cast()
         return dice_points * self.monopoly_coef
 
+
 class Deck:
-    ''' Parent for Community Chest and Chance cards
-    '''
+    """ Parent for Community Chest and Chance cards
+    """
+
     def __init__(self, cards):
         # List of cards
         self.cards = cards
@@ -111,10 +119,10 @@ class Deck:
         self.pointer = 0
 
     def draw(self):
-        ''' Draw one card from the deck, and put it underneath.
+        """ Draw one card from the deck, and put it underneath.
         Actually, we don't manipulate cards, just shuffle them once
         and then just move the pointer through the deck.
-        '''
+        """
         drawn_card = self.cards[self.pointer]
         self.pointer += 1
         if self.pointer == len(self.cards):
@@ -122,26 +130,27 @@ class Deck:
         return drawn_card
 
     def remove(self, card_to_remove):
-        ''' Remove a card (used for GOOJF card)
-        '''
+        """ Remove a card (used for GOOJF card)
+        """
         self.cards.remove(card_to_remove)
         # Make sure the pointer is still okay
         if self.pointer == len(self.cards):
             self.pointer = 0
 
     def add(self, card_to_add):
-        ''' Add card (to put removed GOOJF card back in)
-        '''
+        """ Add card (to put removed GOOJF card back in)
+        """
         self.cards.insert(self.pointer - 1, card_to_add)
 
+
 class Board:
-    ''' Class collecting board related information:
+    """ Class collecting board related information:
     properties and their owners, build houses, etc
-    '''
+    """
 
     def __init__(self, settings):
-        ''' Initialize board configuration: properties, special cells etc
-        '''
+        """ Initialize board configuration: properties, special cells etc
+        """
         # Keep a copy of game settings (to use in in-game calculations)
         self.settings = settings
 
@@ -165,12 +174,12 @@ class Board:
         self.cells.append(Property(
             "B2 Vermont Avenue", 100, 6, 50, (30, 90, 270, 400, 550), "Lightblue"))
         self.cells.append(Property(
-            "B3 Connecticut Avenue",120,8,50,(40, 100, 300, 450, 600),"Lightblue"))
+            "B3 Connecticut Avenue", 120, 8, 50, (40, 100, 300, 450, 600), "Lightblue"))
 
         # 10-14
         self.cells.append(Cell("JL Jail"))
         self.cells.append(Property(
-            "C1 St.Charle's Place", 140, 10, 100, (50, 150, 450, 625, 750), "Pink"))
+            "C1 St. Charles Place", 140, 10, 100, (50, 150, 450, 625, 750), "Pink"))
         self.cells.append(Property(
             "U1 Electric Company", 150, 0, 0, (0, 0, 0, 0, 0), "Utilities"))
         self.cells.append(Property(
@@ -201,15 +210,15 @@ class Board:
 
         # 25-29
         self.cells.append(Property(
-            "R3 BnO Railroad", 200, 25, 0, (0, 0, 0, 0, 0), "Railroads"))
+            "R3 B&O Railroad", 200, 25, 0, (0, 0, 0, 0, 0), "Railroads"))
         self.cells.append(Property(
             "F1 Atlantic Avenue", 260, 22, 150, (110, 330, 800, 975, 1150), "Yellow"))
         self.cells.append(Property(
-            "F2 Ventinor Avenue", 260, 22, 150, (110, 330, 800, 975, 1150), "Yellow"))
+            "F2 Ventnor Avenue", 260, 22, 150, (110, 330, 800, 975, 1150), "Yellow"))
         self.cells.append(Property(
             "U2 Waterworks", 150, 0, 0, (0, 0, 0, 0, 0), "Utilities"))
         self.cells.append(Property(
-            "F3 Martin Gardens", 280, 24, 150, (120, 360, 850, 1025, 1200), "Yellow"))
+            "F3 Marvin Gardens", 280, 24, 150, (120, 360, 850, 1025, 1200), "Yellow"))
 
         # 30-34
         self.cells.append(GoToJail("GTJ Go To Jail"))
@@ -248,17 +257,17 @@ class Board:
             "Advance to Illinois Avenue. If you pass Go, collect $200",
             "Advance to St. Charles Place. If you pass Go, collect $200",
             "Advance to the nearest Railroad. If owned, pay owner twice " + \
-                "the rental to which they are otherwise entitled",
+            "the rental to which they are otherwise entitled",
             "Advance to the nearest Railroad. If owned, pay owner twice " + \
-                "the rental to which they are otherwise entitled",
+            "the rental to which they are otherwise entitled",
             "Advance token to nearest Utility. " + \
-                "If owned, throw dice and pay owner a total ten times amount thrown.",
+            "If owned, throw dice and pay owner a total ten times amount thrown.",
             "Bank pays you dividend of $50",
             "Get Out of Jail Free",
             "Go Back 3 Spaces",
             "Go to Jail. Go directly to Jail, do not pass Go, do not collect $200",
             "Make general repairs on all your property. For each house pay $25. " + \
-                "For each hotel pay $100",
+            "For each hotel pay $100",
             "Speeding fine $15",
             "Take a trip to Reading Railroad. If you pass Go, collect $200",
             "You have been elected Chairman of the Board. Pay each player $50",
@@ -286,11 +295,11 @@ class Board:
         ])
 
     def create_property_groups(self):
-        ''' self.groups is a convenient way to group cells by color/type,
+        """ self.groups is a convenient way to group cells by color/type,
         so we don't have to check all properties on the board, to, for example,
         update their monopoly status.
         This function populate self.groups with all properties
-        '''
+        """
         groups = {}
         for cell in self.cells:
             if not isinstance(cell, Property):
@@ -301,16 +310,16 @@ class Board:
         return groups
 
     def log_board_state(self, log):
-        ''' Log current state of the houses/hotels, free parking money
-        '''
+        """ Log current state of the houses/hotels, free parking money
+        """
         log.add(f"Available houses/hotels: {self.available_houses}/{self.available_hotels}")
         if GameSettings.free_parking_money:
             log.add(f"Free Parking Money: ${self.free_parking_money}")
 
     def log_current_map(self, log):
-        ''' Log current situation on the board,
+        """ Log current situation on the board,
         who owns what, monopolies, improvements, etc
-        '''
+        """
         log.add("\n== BOARD ==")
         for cell in self.cells:
             if not isinstance(cell, Property):
@@ -326,10 +335,10 @@ class Board:
                     f"Rent coef: {cell.monopoly_coef}, Improvements: {improvements}")
 
     def recalculate_monopoly_coeffs(self, changed_cell):
-        ''' Go through all properties in the property group and update flags:
+        """ Go through all properties in the property group and update flags:
         - monopoly_coeff
         Would be run every time, when property ownership.
-        '''
+        """
 
         # Create and populate list of owners for this group
         owners = []
@@ -345,11 +354,11 @@ class Board:
             # in a group owner of this cell has
             ownership_count = owners.count(cell.owner)
 
-            # For railroad it is 1/2/4/8 (or 2**(n-1))
+            # For railroad, it is 1/2/4/8 (or 2**(n-1))
             if cell.group == "Railroads":
                 cell.monopoly_coef = 2 ** (ownership_count - 1)
 
-            # For Utilities it is either 4 or 10
+            # For Utilities, it is either 4 or 10
             elif cell.group == "Utilities":
                 if ownership_count == 2:
                     cell.monopoly_coef = 10

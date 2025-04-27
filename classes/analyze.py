@@ -1,5 +1,5 @@
-''' Functions to analyze the results of the simulation
-'''
+""" Functions to analyze the results of the simulation
+"""
 
 import pandas as pd
 
@@ -7,15 +7,15 @@ from settings import SimulationSettings, GameSettings, LogSettings
 
 
 class Analyzer:
-    ''' Functions to analyzed games after the simulation
-    '''
+    """ Functions to analyzed games after the simulation
+    """
 
     def __init__(self):
         self.df = pd.read_csv(LogSettings.data_log_file, sep='\t')
 
     def remaining_players(self):
-        ''' How many games had clear winner, how many players remain in tha end
-        '''
+        """ How many games had clear winner, how many players remain in tha end
+        """
         grouped = self.df.groupby('game_number').size().reset_index(name='Losers')
         result = grouped['Losers'].value_counts().reset_index()
 
@@ -39,9 +39,9 @@ class Analyzer:
             print(f"  - {remaining}: {count} ({count * 100 / SimulationSettings.n_games:.1f}%)")
 
     def game_length(self):
-        ''' Median game length (for all finite games)
-        '''
-        # Calculate median game length, which is highest bankruptcy turn within a game
+        """ Median game length (for all finite games)
+        """
+        # Calculate median game length, which is the highest bankruptcy turn within a game
         grouped = self.df.groupby('game_number')
         filtered_groups = grouped.filter(lambda x: len(x) == len(GameSettings.players_list) - 1)
         lengths_df = filtered_groups.groupby('game_number')['turn'].max().reset_index()
@@ -54,11 +54,11 @@ class Analyzer:
 
         # Calculate average survival time (for those who goes bankrupt)
         survival_average = lengths_df["turn"].mean()
-        print(f"Average survival time (for bunkrupt players): {survival_average:.1f} turns")
+        print(f"Average survival time (for bankrupt players): {survival_average:.1f} turns")
 
     def winning_rate(self):
-        ''' Display winning (survival) rate of players
-        '''
+        """ Display winning (survival) rate of players
+        """
         loses_counts = self.df.groupby('player').size().reset_index(name='count')
 
         # {player: games_survived}
@@ -70,8 +70,8 @@ class Analyzer:
             loses = survival_rate.get(player_name, 0)
         #for player_name, loses in sorted(survival_rate.items()):
             survivals = SimulationSettings.n_games - loses
-            surv_rate = survivals / SimulationSettings.n_games
-            margin = 1.96 * (surv_rate * (1 - surv_rate) / SimulationSettings.n_games) ** 0.5
+            survival_rate = survivals / SimulationSettings.n_games
+            margin = 1.96 * (survival_rate * (1 - survival_rate) / SimulationSettings.n_games) ** 0.5
             print(f"  - {player_name}: {survivals} " +
-                  f"({surv_rate * 100:.1f} "
+                  f"({survival_rate * 100:.1f} "
                   f"+- {margin * 100:.1f}%)")

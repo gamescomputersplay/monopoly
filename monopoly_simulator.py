@@ -1,6 +1,3 @@
-''' Main file to run monopoly simulation
-'''
-
 import random
 import concurrent.futures
 
@@ -14,9 +11,9 @@ from classes.game import monopoly_game
 
 
 def run_simulation(config):
-    ''' Run the simulation
-    In: Simulation parameters (number of games, seed etc)
-    '''
+    """
+    In: Simulation parameters (number of games, seed etc.)
+    """
 
     # Empty the game log file (list of all player actions)
     log = Log(LogSettings.game_log_file)
@@ -38,7 +35,7 @@ def run_simulation(config):
         (i + 1, random.random())
         for i in range(config.n_games)]
 
-    # Simulate each game with multi-processing
+    # Simulate each game with multiprocessing
     with concurrent.futures.ProcessPoolExecutor(max_workers=config.multi_process) as executor:
         list(tqdm(executor.map(monopoly_game, data_for_simulation), total=len(data_for_simulation)))
 
