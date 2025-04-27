@@ -228,7 +228,7 @@ class Board:
             "G2 North Carolina Avenue", 300, 26, 200, (130, 390, 900, 1100, 1275), "Green"))
         self.cells.append(CommunityChest("COM3 Community Chest"))
         self.cells.append(Property(
-            "G3 Pennsylvania Avenue", 320, 28, 200, (150, 450, 100, 1200, 1400), "Green"))
+            "G3 Pennsylvania Avenue", 320, 28, 200, (150, 450, 1000, 1200, 1400), "Green"))
 
         # 35-39
         self.cells.append(Property(
