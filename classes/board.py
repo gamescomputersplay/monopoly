@@ -167,7 +167,7 @@ class Board:
 
         # 5-9
         self.cells.append(Property(
-            "R1 Reading railroad", 200, 25, 0, (0, 0, 0, 0, 0), "Railroads"))
+            "R1 Reading Railroad", 200, 25, 0, (0, 0, 0, 0, 0), "Railroads"))
         self.cells.append(Property(
             "B1 Oriental Avenue", 100, 6, 50, (30, 90, 270, 400, 550), "Lightblue"))
         self.cells.append(Chance("CH1 Chance"))
@@ -191,7 +191,7 @@ class Board:
         self.cells.append(Property(
             "R2 Pennsylvania Railroad", 200, 25, 0, (0, 0, 0, 0, 0), "Railroads"))
         self.cells.append(Property(
-            "D1 St.James Place", 180, 14, 100, (70, 200, 550, 700, 950), "Orange"))
+            "D1 St. James Place", 180, 14, 100, (70, 200, 550, 700, 950), "Orange"))
         self.cells.append(CommunityChest("COM2 Community Chest"))
         self.cells.append(Property(
             "D2 Tennessee Avenue", 180, 14, 100, (70, 200, 550, 700, 950), "Orange"))
@@ -337,7 +337,7 @@ class Board:
     def recalculate_monopoly_coeffs(self, changed_cell):
         """ Go through all properties in the property group and update flags:
         - monopoly_coeff
-        Would be run every time, when property ownership.
+        Would be run every time, when property ownership changes.
         """
 
         # Create and populate list of owners for this group
