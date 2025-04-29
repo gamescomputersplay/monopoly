@@ -9,10 +9,10 @@ class SimulationSettings:
     n_moves = 1000
 
     # Number of games to simulate
-    n_games = 1000
+    n_games = 100000
 
     # Random seed to start simulation with
-    seed = 42
+    seed = 0
 
     # Number of parallel processes to use in the simulation
     multi_process = 4
@@ -35,7 +35,7 @@ class StandardPlayerSettings:
     # Amount of money player wants to keep unspent (money safety pillow)
     unspendable_cash = 200
 
-    # Group of properties, player refuses to buy (set, as there may be several)
+    # Group of properties that the player refuses to buy (a set, as there may be several)
     ignore_property_groups = {}
 
     # Willing to participate in trades
@@ -63,16 +63,23 @@ class GameSettings:
     players_list = [
         ("Hero", HeroPlayerSettingsSettings),
         ("opponent 1", StandardPlayerSettings),
-        ("opponent 2", StandardPlayerSettings),
-        ("opponent 3", StandardPlayerSettings),
+        # ("opponent 2", StandardPlayerSettings),
+        # ("opponent 3", StandardPlayerSettings),
     ]
 
     # Randomly shuffle order of players each game
     shuffle_players = True
 
     # Initial money (a single integer if it is the same for everybody or a list of values for individual values)
-    starting_money = 1500
-    # starting_money = [1415, 1470, 1530, 1585]
+    # for example, either starting_money = 1500, or starting_money = [1600,1500,1400,1300]
+    starting_money = [1200, 200]
+
+    # Initial properties (a dictionary with player position (0,1,2,3) as keys and list of property numbers as values)
+    # see board.py for property numbers
+    starting_properties = {
+        0: [11, 13, 14], # hero gets the Maroons/Pinks
+        1: [31, 32, 34]  # opp gets the Greens
+    }
 
     # Houses and hotel available for development
     available_houses = 36

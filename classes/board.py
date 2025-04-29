@@ -317,8 +317,8 @@ class Board:
             log.add(f"Free Parking Money: ${self.free_parking_money}")
 
     def log_current_map(self, log):
-        """ Log current situation on the board,
-        who owns what, monopolies, improvements, etc
+        """ Log the current situation on the board,
+        who owns what, monopolies, improvements, etc.
         """
         log.add("\n== BOARD ==")
         for cell in self.cells:
@@ -340,7 +340,7 @@ class Board:
         Would be run every time, when property ownership changes.
         """
 
-        # Create and populate list of owners for this group
+        # Create and populate a list of owners for this group
         owners = []
 
         # To check if this is a monopoly, we need to know how many owners are there in a group

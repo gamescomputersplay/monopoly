@@ -11,6 +11,12 @@ from classes.board import Board
 from classes.dice import Dice
 from classes.log import Log
 
+# Assign properties to players
+def assign_property(player, property, board):
+    property.owner = player
+    player.owned.append(property)
+    board.recalculate_monopoly_coeffs(property)
+    player.update_lists_of_properties_to_trade(board)
 
 
 def monopoly_game(data_for_simulation):
@@ -61,6 +67,12 @@ def monopoly_game(data_for_simulation):
     else:
         for player in players:
             player.money = GameSettings.starting_money
+
+    # set up players initial properties
+    for player_index, property_indices in GameSettings.starting_properties.items():
+        for cell_index in property_indices:
+            assign_property(players[player_index], board.cells[cell_index], board)
+
 
     # Play for the required number of turns
     for turn_n in range(1, SimulationSettings.n_moves + 1):
