@@ -7,26 +7,26 @@ from settings import SimulationSettings, GameSettings, LogSettings
 
 
 class Analyzer:
-    """ Functions to analyzed games after the simulation
+    """ Functions to analyze games after the simulation
     """
 
     def __init__(self):
         self.df = pd.read_csv(LogSettings.data_log_file, sep='\t')
 
     def remaining_players(self):
-        """ How many games had clear winner, how many players remain in tha end
+        """ number of games that had a clear winner, how many players remain at the end
         """
         grouped = self.df.groupby('game_number').size().reset_index(name='Losers')
         result = grouped['Losers'].value_counts().reset_index()
+        result.columns = ['Losers', 'count']
 
         # {remaining players: games}
-        remaining_players = {len(GameSettings.players_list) - row['Losers']: row['count']
-                             for index, row in result.iterrows()}
+        remaining_players = {len(GameSettings.players_list) - row['Losers']: row['count'] for index, row in result.iterrows()}
         # Add games with no losers (all players remained)
         remaining_players[len(GameSettings.players_list)] = \
             SimulationSettings.n_games - sum(remaining_players.values())
 
-        # Games with clear winner (1 player remains)
+        # Games with clear winner (just a single player remains)
         clear_winner = 0
         if 1 in remaining_players:
             clear_winner = remaining_players[1]
@@ -62,14 +62,14 @@ class Analyzer:
         loses_counts = self.df.groupby('player').size().reset_index(name='count')
 
         # {player: games_survived}
-        survival_rate = {row['player']: row['count']
-                             for index, row in loses_counts.iterrows()}
+        loses_dict = {row['player']: row['count'] for index, row in loses_counts.iterrows()}
         print("Players' survival rate:")
+
         for player in GameSettings.players_list:
             player_name = player[0]
-            loses = survival_rate.get(player_name, 0)
-        #for player_name, loses in sorted(survival_rate.items()):
+            loses = loses_dict.get(player_name, 0)
             survivals = SimulationSettings.n_games - loses
+            
             survival_rate = survivals / SimulationSettings.n_games
             margin = 1.96 * (survival_rate * (1 - survival_rate) / SimulationSettings.n_games) ** 0.5
             print(f"  - {player_name}: {survivals} " +
