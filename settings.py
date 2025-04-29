@@ -31,7 +31,7 @@ class LogSettings:
     data_log_file = "datalog.txt"
 
 
-class StandardPlayerSetting:
+class StandardPlayerSettings:
     # Amount of money player wants to keep unspent (money safety pillow)
     unspendable_cash = 200
 
@@ -47,8 +47,8 @@ class StandardPlayerSetting:
     trade_max_diff_rel = 2  # More expensive / less expensive
 
 
-class ExperimentPlayerSetting(StandardPlayerSetting):
-    """ Changed settings for the Experiment Player
+class HeroPlayerSettingsSettings(StandardPlayerSettings):
+    """ here you can change the settings of the hero (the Experimental Player)
     """
 
 
@@ -61,10 +61,10 @@ class GameSettings:
 
     # Players and their behavior settings
     players_list = [
-        ("Experiment", ExperimentPlayerSetting),
-        ("Standard 1", StandardPlayerSetting),
-        ("Standard 2", StandardPlayerSetting),
-        ("Standard 3", StandardPlayerSetting),
+        ("Hero", HeroPlayerSettingsSettings),
+        ("opponent 1", StandardPlayerSettings),
+        ("opponent 2", StandardPlayerSettings),
+        ("opponent 3", StandardPlayerSettings),
     ]
 
     # Randomly shuffle order of players each game
