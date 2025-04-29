@@ -26,9 +26,9 @@ class Player:
         # Person's roll double and jail status
         # Is the player currently in jail
         self.in_jail = False
-        # How any doubles player thrown so far
+        # number of doubles each player thrown so far
         self.had_doubles = 0
-        # How many days in jail player spent so far
+        # number of days in jail each player spent so far
         self.days_in_jail = 0
         # Does player have a GOOJF card
         self.get_out_of_jail_chance = False
@@ -42,7 +42,7 @@ class Player:
         self.wants_to_sell = set()
         self.wants_to_buy = set()
 
-        # Bankrupt (game ended for thi player)
+        # Bankrupt (game ended for this player)
         self.is_bankrupt = False
 
         # Placeholder for various flags used throughout the game
@@ -79,7 +79,7 @@ class Player:
         - log handle
         """
 
-        # Is player is bankrupt - do nothing
+        # If the player bankrupt - do nothing
         if self.is_bankrupt:
             return None
 
@@ -120,7 +120,7 @@ class Player:
         # Get salary if we passed go on the way
         if self.position >= 40:
             self.handle_salary(board, log)
-        # Get the correct position, if we passed GO
+        # Get the correct position if we passed GO
         self.position %= 40
         log.add(f"Player {self.name} goes to: {board.cells[self.position].name}")
 
@@ -172,7 +172,7 @@ class Player:
         # Reset Other notes flag
         self.other_notes = ""
 
-        # If player went bankrupt this turn - return string "bankrupt"
+        # If player went bankrupt, this turn - return string "bankrupt"
         if self.is_bankrupt:
             return "bankrupt"
 

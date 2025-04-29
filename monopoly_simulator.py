@@ -39,7 +39,7 @@ def run_simulation(config):
     with concurrent.futures.ProcessPoolExecutor(max_workers=config.multi_process) as executor:
         list(tqdm(executor.map(monopoly_game, data_for_simulation), total=len(data_for_simulation)))
 
-    # Print analysis of the simulation (data is read from datalog file)
+    # Print analysis of the simulation (data is read from the datalog file)
     analysis = Analyzer()
     analysis.remaining_players()
     analysis.game_length()

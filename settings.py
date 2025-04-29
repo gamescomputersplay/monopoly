@@ -12,7 +12,7 @@ class SimulationSettings:
     n_games = 1000
 
     # Random seed to start simulation with
-    seed = 0
+    seed = 42
 
     # Number of parallel processes to use in the simulation
     multi_process = 4
