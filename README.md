@@ -53,16 +53,18 @@ For example:
 
 ### Simulation-Related:
 - Number of games to play (1000)
-
-### Game-Related:
-
 - Max number of turns (1000)
 - Random seed to start with, for replicable simulations
-- Number of dice (2)
-- Number of sides on a die (6)
+
+### Game-Related:
 - Number of players (4)
 - Shuffling player order between simulations (True)
 - Starting money, either the same for all or per player going 1st, 2nd, etc. ($1500 for all)
+- Starting properties, allows to simulate specific mid-game situation (nothing for all, like in regular game start) 
+ 
+### Rules-Related:
+- Number of dice (2)
+- Number of sides on a die (6)
 - Available houses (36)
 - Available hotels (12)
 - Salary, i.e., money for passing GO ($200)
