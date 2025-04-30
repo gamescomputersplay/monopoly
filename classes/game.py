@@ -60,14 +60,15 @@ def monopoly_game(data_for_simulation):
         dice.shuffle(players)
     
     # Set up players starting money according to the game settings:
-    # If starting money is a list, assign it to players in order
-    if isinstance(GameSettings.starting_money, list):
-        for player, starting_money in zip(players, GameSettings.starting_money):
-            player.money = starting_money
+    # Supports either a dict (per-player), or single value
+    starting_money = GameSettings.starting_money
+    if isinstance(starting_money, dict):
+        for idx, player in enumerate(players):
+            player.money = starting_money.get(idx, 0)  # default to 0 if not specified
     # If starting money is a single value, assign it to all players
     else:
         for player in players:
-            player.money = GameSettings.starting_money
+            player.money = starting_money
     
     # set up players initial properties
     for player_index, property_indices in GameSettings.starting_properties.items():

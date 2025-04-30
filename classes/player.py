@@ -5,6 +5,7 @@ from classes.board import Property, GoToJail, LuxuryTax, IncomeTax
 from classes.board import FreeParking, Chance, CommunityChest
 from settings import GameSettings
 
+
 class Player:
     """ Class to contain player-related into and actions:
     - money, position, owned property
@@ -82,13 +83,14 @@ class Player:
         # If the player bankrupt - do nothing
         if self.is_bankrupt:
             return None
-
-        log.add(f"=== Player {self.name} (${self.money}, " +
+        
+        log.add(f"=== {self.name} (${self.money}, " +
                 f"at {board.cells[self.position].name}) goes: ===")
-
-
-        # Things to do before the throwing of the dice:
-        # Trade with other players. Keep trading until no trades are possible
+        
+        # Before the throwing of the dice:
+        # 1. Trade with other players. Keep trading until no trades are possible
+        # 2. Unmortgage a property. Keep doing it until possible
+        # 3. Improve all properties that can be improved
         while self.do_a_two_way_trade(players, board, log):
             pass
 
@@ -102,34 +104,33 @@ class Player:
 
         # The move itself:
         # Player rolls the dice
-        _, dice_roll_score, dice_roll_is_double = dice.cast()
-
+        _, dice_sum, is_double = dice.cast()
+        
         # Get doubles for the third time: just go to jail
-        if dice_roll_is_double and self.had_doubles == 2:
+        if is_double and self.had_doubles == 2:
             self.handle_going_to_jail("rolled 3 doubles in a row", log)
             return
 
         # Player is currently in jail
         if self.in_jail:
             # Will return True if player stays in jail and move ends
-            if self.handle_being_in_jail(dice_roll_is_double, board, log):
+            if self.handle_being_in_jail(is_double, board, log):
                 return
 
         # Player moves to a cell
-        self.position += dice_roll_score
+        self.position += dice_sum
         # Get salary if we passed go on the way
         if self.position >= 40:
             self.handle_salary(board, log)
         # Get the correct position if we passed GO
         self.position %= 40
         log.add(f"Player {self.name} goes to: {board.cells[self.position].name}")
-
-
-        # Handle various types of cells player may land on
-
-        # Both cards are processed first, as they may send player to a property
-        # and Chance is before "Community Chest" as Chance can send to Community Chest
-
+        
+        # Handle special cells:
+        
+        # Both Chance and Community Chest are processed first, as they may send the player to a property
+        # Chance is before "Community Chest" as Chance can send to Community Chest
+        
         # Player lands on "Chance"
         if isinstance(board.cells[self.position], Chance):
             # returning "move is over" means the move is over (even if it was a double)
@@ -177,17 +178,13 @@ class Player:
             return "bankrupt"
 
         # If the roll was a double
-        if dice_roll_is_double:
-            # Keep track of doubles in a row
+        if is_double:
             self.had_doubles += 1
-            # We already handled sending to jail, so player just goes again
             log.add(f"{self} rolled a double ({self.had_doubles} in a row) so they go again.")
             self.make_a_move(board, players, dice, log)
-        # If now a double: reset double counter
         else:
-            self.had_doubles = 0
-
-
+            self.had_doubles = 0  # Reset doubles count
+    
     def handle_salary(self, board, log):
         """ Adding Salary to the player's money, according to the game's settings
         """
@@ -227,7 +224,7 @@ class Player:
             self.in_jail = False
             self.days_in_jail = 0
         # Get out of jail and pay fine
-        elif self.days_in_jail == 2: # It's your third day
+        elif self.days_in_jail == 2:  # It's your third day
             log.add(f"{self} did not rolled a double for the third time, " +
                     f"pays {GameSettings.exit_jail_fine} and leaves jail")
             self.pay_money(GameSettings.exit_jail_fine, "bank", board, log)
@@ -236,7 +233,7 @@ class Player:
         # Stay in jail for another turn
         else:
             log.add(f"{self} stays in jail")
-            self.days_in_jail  += 1
+            self.days_in_jail += 1
             return True
         return False
 
@@ -286,7 +283,7 @@ class Player:
         # Sends to a type of location, and affects the rent amount
 
         elif card == "Advance to the nearest Railroad. " + \
-                     "If owned, pay owner twice the rental to which they are otherwise entitled":
+                "If owned, pay owner twice the rental to which they are otherwise entitled":
             nearest_railroad = self.position
             while (nearest_railroad - 5) % 10 != 0:
                 nearest_railroad += 1
@@ -300,7 +297,7 @@ class Player:
         elif card == "Advance token to nearest Utility. " + \
              "If owned, throw dice and pay owner a total ten times amount thrown.":
             nearest_utility = self.position
-            while nearest_utility not in  (12, 28):
+            while nearest_utility not in (12, 28):
                 nearest_utility += 1
                 nearest_utility %= 40
             log.add(f"{self} goes to {board.cells[nearest_utility]}")

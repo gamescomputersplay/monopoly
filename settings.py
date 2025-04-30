@@ -9,7 +9,7 @@ class SimulationSettings:
     n_moves = 1000
 
     # Number of games to simulate
-    n_games = 10000
+    n_games = 10
 
     # Random seed to start simulation with
     seed = 0
@@ -70,9 +70,12 @@ class GameSettings:
     # Randomly shuffle order of players each game
     shuffle_players = False
 
-    # Initial money (a single integer if it is the same for everybody or a list of values for individual values)
+    # Initial money (a single integer if it is the same for everybody or a dict of player positions and cash)
     # for example, either starting_money = 1500, or starting_money = [1600,1500,1400,1300]
-    starting_money = [1200, 200]
+    starting_money = {
+        0: 1200,  # hero gets 1200
+        1: 200,  # opp gets 200
+    }
 
     # Initial properties (a dictionary with player position (0,1,2,3) as keys and list of property numbers as values)
     # Property numbers correspond to indices in `board.cells`
