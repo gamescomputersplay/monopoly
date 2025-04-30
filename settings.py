@@ -13,7 +13,7 @@ class SimulationSettings:
     n_moves = 1000
 
     # Number of games to simulate
-    n_games = 10000
+    n_games = 3
 
     # Random seed to start simulation with
     seed = 0
@@ -22,21 +22,8 @@ class SimulationSettings:
     multi_process = 4
 
 
-class LogSettings:
-    # Detailed log about all that is going on in the game:
-    # movements, purchases, rent, cards, etc.
-    # Note that it takes about 5Mb per one 1000-turn game.
-    # Might want to turn it off for large simulations
-    keep_game_log = True
-    game_log_file = "gamelog.txt"
-    
-    # Log that keeps information about on which turn which player went bankrupt
-    # Base info for all simulation analysis
-    data_log_file = "datalog.txt"
-
-
 class StandardPlayerSettings:
-    # Amount of money player wants to keep unspent (money safety pillow)
+    # Amount of money the standard player wants to keep unspent (money safety pillow)
     unspendable_cash = 200
     
     # Group of properties that the player refuses to buy (a set, as there may be several)
@@ -45,7 +32,7 @@ class StandardPlayerSettings:
     # Willing to participate in trades
     participates_in_trades = True
     
-    # Only agree to trade if value difference is within these limits
+    # Only agree to trade if the value difference is within these limits
     # (Absolute and relative)
     trade_max_diff_abs = 200  # More expensive - less expensive
     trade_max_diff_rel = 2  # More expensive / less expensive
@@ -71,11 +58,11 @@ class GameSettings:
         (player4, StandardPlayerSettings),
     ]
     
-    # Randomly shuffle order of players each game
+    # Randomly shuffle the order of players each game
     shuffle_players = True
     
     # Initial money (a single integer if it is the same for everybody or a dict of player names and cash)
-    # for example, either starting_money = 1500, or a dictionary with player names as keys and int values
+    # for example, either starting_money = 1500 or a dictionary with player names as keys and int values
     starting_money = {
         HERO: 1500,
         player2: 1500,
@@ -83,7 +70,7 @@ class GameSettings:
         player4: 1500
     }
     
-    # Initial properties (a dictionary with player names as keys and list of property numbers as values)
+    # Initial properties (a dictionary with player names as keys and a list of property numbers as values)
     # Property numbers correspond to indices in `board.cells`
     starting_properties = {
         HERO: [],

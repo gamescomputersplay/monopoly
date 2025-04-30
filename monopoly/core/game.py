@@ -3,13 +3,13 @@
 2. players
 3. making moves by all players
 """
+from monopoly.log_settings import LogSettings
+from settings import SimulationSettings, GameSettings
 
-from settings import SimulationSettings, GameSettings, LogSettings
-
-from classes.player import Player, BANKRUPT
-from classes.board import Board
-from classes.dice import Dice
-from classes.log import Log
+from monopoly.core.player import Player, BANKRUPT
+from monopoly.core.board import Board
+from monopoly.core.dice import Dice
+from monopoly.log import Log
 
 
 # Assign properties to players
@@ -89,12 +89,12 @@ def setup_players(board, dice):
 
 
 def setup_game(game_number, game_seed):
-    log = Log(LogSettings.game_log_file, disabled=not LogSettings.keep_game_log)
+    log = Log(LogSettings.DETAILED_LOG_PATH, disabled=not LogSettings.KEEP_GAME_LOG)
     # First line in the game log: game number and seed
     log.add(f"\n\n= GAME {game_number} of {SimulationSettings.n_games} " +
             f"(seed = {game_seed}) =")
     # Initialize data log
-    datalog = Log(LogSettings.data_log_file)
+    datalog = Log(LogSettings.BANKRUPTCIES_PATH)
     # Initialize the board (plots, chance, community chest etc.)
     board = Board(GameSettings)
     # Set up dice (it creates a separate random generator with initial "game_seed",

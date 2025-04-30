@@ -10,9 +10,9 @@ The simulator is a hobby project. There are still many things I am working on, a
 
 ## How to Use
 
-1. Edit settings.py to set the parameters you want for your simulation.
-2. Run monopoly_simulator.py.
-3. Marvel at the results.
+1. Edit `settings.py` to set the parameters you want for your simulation.
+2. Run `simulate.py` to start the simulation.
+3. Marvel at the results at the console and in the gamelog.txt, datalog.txt
 
 ## Implemented Rules
 

@@ -1,7 +1,7 @@
 """ Class to keep a log of the game.
-Challenge here was to make it thread-safe: simulator plays several games at a time,
+The challenge here was to make it thread-safe: simulator plays several games at a time,
 but the game log should be written by "whole game" chunks. This is the reason games
-will not be in order, as the order games start is not the same as the order they finish.
+will not be in order, as the order games start is different from the order they finish.
 """
 
 import multiprocessing
@@ -11,7 +11,7 @@ class Log:
     """ Class to handle logging of game events
     """
     
-    # Lock is declare on the class level,
+    # Lock is declared on the class level,
     # so it would be shared among processes
     lock = multiprocessing.Lock()
     
