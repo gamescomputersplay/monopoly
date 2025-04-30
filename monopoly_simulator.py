@@ -15,12 +15,10 @@ def run_simulation(config):
     In: Simulation parameters (number of games, seed etc.)
     """
 
-    # Empty the game log file (list of all player actions)
+    # reset log files (list of all player actions)
     log = Log(LogSettings.game_log_file)
-    log.reset()
-
-    # Empty the data log (list of bankruptcy turns for each player)
     datalog = Log(LogSettings.data_log_file)
+    log.reset()
     datalog.reset("game_number\tplayer\tturn")
 
     # Initiate overall random generator with the seed from config file
@@ -32,7 +30,7 @@ def run_simulation(config):
     # data_for_simulation is a list of tuples: (game_number, game_seed)
     # it is packed together to be able to use multi-threading
     data_for_simulation = [
-        (i + 1, random.random())
+        (i + 1, random.randint(0, 2**32 - 1))
         for i in range(config.n_games)]
 
     # Simulate each game with multiprocessing
