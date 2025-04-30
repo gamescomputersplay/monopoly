@@ -95,14 +95,9 @@ class Player:
         # 3. Improve all properties that can be improved
         while self.do_a_two_way_trade(players, board, log):
             pass
-
-        # Unmortgage a property. Keep doing it until possible
         while self.unmortgage_a_property(board, log):
             pass
-
-        # Improve all properties that can be improved
         self.improve_properties(board, log)
-
 
         # The move itself:
         # Player rolls the dice
@@ -179,7 +174,6 @@ class Player:
         if self.is_bankrupt:
             return BANKRUPT
 
-        # If the roll was a double
         if is_double:
             self.had_doubles += 1
             log.add(f"{self} rolled a double ({self.had_doubles} in a row) so they go again.")
