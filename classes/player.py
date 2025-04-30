@@ -5,6 +5,8 @@ from classes.board import Property, GoToJail, LuxuryTax, IncomeTax
 from classes.board import FreeParking, Chance, CommunityChest
 from settings import GameSettings
 
+BANKRUPT = "bankrupt"
+
 
 class Player:
     """ Class to contain player-related into and actions:
@@ -175,13 +177,15 @@ class Player:
 
         # If player went bankrupt, this turn - return string "bankrupt"
         if self.is_bankrupt:
-            return "bankrupt"
+            return BANKRUPT
 
         # If the roll was a double
         if is_double:
             self.had_doubles += 1
             log.add(f"{self} rolled a double ({self.had_doubles} in a row) so they go again.")
-            self.make_a_move(board, players, dice, log)
+            is_bankrupt_on_double_move = self.make_a_move(board, players, dice, log)
+            if is_bankrupt_on_double_move:
+                return BANKRUPT
         else:
             self.had_doubles = 0  # Reset doubles count
     
