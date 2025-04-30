@@ -3,6 +3,7 @@
 2. Players
 3. Making moves by all players
 """
+from monopoly.core.game_utils import assign_property, _check_end_conditions, log_players_state
 from monopoly.log_settings import LogSettings
 from settings import SimulationSettings, GameSettings
 
@@ -10,14 +11,6 @@ from monopoly.core.player import Player, BANKRUPT
 from monopoly.core.board import Board
 from monopoly.core.dice import Dice
 from monopoly.log import Log
-
-
-# Assign properties to players
-def assign_property(player, property_to_assign, board):
-    property_to_assign.owner = player
-    player.owned.append(property_to_assign)
-    board.recalculate_monopoly_multipliers(property_to_assign)
-    player.update_lists_of_properties_to_trade(board)
 
 
 def monopoly_game(data_for_simulation):
@@ -28,36 +21,34 @@ def monopoly_game(data_for_simulation):
     - "game_seed" to initialize random generator for the game
     """
     game_number, game_seed = data_for_simulation
-    board, dice, log, datalog = setup_game(game_number, game_seed)
+    board, dice, events_log, bankruptcies_log = setup_game(game_number, game_seed)
 
     # Set up players with their behavior settings, starting money and properties.
     players = setup_players(board, dice)
 
-    # Play for the required number of turns
+    # Play the game until:
+    # 1. Win: Only 1 player did not bankrupt
+    # 2. Several survivors: All non-bankrupt players have more cash than `never_bankrupt_cash`
+    # 3. Turn limit reached
     for turn_n in range(1, SimulationSettings.n_moves + 1):
-        log.add(f"\n== GAME {game_number} Turn {turn_n} ===")
+        events_log.add(f"\n== GAME {game_number} Turn {turn_n} ===")
+        log_players_state(board, events_log, players)
+        board.log_board_state(events_log)
+        events_log.add("")
 
-        alive_players_counter = count_alive_players_and_log_state(board, log, players)
-
-        board.log_board_state(log)
-        log.add("")
-
-        # If there are less than 2 live players, end the game
-        # (0 alive is quite unlikely, but possible):
-        if alive_players_counter < 2:
-            log.add(f"Only {alive_players_counter} alive player remains, game over")
+        if _check_end_conditions(players, events_log):
             break
 
         # Players make their moves
         for player in players:
-            result = player.make_a_move(board, players, dice, log)
+            result = player.make_a_move(board, players, dice, events_log)
             if result == BANKRUPT:
-                datalog.add(f"{game_number}\t{player}\t{turn_n}")
+                bankruptcies_log.add(f"{game_number}\t{player}\t{turn_n}")
 
     # Last thing to log in the game log: the final state of the board
-    board.log_current_map(log)
-    log.save()
-    datalog.save()
+    board.log_current_map(events_log)
+    events_log.save()
+    bankruptcies_log.save()
 
 
 def setup_players(board, dice):
@@ -88,35 +79,13 @@ def setup_players(board, dice):
 
 
 def setup_game(game_number, game_seed):
-    log = Log(LogSettings.DETAILED_LOG_PATH, disabled=not LogSettings.KEEP_GAME_LOG)
-    # First line in the game log: game number and seed
-    log.add(f"\n\n= GAME {game_number} of {SimulationSettings.n_games} " +
-            f"(seed = {game_seed}) =")
-    # Initialize data log
-    datalog = Log(LogSettings.BANKRUPTCIES_PATH)
+    events_log = Log(LogSettings.EVENTS_LOG_PATH, disabled=not LogSettings.KEEP_GAME_LOG)
+    events_log.add(f"\n\n= GAME {game_number} of {SimulationSettings.n_games} (seed = {game_seed}) =")
+    bankruptcies_log = Log(LogSettings.BANKRUPTCIES_PATH)
+
     # Initialize the board (plots, chance, community chest etc.)
     board = Board(GameSettings)
-    # Set up dice (it creates a separate random generator with initial "game_seed",
-    # to have thread-safe shuffling and dice throws)
-    dice = Dice(game_seed, GameSettings.dice_count, GameSettings.dice_sides, log)
-    # Shuffle chance and community chest cards
-    # (using thread-safe random generator)
+    dice = Dice(game_seed, GameSettings.dice_count, GameSettings.dice_sides, events_log)
     dice.shuffle(board.chance.cards)
     dice.shuffle(board.chest.cards)
-    return board, dice, log, datalog
-
-
-def count_alive_players_and_log_state(board, log, players):
-    """ Current player's position, money and net worth, looks like this:
-         For example: Player 'Hero': $1220 (net $1320), at 21 (E1 Kentucky Avenue)"""
-    alive_players_counter = 0
-    for player_n, player in enumerate(players):
-        if not player.is_bankrupt:
-            alive_players_counter += 1
-
-            log.add(f"- {player.name}: " +
-                    f"${int(player.money)} (net ${player.net_worth()}), " +
-                    f"at {player.position} ({board.cells[player.position].name})")
-        else:
-            log.add(f"- Player {player_n}, '{player.name}': Bankrupt")
-    return alive_players_counter
+    return board, dice, events_log, bankruptcies_log

@@ -33,7 +33,7 @@ class Player:
         self.had_doubles = 0
         # number of days in jail each player spent so far
         self.days_in_jail = 0
-        # Does the player have a GOOJF card
+        # is the player holding a GOOJF card(s)
         self.get_out_of_jail_chance = False
         self.get_out_of_jail_comm_chest = False
 
@@ -76,7 +76,7 @@ class Player:
     def make_a_move(self, board, players, dice, log):
         """ Main function for a player to make a move
         Receives:
-        - a board, with all cells and other things
+        - the game state: board, cells, players' state
         - other players (in case we need to make transactions with them)
         - dice (to roll)
         - log handle
@@ -103,7 +103,7 @@ class Player:
         # Player rolls the dice
         _, dice_sum, is_double = dice.cast()
         
-        # Get doubles for the third time: just go to jail
+        # Get doubles for the third time: go to jail
         if is_double and self.had_doubles == 2:
             self.handle_going_to_jail("rolled 3 doubles in a row", log)
             return None

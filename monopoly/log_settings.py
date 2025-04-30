@@ -5,5 +5,5 @@ results_dir = project_root.parent / "results"
 
 class LogSettings:
     KEEP_GAME_LOG     = True
-    DETAILED_LOG_PATH = results_dir / "game_events.log"
+    EVENTS_LOG_PATH = results_dir / "events.log"
     BANKRUPTCIES_PATH = results_dir / "bankruptcies.tsv"

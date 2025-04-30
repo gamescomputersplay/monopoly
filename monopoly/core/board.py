@@ -11,10 +11,10 @@ from settings import GameSettings
 class Cell:
     """ Cell Class, base for other classes
     """
-    
+
     def __init__(self, name):
         self.name = name
-    
+
     def __str__(self):
         return self.name
 
@@ -52,14 +52,14 @@ class CommunityChest(Cell):
 class Property(Cell):
     """ Property Class (for Properties, Rails, Utilities)
     """
-    
+
     def __init__(self, name, cost_base, rent_base, cost_house, rent_house, group):
         """
         Example of parameters for a property:
         "B2 Vermont Avenue", 100, 6, 50, (30, 90, 270, 400, 550), "Lightblue"
         """
         super().__init__(name)
-        
+
         # Initial parameters (usually found on a property card):
         # Cost to buy the property
         self.cost_base = cost_base
@@ -71,21 +71,21 @@ class Property(Cell):
         self.rent_house = rent_house
         # Group of the property (color, or "Railroads", "Utilities")
         self.group = group
-        
+
         # Current state of the property
         # Owner of the property (Will be a Player object or None if not owned)
         self.owner = None
         # Is the property mortgaged
         self.is_mortgaged = False
-        
+
         # Multiplier to calculate rent (1 - no monopoly, 2 - monopoly,
         # 1/2/4/8 for railways, 4/10 for utilities)
         self.monopoly_multiplier = 1
-        
+
         # Number of houses/hotel on the property
         self.has_houses = 0
         self.has_hotel = 0
-    
+
     def calculate_rent(self, dice):
         """ Calculate the rent amount for this property, including monopoly, houses etc.
         dice are used to calculate rent for utilities
@@ -93,16 +93,16 @@ class Property(Cell):
         # There is a hotel on this property
         if self.has_hotel == 1:
             return self.rent_house[-1]
-        
+
         # There are 1 or more houses on this property
         if self.has_houses:
             return self.rent_house[self.has_houses - 1]
-        
+
         if self.group != "Utilities":
             # Undeveloped monopoly: double rent
             # Rails: multiply rent depending on how many owned
             return self.rent_base * self.monopoly_multiplier
-        
+
         # Utilities: Dice roll * 4/10
         _, dice_points, _ = dice.cast()
         return dice_points * self.monopoly_multiplier
@@ -111,13 +111,13 @@ class Property(Cell):
 class Deck:
     """ Parent for Community Chest and Chance cards
     """
-    
+
     def __init__(self, cards):
         # List of cards
         self.cards = cards
         # Pointer to a next card to draw
         self.pointer = 0
-    
+
     def draw(self):
         """ Draw one card from the deck, and put it underneath.
         Actually, we don't manipulate cards, just shuffle them once
@@ -128,7 +128,7 @@ class Deck:
         if self.pointer == len(self.cards):
             self.pointer = 0
         return drawn_card
-    
+
     def remove(self, card_to_remove):
         """ Remove a card (used for GOOJF card)
         """
@@ -136,7 +136,7 @@ class Deck:
         # Make sure the pointer is still okay
         if self.pointer == len(self.cards):
             self.pointer = 0
-    
+
     def add(self, card_to_add):
         """ Add card (to put removed GOOJF card back in)
         """
@@ -147,13 +147,13 @@ class Board:
     """ Class collecting board related information:
     properties and their owners, build houses, etc
     """
-    
+
     def __init__(self, settings):
         """ Initialize board configuration: properties, special cells etc
         """
         # Keep a copy of game settings (to use in in-game calculations)
         self.settings = settings
-        
+
         self.cells = []
         # 0-4
         self.cells.append(Cell("GO"))
@@ -203,17 +203,17 @@ class Board:
         self.cells.append(Property("H1 Park Place", 350, 35, 200, (175, 500, 1100, 1300, 1500), "Indigo"))
         self.cells.append(LuxuryTax("LT Luxury Tax"))
         self.cells.append(Property("H2 Boardwalk", 400, 50, 200, (200, 600, 1400, 1700, 2000), "Indigo"))
-        
+
         # Board fields, grouped by group self.groups["Green"] - list of all greens
         self.groups = self.create_property_groups()
-        
-        # For "Free parking money" rule. How much money is on "Free Parking"
+
+        # when the "Free Parking" rule is active, Keep track of the amount of money at the "Free parking money"
         self.free_parking_money = 0
-        
+
         # Available houses and hotels
         self.available_houses = GameSettings.available_houses
         self.available_hotels = GameSettings.available_hotels
-        
+
         # Chance deck
         self.chance = Deck([
             "Advance to Boardwalk",
@@ -237,7 +237,7 @@ class Board:
             "You have been elected Chairman of the Board. Pay each player $50",
             "Your building loan matures. Collect $150"
         ])
-        
+
         # Community Chest deck
         self.chest = Deck([
             "Advance to Go (Collect $200)",
@@ -257,7 +257,7 @@ class Board:
             "You have won second prize in a beauty contest. Collect $10",
             "You inherit $100"
         ])
-    
+
     def create_property_groups(self):
         """ self.groups is a convenient way to group cells by color/type,
         so we don't have to check all properties on the board, to, for example,
@@ -272,14 +272,14 @@ class Board:
                 groups[cell.group] = []
             groups[cell.group].append(cell)
         return groups
-    
+
     def log_board_state(self, log):
-        """ Log current state of the houses/hotels, free parking money
+        """ Log the current state of the houses/hotels, free parking money
         """
         log.add(f"Available houses/hotels: {self.available_houses}/{self.available_hotels}")
         if GameSettings.free_parking_money:
             log.add(f"Free Parking Money: ${self.free_parking_money}")
-    
+
     def log_current_map(self, log):
         """ Log the current situation on the board,
         who owns what, monopolies, improvements, etc.
@@ -297,39 +297,39 @@ class Board:
             # G1 Pacific Avenue, Owner: Exp, Rent multiplier: 2, Can improve: False, Improvements: hotel
             log.add(f"- {cell.name}, Owner: {cell.owner}, " +
                     f"Rent multiplier: {cell.monopoly_multiplier}, Improvements: {improvements}")
-    
+
     def recalculate_monopoly_multipliers(self, changed_cell):
         """ Go through all properties in the property group and update flags:
         - monopoly_multiplier
-        runs every time a property ownership changes.
-        1. properties can have 1/2 depending on if the player own a monopoly.
-        2. railroads can have 1/2/4/8 depending on how many owned
-        3. utilities can have 4/10 depending on how many owned
+        runs every time property ownership changes.
+        1. Properties can have 1/2 depending on if the player owns a monopoly.
+        2. Railroads can have 1/2/4/8 depending on how many owned
+        3. Utilities can have 4/10 depending on if owning one or both
         """
-        
+
         # To check if this is a monopoly, we need to know how many owners are there in a group
         owners = [cell.owner for cell in self.groups[changed_cell.group]]
-        
+
         # Update monopoly_multipliers
         for cell in self.groups[changed_cell.group]:
             ownership_count = owners.count(cell.owner)
-            
+
             # For railroad, it is 1/2/4/8 (or 2**(n-1))
             if cell.group == "Railroads":
                 cell.monopoly_multiplier = 2 ** (ownership_count - 1)
-            
+
             # For Utilities, it is either 4 or 10
             elif cell.group == "Utilities":
                 if ownership_count == 2:
                     cell.monopoly_multiplier = 10
                 else:
                     cell.monopoly_multiplier = 4
-            
+
             # For all other properties it is 2 (monopoly) or 1 (no monopoly)
-            # It is a monopoly if player owns as many properties as there are in the group
+            # It is a monopoly if the player owns as all properties in the group
             elif ownership_count == len(self.groups[changed_cell.group]):
                 cell.monopoly_multiplier = 2
             else:
                 cell.monopoly_multiplier = 1
-        
+
         return
