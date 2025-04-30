@@ -504,7 +504,7 @@ class Player:
                         f"for ${landed_property.cost_base}")
 
                 # Recalculate all monopoly / can build flags
-                board.recalculate_monopoly_coeffs(landed_property)
+                board.recalculate_monopoly_multipliers(landed_property)
 
                 # Recalculate who wants to buy what
                 # (for all players, it may affect their decisions too)
@@ -534,7 +534,7 @@ class Player:
                 if self.other_notes == "10 times dice":
                     # Divide by monopoly_coef to restore the dice throw
                     # Multiply that by 10
-                    rent_amount = rent_amount // landed_property.monopoly_coef * 10
+                    rent_amount = rent_amount // landed_property.monopoly_multiplier * 10
                     log.add(f"Per Chance card, rent is 10x dice throw (${rent_amount}).")
                 self.pay_money(rent_amount, landed_property.owner, board, log)
                 if not self.is_bankrupt:
@@ -557,8 +557,8 @@ class Player:
                 # Property has to be:
                 # - not maxed out (no hotel)
                 # - not mortgaged
-                # - a part of monopoly, but not railway or utility (so the monopoly_coef is 2)
-                if cell.has_hotel == 0 and not cell.is_mortgaged and cell.monopoly_coef == 2:
+                # - a part of monopoly, but not railway or utility (so the monopoly_multiplier is 2)
+                if cell.has_hotel == 0 and not cell.is_mortgaged and cell.monopoly_multiplier == 2:
                     # Look at other cells in this group
                     # If they have fewer houses, this cell can not be improved
                     # If any cells in the group is mortgaged, this cell can not be improved
@@ -787,7 +787,7 @@ class Player:
                     cell_to_transfer.owner = None
                     cell_to_transfer.is_mortgaged = False
 
-                board.recalculate_monopoly_coeffs(cell_to_transfer)
+                board.recalculate_monopoly_multipliers(cell_to_transfer)
                 log.add(f"{self} transfers {cell_to_transfer} to {payee}")
 
         # Regular transaction
@@ -1020,8 +1020,8 @@ class Player:
                                 f"from {self}")
 
                     # Recalculate monopoly and improvement status
-                    board.recalculate_monopoly_coeffs(player_gives[0])
-                    board.recalculate_monopoly_coeffs(player_receives[0])
+                    board.recalculate_monopoly_multipliers(player_gives[0])
+                    board.recalculate_monopoly_multipliers(player_receives[0])
 
                     # Recalculate who wants to buy what
                     # (for all players, it may affect their decisions too)

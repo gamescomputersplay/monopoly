@@ -79,8 +79,8 @@ class GameSettings:
     # Maroons (a.k.a. Pinks): 11 = St. Charles Place, 13 = States Avenue, 14 = Virginia Avenue
     # Greens: 31 = Pacific Avenue, 32 = North Carolina Avenue, 34 = Pennsylvania Avenue
     starting_properties = {
-        0: [11, 13, 14], # hero gets the Maroons/Pinks: "C1 St. Charles Place", "C2 States Avenue", "C3 Virginia Avenue"
-        1: [31, 32, 34]  # opp gets the Greens: "G1 Pacific Avenue", "G2 North Carolina Avenue", "G3 Pennsylvania Avenue"
+        0: [11, 13, 14],  # hero gets the Pinks: C1 St. Charles Place", "C2 States Avenue", "C3 Virginia Avenue
+        1: [31, 32, 34]  # opp gets the Greens: G1 Pacific Avenue", "G2 North Carolina Avenue", "G3 Pennsylvania Avenue
     }
 
     # Houses and hotel available for development
