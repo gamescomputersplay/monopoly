@@ -26,8 +26,7 @@ class Dice:
         """
         
         cast = [self.local_random.randint(1, self.dice_sides) for _ in range(self.dice_count)]
-        self.log.add(f"Dice roll: {cast} " +
-                     f"(sum {sum(cast)}{', double' if len(set(cast)) == 1 else ''})")
+        self.log.add(f"roll: {sum(cast)}, ({cast}{',double' if len(set(cast)) == 1 else ''})")
         
         # Return individual dice values, the sum of the cast and
         # if values are the same (double in case of 2 dice)

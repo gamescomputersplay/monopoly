@@ -124,7 +124,7 @@ class Player:
             self.handle_salary(board, log)
         # Get the correct position if we passed GO
         self.position %= 40
-        log.add(f"Player {self.name} goes to: {board.cells[self.position].name}")
+        log.add(f"{self.name} goes to: {board.cells[self.position].name}")
         
         # Handle special cells:
         

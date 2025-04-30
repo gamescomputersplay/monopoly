@@ -77,52 +77,38 @@ def monopoly_game(data_for_simulation):
     
     # Play for the required number of turns
     for turn_n in range(1, SimulationSettings.n_moves + 1):
-        
-        # Start a turn. Log turn's number
         log.add(f"\n== GAME {game_number} Turn {turn_n} ===")
         
-        # Log all the players with their current position/money.
-        # While we are at it, count alive players
-        alive = 0
-        
+        alive_players_counter = 0
         for player_n, player in enumerate(players):
-            
             if not player.is_bankrupt:
-                alive += 1
+                alive_players_counter += 1
                 # Current player's position, money and net worth, looks like this:
-                # - Player 'Experiment': $1220 (net $1320), at 21 (E1 Kentucky Avenue)
-                log.add(f"- Player '{player.name}': " +
+                # - Player 'Hero': $1220 (net $1320), at 21 (E1 Kentucky Avenue)
+                log.add(f"- {player.name}: " +
                         f"${int(player.money)} (net ${player.net_worth()}), " +
                         f"at {player.position} ({board.cells[player.position].name})")
             else:
                 log.add(f"- Player {player_n}, '{player.name}': Bankrupt")
         
-        # Log the number of available Houses/Hotels etc
         board.log_board_state(log)
-        # Add an empty line before players' moves
         log.add("")
         
-        # If there are less than 2 alive players
+        # If there are less than 2 alive players, end the game
         # (0 alive is quite unlikely, but possible):
-        # End the game
-        if alive < 2:
-            log.add("Only 1 player remains, game over")
+        if alive_players_counter < 2:
+            log.add(f"Only {alive_players_counter} alive player remains, game over")
             break
         
         # Players make their moves
         for player in players:
             # result will be "bankrupt" if player goes bankrupt
             result = player.make_a_move(board, players, dice, log)
-            # If player goes bankrupt, log it in the data log file
             if result == "bankrupt":
                 datalog.add(f"{game_number}\t{player}\t{turn_n}")
     
     # Last thing to log in the game log: the final state of the board
     board.log_current_map(log)
-    
-    # Save the logs
     log.save()
     datalog.save()
     
-    # Useless return, but it is here to mark the end of the game
-    return None
