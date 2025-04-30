@@ -80,7 +80,10 @@ def setup_players(board, dice):
 
 def setup_game(game_number, game_seed):
     events_log = Log(LogSettings.EVENTS_LOG_PATH, disabled=not LogSettings.KEEP_GAME_LOG)
-    events_log.add(f"\n\n= GAME {game_number} of {SimulationSettings.n_games} (seed = {game_seed}) =")
+    if game_number == 1:
+        events_log.add(f"= GAME {game_number} of {SimulationSettings.n_games} (seed = {game_seed}) =")
+    else:
+        events_log.add(f"\n\n= GAME {game_number} of {SimulationSettings.n_games} (seed = {game_seed}) =")
     bankruptcies_log = Log(LogSettings.BANKRUPTCIES_PATH)
 
     # Initialize the board (plots, chance, community chest etc.)

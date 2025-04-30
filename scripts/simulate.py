@@ -12,7 +12,7 @@ from monopoly.analytics import Analyzer
 
 def run_simulation(config):
     events_log = Log(LogSettings.EVENTS_LOG_PATH)
-    events_log.reset()
+    events_log.reset("Events log")
     bankruptcies_log = Log(LogSettings.BANKRUPTCIES_PATH)
     bankruptcies_log.reset("game_number\tplayer_bankrupt\tturn")
 
