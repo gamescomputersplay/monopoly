@@ -9,7 +9,7 @@ class SimulationSettings:
     n_moves = 1000
 
     # Number of games to simulate
-    n_games = 10
+    n_games = 10000
 
     # Random seed to start simulation with
     seed = 0
@@ -68,13 +68,13 @@ class GameSettings:
     ]
 
     # Randomly shuffle order of players each game
-    shuffle_players = False
+    shuffle_players = True
 
     # Initial money (a single integer if it is the same for everybody or a dict of player positions and cash)
     # for example, either starting_money = 1500, or starting_money = [1600,1500,1400,1300]
     starting_money = {
-        0: 1200,  # hero gets 1200
-        1: 200,  # opp gets 200
+        "Hero": 1200,
+        "Alice": 200,
     }
 
     # Initial properties (a dictionary with player position (0,1,2,3) as keys and list of property numbers as values)
@@ -82,8 +82,8 @@ class GameSettings:
     # Maroons (a.k.a. Pinks): 11 = St. Charles Place, 13 = States Avenue, 14 = Virginia Avenue
     # Greens: 31 = Pacific Avenue, 32 = North Carolina Avenue, 34 = Pennsylvania Avenue
     starting_properties = {
-        0: [11, 13, 14],  # hero gets the Pinks: C1 St. Charles Place", "C2 States Avenue", "C3 Virginia Avenue
-        1: [31, 32, 34]  # opp gets the Greens: G1 Pacific Avenue", "G2 North Carolina Avenue", "G3 Pennsylvania Avenue
+        "Hero": [11, 13, 14],  # hero gets the Pinks: C1 St. Charles Place, C2 States Avenue, C3 Virginia Avenue
+        "Alice": [31, 32, 34]  # opp gets the Greens: G1 Pacific Avenue,G2 North Carolina Avenue, G3 Pennsylvania Avenue
     }
 
     # Houses and hotel available for development

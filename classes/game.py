@@ -72,17 +72,18 @@ def setup_players(board, dice):
     # Supports either a dict (per-player), or single value
     starting_money = GameSettings.starting_money
     if isinstance(starting_money, dict):
-        for idx, player in enumerate(players):
-            player.money = starting_money.get(idx, 0)  # default to 0 if not specified
+        for player in players:
+            player.money = starting_money.get(player.name, 0)
     # If starting money is a single value, assign it to all players
     else:
         for player in players:
             player.money = starting_money
             
     # set up players initial properties
-    for player_index, property_indices in GameSettings.starting_properties.items():
+    for player in players:
+        property_indices = GameSettings.starting_properties.get(player.name, [])
         for cell_index in property_indices:
-            assign_property(players[player_index], board.cells[cell_index], board)
+            assign_property(player, board.cells[cell_index], board)
             
     return players
 
