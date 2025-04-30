@@ -1,10 +1,8 @@
-''' Config file for monopoly simulation
-'''
+""" Config file for monopoly simulation
+"""
 
-class SimulationSettings():
-    ''' Simulation settings
-    '''
 
+class SimulationSettings:
     # Number of moves to simulate
     # (if there are more than one player alive after then,
     # the game is considered to have no winner)
@@ -14,32 +12,30 @@ class SimulationSettings():
     n_games = 1000
 
     # Random seed to start simulation with
-    seed = 0
+    seed = 42
 
     # Number of parallel processes to use in the simulation
     multi_process = 4
 
+
 class LogSettings:
-    ''' Settings for logging
-    '''
-    # Detailed log about all that is going on in th game:
-    # movements, purchases, rent, cards, etc
+    # Detailed log about all that is going on in the game:
+    # movements, purchases, rent, cards, etc.
     # Note that it takes about 5Mb per one 1000-turn game.
     # Might want to turn it off for large simulations
     keep_game_log = True
     game_log_file = "gamelog.txt"
 
-    # Log that keeps information about on which turn which player went bunkrupt
+    # Log that keeps information about on which turn which player went bankrupt
     # Base info for all simulation analysis
     data_log_file = "datalog.txt"
 
-class StandardPlayer:
-    ''' Settings for a Standard Player
-    '''
+
+class StandardPlayerSettings:
     # Amount of money player wants to keep unspent (money safety pillow)
     unspendable_cash = 200
 
-    # Group of properties, player refuse to buy (set, as there may be several)
+    # Group of properties, player refuses to buy (set, as there may be several)
     ignore_property_groups = {}
 
     # Willing to participate in trades
@@ -47,33 +43,34 @@ class StandardPlayer:
 
     # Only agree to trade if value difference is within these limits
     # (Absolute and relative)
-    trade_max_diff_abs = 200 # More expensive - less expensive
-    trade_max_diff_rel = 2 # More expensive / less expensive
+    trade_max_diff_abs = 200  # More expensive - less expensive
+    trade_max_diff_rel = 2  # More expensive / less expensive
 
-class ExperimentPlayer(StandardPlayer):
-    ''' Changed settings for the Experiment Player
-    '''
 
-class GameSettings():
-    ''' Setting for the game (rules + player list)
-    '''
+class HeroPlayerSettingsSettings(StandardPlayerSettings):
+    """ here you can change the settings of the hero (the Experimental Player)
+    """
+
+
+class GameSettings:
+    """ Setting for the game (rules and player list)
+    """
     # Dice settings
     dice_count = 2
     dice_sides = 6
 
     # Players and their behavior settings
     players_list = [
-        ("Experiment", ExperimentPlayer),
-        ("Standard 1", StandardPlayer),
-        ("Standard 2", StandardPlayer),
-        ("Standard 3", StandardPlayer),
+        ("Hero", HeroPlayerSettingsSettings),
+        ("opponent 1", StandardPlayerSettings),
+        ("opponent 2", StandardPlayerSettings),
+        ("opponent 3", StandardPlayerSettings),
     ]
 
     # Randomly shuffle order of players each game
     shuffle_players = True
 
-    # Initial money (a single integer if it is same
-    # for everybody or a list of values for individual values)
+    # Initial money (a single integer if it is the same for everybody or a list of values for individual values)
     starting_money = 1500
     # starting_money = [1415, 1470, 1530, 1585]
 
@@ -93,10 +90,10 @@ class GameSettings():
     income_tax = 200
     income_tax_percentage = .1
 
-    # Mortgage value: how much cash player get's for mortgaging a property
+    # Mortgage value: how much cash a player gets for mortgaging a property
     # Default is 0.5
     mortgage_value = 0.5
-    # Mortgage fee is an extra they need to pay to unmortgage
+    # The Mortgage fee is an extra they need to pay to unmortgage
     # Default is 0.1
     mortgage_fee = 0.1
 
