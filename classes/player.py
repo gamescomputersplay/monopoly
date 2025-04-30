@@ -198,7 +198,6 @@ class Player:
         self.had_doubles = 0
         self.days_in_jail = 0
 
-
     def handle_being_in_jail(self, dice_roll_is_double, board, log):
         """ Handle player being in Jail
         Return True if the player stays in jail (to end his turn)
@@ -234,7 +233,6 @@ class Player:
             self.days_in_jail += 1
             return True
         return False
-
 
     def handle_chance(self, board, players, log):
         """ Draw and act on a Chance card
@@ -346,7 +344,6 @@ class Player:
 
         return ""
 
-
     def handle_community_chest(self, board, players, log):
         """ Draw and act on a Community Chest card
         Return True if the move should be over (go to jail)
@@ -435,7 +432,6 @@ class Player:
 
         return ""
 
-
     def handle_income_tax(self, board, log):
         """ Handle Income tax: choose which option
         (fix or %) is less money and go with it
@@ -452,7 +448,6 @@ class Player:
             log.add(f"{self} pays {GameSettings.income_tax_percentage * 100:.0f}% " +
                     f"Income tax {tax_to_pay}")
         self.pay_money(tax_to_pay, "bank", board, log)
-
 
     def handle_landing_on_property(self, board, players, dice, log):
         """ Landing on property: either buy it or pay rent
@@ -534,7 +529,6 @@ class Player:
                 self.pay_money(rent_amount, landed_property.owner, board, log)
                 if not self.is_bankrupt:
                     log.add(f"{self} pays {landed_property.owner} rent ${rent_amount}")
-
 
     def improve_properties(self, board, log):
         """ While there is money to spend and properties to improve,
@@ -635,7 +629,7 @@ class Player:
         def get_next_property_to_downgrade(required_amount):
             """ Get the next property to sell houses/hotel from.
             Logic goes as follows:
-            - if you can sell a house, sell a house (otherwise seel a hotel, if you have no choice)
+            - sell a house is able, otherwise sell a hotel
             - sell one that would bring you just above the required amount (or the most expensive)
             """
 
@@ -731,7 +725,6 @@ class Player:
                         f"house on {cell_to_deimprove}, raising ${sell_price}")
                 self.money += sell_price
 
-
         # Mortgage properties
         list_to_mortgage = get_list_of_properties_to_mortgage()
 
@@ -806,7 +799,6 @@ class Player:
             elif payee == "bank" and GameSettings.free_parking_money:
                 board.free_parking_money += amount
 
-
         # Bankruptcy (can't pay even after selling and mortgaging all)
         else:
             log.add(f"{self} has to pay ${amount}, max they can raise is ${max_raisable_money}")
@@ -870,7 +862,6 @@ class Player:
             if len(owned_by_others) == 1:
                 self.wants_to_buy.add(owned_by_others[0])
 
-
     def do_a_two_way_trade(self, players, board, log):
         """ Look for and perform a two-way trade
         """
@@ -927,11 +918,9 @@ class Player:
                         player_receives = remove_by_color(player_receives, questionable_color)
                         player_gives = remove_by_color(player_gives, questionable_color)
 
-
             # Sort, starting from the most expensive
             player_receives.sort(key=lambda x: -x.cost_base)
             player_gives.sort(key=lambda x: -x.cost_base)
-
 
             # Check the difference in value and make sure it is not larger that player's preference
             while player_gives and player_receives:
@@ -1007,7 +996,7 @@ class Player:
 
                     if price_difference > 0:
                         log.add(f"{self} received " +
-                                f"price difference compensation ${abs(price_difference)} " + 
+                                f"price difference compensation ${abs(price_difference)} " +
                                 f"from {other_player}")
                     if price_difference < 0:
                         log.add(f"{other_player} received " +
