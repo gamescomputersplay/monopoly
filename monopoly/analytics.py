@@ -7,7 +7,8 @@ from settings import SimulationSettings, GameSettings
 
 
 class Analyzer:
-    """ Functions to analyze games after the simulation
+    """ Functions to analyze games after the simulation is finished
+    data is read from the bankruptcies.tsv log file
     """
 
     def __init__(self):

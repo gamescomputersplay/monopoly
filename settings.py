@@ -21,7 +21,7 @@ class SimulationSettings:
     # Number of parallel processes to use in the simulation
     multi_process = 4
 
-    # Cash that will be considered cannot go bankrupt, see this paper which estimate the probability that the game will last forever.
+    # Cash that will be considered cannot go bankrupt, see this paper that estimates the probability that the game will last forever.
     # https://www.researchgate.net/publication/224123876_Estimating_the_probability_that_the_game_of_Monopoly_never_ends
     never_bankrupt_cash = 5000
 
