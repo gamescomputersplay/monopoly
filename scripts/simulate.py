@@ -30,9 +30,7 @@ def run_simulation(config):
 
     # Print analysis of the simulation (data is read from the bankruptcies_log file)
     analyzer = Analyzer()
-    analyzer.remaining_players()
-    analyzer.game_length()
-    analyzer.winning_rate()
+    analyzer.run_all()
 
 
 if __name__ == "__main__":

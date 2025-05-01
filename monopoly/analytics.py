@@ -13,6 +13,12 @@ class Analyzer:
     def __init__(self):
         self.df = pd.read_csv(LogSettings.BANKRUPTCIES_PATH, sep='\t')
 
+    def run_all(self):
+        """ Run all analysis functions """
+        self.remaining_players()
+        self.game_length()
+        self.winning_rate()
+
     def remaining_players(self):
         """ number of games that had a clear winner, how many players remain at the end
         """
