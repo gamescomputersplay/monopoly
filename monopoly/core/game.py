@@ -3,7 +3,7 @@
 2. Players
 3. Making moves by all players
 """
-from monopoly.core.game_utils import assign_property, _check_end_conditions, log_players_state
+from monopoly.core.game_utils import assign_property, _check_end_conditions, log_players_and_board_state
 from monopoly.log_settings import LogSettings
 from settings import SimulationSettings, GameSettings
 
@@ -13,14 +13,14 @@ from monopoly.core.dice import Dice
 from monopoly.log import Log
 
 
-def monopoly_game(data_for_simulation):
+def monopoly_game(game_number_and_seeds):
     """ Simulation of one game.
     For convenience to set up a multi-thread,
     parameters are packed into a tuple: (game_number, game_seed):
     - "game number" is here to print out in the game log
     - "game_seed" to initialize random generator for the game
     """
-    game_number, game_seed = data_for_simulation
+    game_number, game_seed = game_number_and_seeds
     board, dice, events_log, bankruptcies_log = setup_game(game_number, game_seed)
 
     # Set up players with their behavior settings, starting money and properties.
@@ -32,7 +32,7 @@ def monopoly_game(data_for_simulation):
     # 3. Turn limit reached
     for turn_n in range(1, SimulationSettings.n_moves + 1):
         events_log.add(f"\n== GAME {game_number} Turn {turn_n} ===")
-        log_players_state(board, events_log, players)
+        log_players_and_board_state(board, events_log, players)
         board.log_board_state(events_log)
         events_log.add("")
 

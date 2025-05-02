@@ -1,29 +1,28 @@
 import random
 import concurrent.futures
+from typing import Type
 
 from tqdm import tqdm
 
 from monopoly.core.game import monopoly_game
 from settings import SimulationSettings
 from monopoly.log_settings import LogSettings
-from monopoly.log import Log
 from monopoly.analytics import Analyzer
 
 
-def run_simulation(config):
-    events_log = Log(LogSettings.EVENTS_LOG_PATH)
-    events_log.reset("Events log")
-    bankruptcies_log = Log(LogSettings.BANKRUPTCIES_PATH)
-    bankruptcies_log.reset("game_number\tplayer_bankrupt\tturn")
+def run_simulation(config: Type[SimulationSettings]) -> None:
+    """Simulate N games in parallel, then print an analysis."""
+    LogSettings.init_logs()
 
     master_rng = random.Random(config.seed)
-    data_for_simulation = [(i + 1, master_rng.getrandbits(32)) for i in range(config.n_games)]
+    game_seed_pairs = [(i + 1, master_rng.getrandbits(32)) for i in range(config.n_games)]
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=config.multi_process) as executor:
-        list(tqdm(executor.map(monopoly_game, data_for_simulation), total=len(data_for_simulation)))
+    with concurrent.futures.ProcessPoolExecutor(max_workers=config.multi_process) as executor, \
+            tqdm(total=config.n_games, desc="Simulating Monopoly games") as bar:
+        for _ in executor.map(monopoly_game, game_seed_pairs):
+            bar.update()
 
-    analyzer = Analyzer()
-    analyzer.run_all()
+    Analyzer().run_all()
 
 
 if __name__ == "__main__":
