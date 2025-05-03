@@ -48,7 +48,8 @@ def monopoly_game(game_number_and_seeds):
     # log the final game state
     board.log_current_map(events_log)
     events_log.save()
-    bankruptcies_log.save()
+    if bankruptcies_log.content:
+        bankruptcies_log.save()
 
 
 def setup_players(board, dice):

@@ -31,9 +31,8 @@ def _check_end_conditions(players: List[Player], log: Log, bankruptcies_log, gam
     # 2) everyone is above the never_bankrupt_cash threshold
     threshold = SimulationSettings.never_bankrupt_cash
     if all(p.money > threshold for p in alive):
-        log.add(f"All non-bankrupt players have more than {threshold}$, this game will never end")
+        log.add(f"All Rich: all non-bankrupt players have more than {threshold}$, this game will never end")
         log_players_state(log, players)
-        bankruptcies_log.add(f"{game_number}\tall rich\t{turn_n}")
         return True
     return False
 
