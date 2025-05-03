@@ -13,7 +13,7 @@ class SimulationSettings:
     n_moves = 1000
 
     # Number of games to simulate
-    n_games = 3
+    n_games = 5
 
     # Random seed to start simulation with
     seed = 0

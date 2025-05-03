@@ -1,8 +1,7 @@
 """ Player Class
 """
 
-from monopoly.core.board import Property, GoToJail, LuxuryTax, IncomeTax
-from monopoly.core.board import FreeParking, Chance, CommunityChest
+from monopoly.core.cell import GoToJail, LuxuryTax, IncomeTax, FreeParking, Chance, CommunityChest, Property
 from settings import GameSettings
 
 BANKRUPT = "bankrupt"

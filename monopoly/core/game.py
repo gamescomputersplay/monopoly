@@ -36,7 +36,7 @@ def monopoly_game(game_number_and_seeds):
         board.log_board_state(events_log)
         events_log.add("")
 
-        if _check_end_conditions(players, events_log):
+        if _check_end_conditions(players, events_log, bankruptcies_log, game_number, turn_n):
             break
 
         # Players make their moves
@@ -45,7 +45,7 @@ def monopoly_game(game_number_and_seeds):
             if result == BANKRUPT:
                 bankruptcies_log.add(f"{game_number}\t{player}\t{turn_n}")
 
-    # Last thing to log in the game log: the final state of the board
+    # log the final game state
     board.log_current_map(events_log)
     events_log.save()
     bankruptcies_log.save()
@@ -80,10 +80,8 @@ def setup_players(board, dice):
 
 def setup_game(game_number, game_seed):
     events_log = Log(LogSettings.EVENTS_LOG_PATH, disabled=not LogSettings.KEEP_GAME_LOG)
-    if game_number == 1:
-        events_log.add(f"= GAME {game_number} of {SimulationSettings.n_games} (seed = {game_seed}) =")
-    else:
-        events_log.add(f"\n\n= GAME {game_number} of {SimulationSettings.n_games} (seed = {game_seed}) =")
+    events_log.add(f"= GAME {game_number} of {SimulationSettings.n_games} (seed = {game_seed}) =")
+
     bankruptcies_log = Log(LogSettings.BANKRUPTCIES_PATH)
 
     # Initialize the board (plots, chance, community chest etc.)

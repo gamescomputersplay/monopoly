@@ -4,148 +4,14 @@ That includes:
     - Special cells (Go, Jail, etc.)
     - Decks (Chance, Community Chest)
 """
-
+from monopoly.core.cell import Cell, GoToJail, LuxuryTax, IncomeTax, FreeParking, Chance, CommunityChest, Property
+from monopoly.core.deck import Deck
 from settings import GameSettings
 
 
-class Cell:
-    """ Cell Class, base for other classes
-    """
-
-    def __init__(self, name):
-        self.name = name
-
-    def __str__(self):
-        return self.name
-
-
-class GoToJail(Cell):
-    """ Class for Go To Jail cell
-    not much going on here
-    """
-
-
-class LuxuryTax(Cell):
-    """ Class for LuxuryTax
-    """
-
-
-class IncomeTax(Cell):
-    """ Class for IncomeTax
-    """
-
-
-class FreeParking(Cell):
-    """ Class for Free Parking """
-
-
-class Chance(Cell):
-    """ Class for Chance
-    """
-
-
-class CommunityChest(Cell):
-    """ Class for Community Chest
-    """
-
-
-class Property(Cell):
-    """ Property Class (for Properties, Rails, Utilities)
-    """
-
-    def __init__(self, name, cost_base, rent_base, cost_house, rent_house, group):
-        """
-        Example of parameters for a property:
-        "B2 Vermont Avenue", 100, 6, 50, (30, 90, 270, 400, 550), "Lightblue"
-        """
-        super().__init__(name)
-
-        # Initial parameters (usually found on a property card):
-        # Cost to buy the property
-        self.cost_base = cost_base
-        # Base rent (no houses)
-        self.rent_base = rent_base
-        # Cost to build a house /hotel
-        self.cost_house = cost_house
-        # Rent with 1/2/3/4 houses and a hotel (a tuple of 5 values)
-        self.rent_house = rent_house
-        # Group of the property (color, or "Railroads", "Utilities")
-        self.group = group
-
-        # Current state of the property
-        # Owner of the property (Will be a Player object or None if not owned)
-        self.owner = None
-        # Is the property mortgaged
-        self.is_mortgaged = False
-
-        # Multiplier to calculate rent (1 - no monopoly, 2 - monopoly,
-        # 1/2/4/8 for railways, 4/10 for utilities)
-        self.monopoly_multiplier = 1
-
-        # Number of houses/hotel on the property
-        self.has_houses = 0
-        self.has_hotel = 0
-
-    def calculate_rent(self, dice):
-        """ Calculate the rent amount for this property, including monopoly, houses etc.
-        dice are used to calculate rent for utilities
-        """
-        # There is a hotel on this property
-        if self.has_hotel == 1:
-            return self.rent_house[-1]
-
-        # There are 1 or more houses on this property
-        if self.has_houses:
-            return self.rent_house[self.has_houses - 1]
-
-        if self.group != "Utilities":
-            # Undeveloped monopoly: double rent
-            # Rails: multiply rent depending on how many owned
-            return self.rent_base * self.monopoly_multiplier
-
-        # Utilities: Dice roll * 4/10
-        _, dice_points, _ = dice.cast()
-        return dice_points * self.monopoly_multiplier
-
-
-class Deck:
-    """ Parent for Community Chest and Chance cards
-    """
-
-    def __init__(self, cards):
-        # List of cards
-        self.cards = cards
-        # Pointer to a next card to draw
-        self.pointer = 0
-
-    def draw(self):
-        """ Draw one card from the deck, and put it underneath.
-        Actually, we don't manipulate cards, just shuffle them once
-        and then just move the pointer through the deck.
-        """
-        drawn_card = self.cards[self.pointer]
-        self.pointer += 1
-        if self.pointer == len(self.cards):
-            self.pointer = 0
-        return drawn_card
-
-    def remove(self, card_to_remove):
-        """ Remove a card (used for GOOJF card)
-        """
-        self.cards.remove(card_to_remove)
-        # Make sure the pointer is still okay
-        if self.pointer == len(self.cards):
-            self.pointer = 0
-
-    def add(self, card_to_add):
-        """ Add card (to put removed GOOJF card back in)
-        """
-        self.cards.insert(self.pointer - 1, card_to_add)
-
-
 class Board:
-    """ Class collecting board related information:
-    properties and their owners, build houses, etc
+    """ Class collecting board-related information:
+    properties and their owners, build houses, etc.
     """
 
     def __init__(self, settings):
@@ -262,7 +128,7 @@ class Board:
         """ self.groups is a convenient way to group cells by color/type,
         so we don't have to check all properties on the board, to, for example,
         update their monopoly status.
-        This function populate self.groups with all properties
+        This function populates self.groups with all properties
         """
         groups = {}
         for cell in self.cells:

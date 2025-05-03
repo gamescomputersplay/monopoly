@@ -10,23 +10,22 @@ import multiprocessing
 class Log:
     """ Class to handle logging of game events
     """
-    
     # Lock is declared on the class level,
     # so it would be shared among processes
     lock = multiprocessing.Lock()
-    
-    def __init__(self, log_file_name="log.txt", disabled=False):
+
+    def __init__(self, log_file_name: str = "log.txt", disabled: bool = False):
         self.log_file_name = log_file_name
         self.content = []
         self.disabled = disabled
-    
+
     def add(self, data):
         """ Add a line to a Log
         """
         if self.disabled:
             return
         self.content.append(data)
-    
+
     def save(self):
         """ Write out the log
         """
@@ -37,7 +36,7 @@ class Log:
                 logfile.write("\n".join(self.content))
                 if self.content:
                     logfile.write("\n")
-    
+
     def reset(self, first_line=""):
         """ Empty the log file, write first_line if provided
         """
