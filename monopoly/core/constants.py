@@ -1,3 +1,4 @@
+# properties groups:
 INDIGO = "Indigo"
 GREEN = "Green"
 YELLOW = "Yellow"
