@@ -1,6 +1,6 @@
 """ Player Class
 """
-from monopoly.core.board import RAILROADS, UTILITIES
+from monopoly.core.board import RAILROADS, UTILITIES, BROWN, INDIGO
 from monopoly.core.cell import GoToJail, LuxuryTax, IncomeTax, FreeParking, Chance, CommunityChest, Property
 from settings import GameSettings
 
@@ -907,7 +907,7 @@ class Player:
             
             # If there are only properties from size-2 groups, no trade
             both_colors = set(color_receives + color_gives)
-            if both_colors.issubset({"Utilities", "Indigo", "Brown"}):
+            if both_colors.issubset({UTILITIES, INDIGO, BROWN}):
                 return [], []
             
             # Look at "Indigo", "Brown", "Utilities". These have 2 properties,
@@ -915,7 +915,7 @@ class Player:
             # If they are present, remove it from the guy who has the longer list
             # If a list has the same length, remove both questionable items
             
-            for questionable_color in ["Utilities", "Indigo", "Brown"]:
+            for questionable_color in [UTILITIES, INDIGO, BROWN]:
                 if questionable_color in color_receives and questionable_color in color_gives:
                     if len(player_receives) > len(player_gives):
                         player_receives = remove_by_color(player_receives, questionable_color)

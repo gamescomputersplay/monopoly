@@ -192,11 +192,11 @@ class Board:
             ownership_count = owners.count(cell.owner)
 
             # For railroad, it is 1/2/4/8 (or 2**(n-1))
-            if cell.group == "Railroads":
+            if cell.group == RAILROADS:
                 cell.monopoly_multiplier = 2 ** (ownership_count - 1)
 
             # For Utilities, it is either 4 or 10
-            elif cell.group == "Utilities":
+            elif cell.group == UTILITIES:
                 if ownership_count == 2:
                     cell.monopoly_multiplier = 10
                 else:
