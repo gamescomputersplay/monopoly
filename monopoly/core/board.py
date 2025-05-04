@@ -5,19 +5,9 @@ That includes:
     - Decks (Chance, Community Chest)
 """
 from monopoly.core.cell import Cell, GoToJail, LuxuryTax, IncomeTax, FreeParking, Chance, CommunityChest, Property
+from monopoly.core.constants import INDIGO, GREEN, YELLOW, RED, ORANGE, PINK, LIGHTBLUE, BROWN, RAILROADS, UTILITIES
 from monopoly.core.deck import Deck
 from settings import GameSettings
-
-INDIGO = "Indigo"
-GREEN = "Green"
-YELLOW = "Yellow"
-RED = "Red"
-ORANGE = "Orange"
-PINK = "Pink"
-LIGHTBLUE = "Lightblue"
-BROWN = "Brown"
-RAILROADS = "Railroads"
-UTILITIES = "Utilities"
 
 
 class Board:

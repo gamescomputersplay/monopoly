@@ -1,6 +1,6 @@
 """ Player Class
 """
-from monopoly.core.board import RAILROADS, UTILITIES, BROWN, INDIGO
+from monopoly.core.constants import INDIGO, BROWN, RAILROADS, UTILITIES
 from monopoly.core.cell import GoToJail, LuxuryTax, IncomeTax, FreeParking, Chance, CommunityChest, Property
 from settings import GameSettings
 
