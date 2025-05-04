@@ -161,4 +161,4 @@ dmypy.json
 cython_debug/
 
 # results dir
-.results/
+results/
