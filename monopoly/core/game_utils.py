@@ -13,7 +13,7 @@ def assign_property(player, property_to_assign, board):
     player.update_lists_of_properties_to_trade(board)
 
 
-def _check_end_conditions(players: List[Player], log: Log, bankruptcies_log, game_number, turn_n) -> bool:
+def _check_end_conditions(players: List[Player], log: Log) -> bool:
     """
     Return True when:
       1) fewer than 2 players remain, or
@@ -32,7 +32,6 @@ def _check_end_conditions(players: List[Player], log: Log, bankruptcies_log, gam
     threshold = SimulationSettings.never_bankrupt_cash
     if all(p.money > threshold for p in alive):
         log.add(f"All Rich: all non-bankrupt players have more than {threshold}$, this game will never end")
-        log_players_state(log, players)
         return True
     return False
 
@@ -46,18 +45,5 @@ def log_players_and_board_state(board, log, players):
             log.add(f"- {player.name}: " +
                     f"${int(player.money)} (net ${player.net_worth()}), " +
                     f"at position {player.position} ({board.cells[player.position].name})")
-        else:
-            log.add(f"- Player {player_n}, '{player.name}': Bankrupt")
-
-
-def log_players_state(log, players):
-    """ Current player's position, money and net worth, looks like this:
-         For example: Player 'Hero': $1220 (net $1320), at 21 (E1 Kentucky Avenue)"""
-    for player_n, player in enumerate(players):
-        if not player.is_bankrupt:
-
-            log.add(f"- {player.name}: " +
-                    f"${int(player.money)} (net ${player.net_worth()}), " +
-                    f"at {player.position}")
         else:
             log.add(f"- Player {player_n}, '{player.name}': Bankrupt")
