@@ -1,5 +1,7 @@
 """ Config file for monopoly simulation
 """
+from monopoly.core.constants import GREEN
+
 HERO = "Hero"
 player2 = "Alice"
 player3 = "Bob"
@@ -43,17 +45,11 @@ class StandardPlayerSettings:
 
 
 class HeroPlayerSettingsSettings(StandardPlayerSettings):
-    """ here you can change the settings of the hero (the Experimental Player)
-    """
-
+    """ here you can change the settings of the hero (the Experimental Player) """
+    # ignore_property_groups = {GREEN}
 
 class GameSettings:
-    """ Setting for the game (rules and player list)
-    """
-    # Dice settings
-    dice_count = 2
-    dice_sides = 6
-
+    """ Setting for the game (rules and player list) """
     # Players and their behavior settings
     players_list = [
         (HERO, HeroPlayerSettingsSettings),
@@ -83,12 +79,12 @@ class GameSettings:
         player4: []
     }
 
+    # Game mechanics settings:
+    
     # Houses and hotel available for development
     available_houses = 36
     available_hotels = 12
-
-    # Game mechanics settings
-
+    
     # Passing Go salary
     salary = 200
 
@@ -112,3 +108,7 @@ class GameSettings:
     # Controversial house rule to collect fines on
     # Free Parking and give to whoever lands there
     free_parking_money = False
+    
+    # Dice settings
+    dice_count = 2
+    dice_sides = 6
