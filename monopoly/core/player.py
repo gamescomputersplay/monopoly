@@ -552,7 +552,7 @@ class Player:
                         cell.has_hotel == 0
                         and not cell.is_mortgaged
                         and cell.monopoly_multiplier == 2
-                        # and cell.group not in (RAILROADS, UTILITIES)
+                        and cell.group not in (RAILROADS, UTILITIES)
                 ):
                     # Look at other cells in this group
                     # If they have fewer houses, this cell can not be improved
