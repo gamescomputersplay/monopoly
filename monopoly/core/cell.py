@@ -67,8 +67,8 @@ class Property(Cell):
         # Is the property mortgaged
         self.is_mortgaged = False
 
-        # Multiplier to calculate rent (1 - no monopoly, 2 - monopoly,
-        # 1/2/4/8 for railways, 4/10 for utilities)
+        # Multiplier to calculate rent
+        # regular properties: 1/2, railways: 1/2/4/8, utilities: 4/10)
         self.monopoly_multiplier = 1
 
         # Number of houses/hotel on the property

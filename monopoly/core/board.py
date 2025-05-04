@@ -8,6 +8,17 @@ from monopoly.core.cell import Cell, GoToJail, LuxuryTax, IncomeTax, FreeParking
 from monopoly.core.deck import Deck
 from settings import GameSettings
 
+INDIGO = "Indigo"
+GREEN = "Green"
+YELLOW = "Yellow"
+RED = "Red"
+ORANGE = "Orange"
+PINK = "Pink"
+LIGHTBLUE = "Lightblue"
+BROWN = "Brown"
+RAILROADS = "Railroads"
+UTILITIES = "Utilities"
+
 
 class Board:
     """ Class collecting board-related information:
@@ -23,52 +34,52 @@ class Board:
         self.cells = []
         # 0-4
         self.cells.append(Cell("GO"))
-        self.cells.append(Property("A1 Mediterranean Avenue", 60, 2, 50, (10, 30, 90, 160, 250), "Brown"))
+        self.cells.append(Property("A1 Mediterranean Avenue", 60, 2, 50, (10, 30, 90, 160, 250), BROWN))
         self.cells.append(CommunityChest("COM1 Community Chest"))
-        self.cells.append(Property("A2 Baltic Avenue", 60, 4, 50, (20, 60, 180, 320, 450), "Brown"))
+        self.cells.append(Property("A2 Baltic Avenue", 60, 4, 50, (20, 60, 180, 320, 450), BROWN))
         self.cells.append(IncomeTax("IT Income Tax"))
         # 5-9
-        self.cells.append(Property("R1 Reading Railroad", 200, 25, 0, (0, 0, 0, 0, 0), "Railroads"))
-        self.cells.append(Property("B1 Oriental Avenue", 100, 6, 50, (30, 90, 270, 400, 550), "Lightblue"))
+        self.cells.append(Property("R1 Reading Railroad", 200, 25, 0, (0, 0, 0, 0, 0), RAILROADS))
+        self.cells.append(Property("B1 Oriental Avenue", 100, 6, 50, (30, 90, 270, 400, 550), LIGHTBLUE))
         self.cells.append(Chance("CH1 Chance"))
-        self.cells.append(Property("B2 Vermont Avenue", 100, 6, 50, (30, 90, 270, 400, 550), "Lightblue"))
-        self.cells.append(Property("B3 Connecticut Avenue", 120, 8, 50, (40, 100, 300, 450, 600), "Lightblue"))
+        self.cells.append(Property("B2 Vermont Avenue", 100, 6, 50, (30, 90, 270, 400, 550), LIGHTBLUE))
+        self.cells.append(Property("B3 Connecticut Avenue", 120, 8, 50, (40, 100, 300, 450, 600), LIGHTBLUE))
         # 10-14
         self.cells.append(Cell("JL Jail"))
-        self.cells.append(Property("C1 St. Charles Place", 140, 10, 100, (50, 150, 450, 625, 750), "Pink"))
-        self.cells.append(Property("U1 Electric Company", 150, 0, 0, (0, 0, 0, 0, 0), "Utilities"))
-        self.cells.append(Property("C2 States Avenue", 140, 10, 100, (50, 150, 450, 625, 750), "Pink"))
-        self.cells.append(Property("C3 Virginia Avenue", 160, 12, 100, (60, 180, 500, 700, 900), "Pink"))
+        self.cells.append(Property("C1 St. Charles Place", 140, 10, 100, (50, 150, 450, 625, 750), PINK))
+        self.cells.append(Property("U1 Electric Company", 150, 0, 0, (0, 0, 0, 0, 0), UTILITIES))
+        self.cells.append(Property("C2 States Avenue", 140, 10, 100, (50, 150, 450, 625, 750), PINK))
+        self.cells.append(Property("C3 Virginia Avenue", 160, 12, 100, (60, 180, 500, 700, 900), PINK))
         # 15-19
-        self.cells.append(Property("R2 Pennsylvania Railroad", 200, 25, 0, (0, 0, 0, 0, 0), "Railroads"))
-        self.cells.append(Property("D1 St. James Place", 180, 14, 100, (70, 200, 550, 700, 950), "Orange"))
+        self.cells.append(Property("R2 Pennsylvania Railroad", 200, 25, 0, (0, 0, 0, 0, 0), RAILROADS))
+        self.cells.append(Property("D1 St. James Place", 180, 14, 100, (70, 200, 550, 700, 950), ORANGE))
         self.cells.append(CommunityChest("COM2 Community Chest"))
-        self.cells.append(Property("D2 Tennessee Avenue", 180, 14, 100, (70, 200, 550, 700, 950), "Orange"))
-        self.cells.append(Property("D3 New York Avenue", 200, 16, 100, (80, 220, 600, 800, 1000), "Orange"))
+        self.cells.append(Property("D2 Tennessee Avenue", 180, 14, 100, (70, 200, 550, 700, 950), ORANGE))
+        self.cells.append(Property("D3 New York Avenue", 200, 16, 100, (80, 220, 600, 800, 1000), ORANGE))
         # 20-24
         self.cells.append(FreeParking("FP Free Parking"))
-        self.cells.append(Property("E1 Kentucky Avenue", 220, 18, 150, (90, 250, 700, 875, 1050), "Red"))
+        self.cells.append(Property("E1 Kentucky Avenue", 220, 18, 150, (90, 250, 700, 875, 1050), RED))
         self.cells.append(Chance("CH2 Chance"))
-        self.cells.append(Property("E2 Indiana Avenue", 220, 18, 150, (90, 250, 700, 875, 1050), "Red"))
-        self.cells.append(Property("E3 Illinois Avenue", 240, 20, 150, (100, 300, 750, 925, 1100), "Red"))
+        self.cells.append(Property("E2 Indiana Avenue", 220, 18, 150, (90, 250, 700, 875, 1050), RED))
+        self.cells.append(Property("E3 Illinois Avenue", 240, 20, 150, (100, 300, 750, 925, 1100), RED))
         # 25-29
-        self.cells.append(Property("R3 B&O Railroad", 200, 25, 0, (0, 0, 0, 0, 0), "Railroads"))
-        self.cells.append(Property("F1 Atlantic Avenue", 260, 22, 150, (110, 330, 800, 975, 1150), "Yellow"))
-        self.cells.append(Property("F2 Ventnor Avenue", 260, 22, 150, (110, 330, 800, 975, 1150), "Yellow"))
-        self.cells.append(Property("U2 Waterworks", 150, 0, 0, (0, 0, 0, 0, 0), "Utilities"))
-        self.cells.append(Property("F3 Marvin Gardens", 280, 24, 150, (120, 360, 850, 1025, 1200), "Yellow"))
+        self.cells.append(Property("R3 B&O Railroad", 200, 25, 0, (0, 0, 0, 0, 0), RAILROADS))
+        self.cells.append(Property("F1 Atlantic Avenue", 260, 22, 150, (110, 330, 800, 975, 1150), YELLOW))
+        self.cells.append(Property("F2 Ventnor Avenue", 260, 22, 150, (110, 330, 800, 975, 1150), YELLOW))
+        self.cells.append(Property("U2 Waterworks", 150, 0, 0, (0, 0, 0, 0, 0), UTILITIES))
+        self.cells.append(Property("F3 Marvin Gardens", 280, 24, 150, (120, 360, 850, 1025, 1200), YELLOW))
         # 30-34
         self.cells.append(GoToJail("GTJ Go To Jail"))
-        self.cells.append(Property("G1 Pacific Avenue", 300, 26, 200, (130, 390, 900, 1100, 1275), "Green"))
-        self.cells.append(Property("G2 North Carolina Avenue", 300, 26, 200, (130, 390, 900, 1100, 1275), "Green"))
+        self.cells.append(Property("G1 Pacific Avenue", 300, 26, 200, (130, 390, 900, 1100, 1275), GREEN))
+        self.cells.append(Property("G2 North Carolina Avenue", 300, 26, 200, (130, 390, 900, 1100, 1275), GREEN))
         self.cells.append(CommunityChest("COM3 Community Chest"))
-        self.cells.append(Property("G3 Pennsylvania Avenue", 320, 28, 200, (150, 450, 1000, 1200, 1400), "Green"))
+        self.cells.append(Property("G3 Pennsylvania Avenue", 320, 28, 200, (150, 450, 1000, 1200, 1400), GREEN))
         # 35-39
-        self.cells.append(Property("R4 Short Line", 200, 25, 0, (0, 0, 0, 0, 0), "Railroads"))
+        self.cells.append(Property("R4 Short Line", 200, 25, 0, (0, 0, 0, 0, 0), RAILROADS))
         self.cells.append(Chance("CH3 Chance"))
-        self.cells.append(Property("H1 Park Place", 350, 35, 200, (175, 500, 1100, 1300, 1500), "Indigo"))
+        self.cells.append(Property("H1 Park Place", 350, 35, 200, (175, 500, 1100, 1300, 1500), INDIGO))
         self.cells.append(LuxuryTax("LT Luxury Tax"))
-        self.cells.append(Property("H2 Boardwalk", 400, 50, 200, (200, 600, 1400, 1700, 2000), "Indigo"))
+        self.cells.append(Property("H2 Boardwalk", 400, 50, 200, (200, 600, 1400, 1700, 2000), INDIGO))
 
         # Board fields, grouped by group self.groups["Green"] - list of all greens
         self.groups = self.create_property_groups()
