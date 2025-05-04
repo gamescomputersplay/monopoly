@@ -164,6 +164,7 @@ class Board:
             # G1 Pacific Avenue, Owner: Exp, Rent multiplier: 2, Can improve: False, Improvements: hotel
             log.add(f"- {cell.name}, Owner: {cell.owner}, " +
                     f"Rent multiplier: {cell.monopoly_multiplier}, Improvements: {improvements}")
+        log.add("")
 
     def recalculate_monopoly_multipliers(self, changed_cell):
         """ Go through all properties in the property group and update flags:

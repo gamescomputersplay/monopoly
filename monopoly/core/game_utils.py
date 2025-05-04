@@ -13,7 +13,7 @@ def assign_property(player, property_to_assign, board):
     player.update_lists_of_properties_to_trade(board)
 
 
-def _check_end_conditions(players: List[Player], log: Log) -> bool:
+def _check_end_conditions(players: List[Player], log: Log, game_number, turn_n) -> bool:
     """
     Return True when:
       1) fewer than 2 players remain, or
@@ -31,7 +31,7 @@ def _check_end_conditions(players: List[Player], log: Log) -> bool:
     # 2) everyone is above the never_bankrupt_cash threshold
     threshold = SimulationSettings.never_bankrupt_cash
     if all(p.money > threshold for p in alive):
-        log.add(f"All Rich: all non-bankrupt players have more than {threshold}$, this game will never end")
+        log.add(f"== All Rich ==: GAME {game_number}, Turn {turn_n}: all non-bankrupt players have more than {threshold}$, this game will never end")
         return True
     return False
 

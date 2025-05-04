@@ -36,7 +36,7 @@ def monopoly_game(game_number_and_seeds):
         board.log_board_state(events_log)
         events_log.add("")
 
-        if _check_end_conditions(players, events_log):
+        if _check_end_conditions(players, events_log, game_number, turn_n):
             break
 
         # Players make their moves
