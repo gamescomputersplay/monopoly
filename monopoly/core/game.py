@@ -5,7 +5,7 @@
 """
 from monopoly.core.game_utils import assign_property, _check_end_conditions, log_players_and_board_state
 from monopoly.log_settings import LogSettings
-from settings import SimulationSettings, GameSettings
+from settings import SimulationSettings, GameSettings, GameMechanics
 
 from monopoly.core.player import Player, BANKRUPT
 from monopoly.core.board import Board
@@ -87,7 +87,7 @@ def setup_game(game_number, game_seed):
 
     # Initialize the board (plots, chance, community chest etc.)
     board = Board(GameSettings)
-    dice = Dice(game_seed, GameSettings.dice_count, GameSettings.dice_sides, events_log)
+    dice = Dice(game_seed, GameMechanics.dice_count, GameMechanics.dice_sides, events_log)
     dice.shuffle(board.chance.cards)
     dice.shuffle(board.chest.cards)
     return board, dice, events_log, bankruptcies_log

@@ -7,7 +7,7 @@ That includes:
 from monopoly.core.cell import Cell, GoToJail, LuxuryTax, IncomeTax, FreeParking, Chance, CommunityChest, Property
 from monopoly.core.constants import INDIGO, GREEN, YELLOW, RED, ORANGE, PINK, LIGHTBLUE, BROWN, RAILROADS, UTILITIES
 from monopoly.core.deck import Deck
-from settings import GameSettings
+from settings import GameMechanics
 
 
 class Board:
@@ -78,8 +78,8 @@ class Board:
         self.free_parking_money = 0
 
         # Available houses and hotels
-        self.available_houses = GameSettings.available_houses
-        self.available_hotels = GameSettings.available_hotels
+        self.available_houses = GameMechanics.available_houses
+        self.available_hotels = GameMechanics.available_hotels
 
         # Chance deck
         self.chance = Deck([
@@ -144,7 +144,7 @@ class Board:
         """ Log the current state of the houses/hotels, free parking money
         """
         log.add(f"Available houses/hotels: {self.available_houses}/{self.available_hotels}")
-        if GameSettings.free_parking_money:
+        if GameMechanics.free_parking_money:
             log.add(f"Free Parking Money: ${self.free_parking_money}")
 
     def log_current_map(self, log):

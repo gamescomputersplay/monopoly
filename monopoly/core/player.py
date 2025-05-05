@@ -1,8 +1,8 @@
 """ Player Class
 """
-from monopoly.core.constants import INDIGO, BROWN, RAILROADS, UTILITIES
 from monopoly.core.cell import GoToJail, LuxuryTax, IncomeTax, FreeParking, Chance, CommunityChest, Property
-from settings import GameSettings
+from monopoly.core.constants import INDIGO, BROWN, RAILROADS, UTILITIES
+from settings import GameMechanics
 
 BANKRUPT = "bankrupt"
 
@@ -65,7 +65,7 @@ class Player:
             
             if cell.is_mortgaged and not count_mortgaged_as_full_value:
                 # Partially count mortgaged properties
-                net_worth += int(cell.cost_base * (1 - GameSettings.mortgage_value))
+                net_worth += int(cell.cost_base * (1 - GameMechanics.mortgage_value))
             else:
                 net_worth += cell.cost_base
                 net_worth += (cell.has_houses + cell.has_hotel) * cell.cost_house
@@ -100,7 +100,7 @@ class Player:
         
         # The move itself:
         # Player rolls the dice
-        _, dice_sum, is_double = dice.cast()
+        _, dice_sum, is_double = dice.roll()
         
         # Get doubles for the third time: go to jail
         if is_double and self.had_doubles == 2:
@@ -151,16 +151,16 @@ class Player:
         # Player lands on "Free Parking"
         if isinstance(board.cells[self.position], FreeParking):
             # If Free Parking Money house rule is on: get the money
-            if GameSettings.free_parking_money:
+            if GameMechanics.free_parking_money:
                 log.add(f"{self} gets ${board.free_parking_money} from Free Parking")
                 self.money += board.free_parking_money
                 board.free_parking_money = 0
         
         # Player lands on "Luxury Tax"
         if isinstance(board.cells[self.position], LuxuryTax):
-            self.pay_money(GameSettings.luxury_tax, "bank", board, log)
+            self.pay_money(GameMechanics.luxury_tax, "bank", board, log)
             if not self.is_bankrupt:
-                log.add(f"{self} pays Luxury Tax ${GameSettings.luxury_tax}")
+                log.add(f"{self} pays Luxury Tax ${GameMechanics.luxury_tax}")
         
         # Player lands on "Income Tax"
         if isinstance(board.cells[self.position], IncomeTax):
@@ -185,10 +185,9 @@ class Player:
             return None
     
     def handle_salary(self, board, log):
-        """ Adding Salary to the player's money, according to the game's settings
-        """
-        self.money += board.settings.salary
-        log.add(f"Player {self.name} receives salary ${board.settings.salary}")
+        """ Adding Salary to the player's money, according to the game's settings """
+        self.money += board.settings.mechanics.salary
+        log.add(f"Player {self.name} receives salary ${board.settings.mechanics.salary}")
     
     def handle_going_to_jail(self, message, log):
         """ Start the jail time
@@ -224,8 +223,8 @@ class Player:
         # Get out of jail and pay a fine
         elif self.days_in_jail == 2:  # It's your third day
             log.add(f"{self} did not rolled a double for the third time, " +
-                    f"pays {GameSettings.exit_jail_fine} and leaves jail")
-            self.pay_money(GameSettings.exit_jail_fine, "bank", board, log)
+                    f"pays {GameMechanics.exit_jail_fine} and leaves jail")
+            self.pay_money(GameMechanics.exit_jail_fine, "bank", board, log)
             self.in_jail = False
             self.days_in_jail = 0
         # Stay in jail for another turn
@@ -439,14 +438,14 @@ class Player:
         """
         # Choose smaller between fixed rate and percentage
         tax_to_pay = min(
-            GameSettings.income_tax,
-            int(GameSettings.income_tax_percentage *
+            GameMechanics.income_tax,
+            int(GameMechanics.income_tax_percentage *
                 self.net_worth(count_mortgaged_as_full_value=True)))
         
-        if tax_to_pay == GameSettings.income_tax:
-            log.add(f"{self} pays fixed Income tax {GameSettings.income_tax}")
+        if tax_to_pay == GameMechanics.income_tax:
+            log.add(f"{self} pays fixed Income tax {GameMechanics.income_tax}")
         else:
-            log.add(f"{self} pays {GameSettings.income_tax_percentage * 100:.0f}% " +
+            log.add(f"{self} pays {GameMechanics.income_tax_percentage * 100:.0f}% " +
                     f"Income tax {tax_to_pay}")
         self.pay_money(tax_to_pay, "bank", board, log)
     
@@ -616,8 +615,8 @@ class Player:
         for cell in self.owned:
             if cell.is_mortgaged:
                 cost_to_unmortgage = \
-                    cell.cost_base * GameSettings.mortgage_value + \
-                    cell.cost_base * GameSettings.mortgage_fee
+                    cell.cost_base * GameMechanics.mortgage_value + \
+                    cell.cost_base * GameMechanics.mortgage_fee
                 if self.money - cost_to_unmortgage >= self.settings.unspendable_cash:
                     log.add(f"{self} unmortgages {cell} for ${cost_to_unmortgage}")
                     self.money -= cost_to_unmortgage
@@ -686,7 +685,7 @@ class Player:
             for cell in self.owned:
                 if not cell.is_mortgaged:
                     list_to_mortgage.append(
-                        (int(cell.cost_base * GameSettings.mortgage_value), cell))
+                        (int(cell.cost_base * GameMechanics.mortgage_value), cell))
             
             # It will be popped from the end, so first to sell should be last
             list_to_mortgage.sort(key=lambda x: -x[0])
@@ -761,7 +760,7 @@ class Player:
                 if cell.has_hotel > 0:
                     max_raisable += cell.cost_house * 5 // 2
                 if not cell.is_mortgaged:
-                    max_raisable += int(cell.cost_base * GameSettings.mortgage_value)
+                    max_raisable += int(cell.cost_base * GameMechanics.mortgage_value)
             return max_raisable
         
         def transfer_all_properties(payee, board, log):
@@ -790,7 +789,7 @@ class Player:
             self.money -= amount
             if payee != "bank":
                 payee.money += amount
-            elif payee == "bank" and GameSettings.free_parking_money:
+            elif payee == "bank" and GameMechanics.free_parking_money:
                 board.free_parking_money += amount
             return
         
@@ -803,7 +802,7 @@ class Player:
             self.money -= amount
             if payee != "bank":
                 payee.money += amount
-            elif payee == "bank" and GameSettings.free_parking_money:
+            elif payee == "bank" and GameMechanics.free_parking_money:
                 board.free_parking_money += amount
         
         # Bankruptcy (can't pay even after selling and mortgaging all)
@@ -817,7 +816,7 @@ class Player:
             log.add(f"{self} gave {payee} all their remaining money (${self.money})")
             if payee != "bank":
                 payee.money += self.money
-            elif payee == "bank" and GameSettings.free_parking_money:
+            elif payee == "bank" and GameMechanics.free_parking_money:
                 board.free_parking_money += amount
             
             self.money = 0
@@ -836,7 +835,7 @@ class Player:
         # If player is not willing to trade, he would
         # have not declared his offered and desired properties,
         # thus stopping any trade with them
-        if not self.settings.participates_in_trades:
+        if not self.settings.is_willing_to_make_trades:
             return
         
         # Reset the lists
@@ -936,13 +935,13 @@ class Player:
                     get_price_difference(player_gives, player_receives)
                 
                 # This player gives too much
-                if diff_abs > self.settings.trade_max_diff_abs or \
-                        diff_giver > self.settings.trade_max_diff_rel:
+                if diff_abs > self.settings.trade_max_diff_absolute or \
+                        diff_giver > self.settings.trade_max_diff_relative:
                     player_gives.pop()
                     continue
                 # The Other player gives too much
-                if -diff_abs > other_player.settings.trade_max_diff_abs or \
-                        diff_receiver > other_player.settings.trade_max_diff_rel:
+                if -diff_abs > other_player.settings.trade_max_diff_absolute or \
+                        diff_receiver > other_player.settings.trade_max_diff_relative:
                     player_receives.pop()
                     continue
                 break

@@ -1,62 +1,73 @@
-""" Config file for monopoly simulation
-"""
+""" Config file for monopoly simulation """
+from dataclasses import dataclass
+from typing import FrozenSet
 
 HERO = "Hero"
-player2 = "Alice"
-player3 = "Bob"
-player4 = "Charly"
+PLAYER_2 = "Alice"
+PLAYER_3 = "Bob"
+PLAYER_4 = "Charly"
 
 
+@dataclass(frozen=True)
+class GameMechanics:
+    # Houses and hotel available for development
+    available_houses = 36
+    available_hotels = 12
+    salary = 200  # Passing Go salary
+    luxury_tax = 100
+    # Income tax (cash or share of net worth)
+    income_tax = 200
+    income_tax_percentage = .1
+    mortgage_value = 0.5  # how much cash a player gets for mortgaging a property (Default is 0.5)
+    mortgage_fee = 0.1  # The extra a player needs to pay to unmortgage (Default is 0.1)
+    exit_jail_fine = 50  # Fine to get out of jail without rolling doubles
+    free_parking_money = False  # Controversial house rule to collect fines on Free Parking and give to whoever lands there
+    # Dice settings
+    dice_count = 2
+    dice_sides = 6
+    
+
+@dataclass(frozen=True)
 class SimulationSettings:
-    # Number of moves to simulate
-    # (if there are more than one player alive after then,
-    # the game is considered to have no winner)
-    n_moves = 1000
+    n_games: int = 1_000_000  # Number of games to simulate
+    n_moves: int = 1000  # Max Number of moves per game
+    seed: int = 0  # Random seed to start simulation with
+    multi_process: int = 4  # Number of parallel processes to use in the simulation
     
-    # Number of games to simulate
-    n_games = 1000
-    
-    # Random seed to start simulation with
-    seed = 0
-    
-    # Number of parallel processes to use in the simulation
-    multi_process = 4
-    
-    # Cash that will be considered cannot go bankrupt, see this paper that estimates the probability that the game
+    # Cash that will be considered cannot go bankrupt. See this paper that estimates the probability that the game
     # will last forever. https://www.researchgate.net/publication
     # /224123876_Estimating_the_probability_that_the_game_of_Monopoly_never_ends
-    never_bankrupt_cash = 5000
+    never_bankrupt_cash: int = 5000
 
 
+@dataclass(frozen=True)
 class StandardPlayerSettings:
-    # Amount of money the standard player wants to keep unspent (money safety pillow)
-    unspendable_cash = 200
+    unspendable_cash: int = 200  # Amount of money the player wants to keep unspent (money safety pillow)
+    ignore_property_groups: FrozenSet[str] = frozenset()  # Group of properties do not buy, i.e.{"RED", "GREEN"}
     
-    # Group of properties that the player refuses to buy (a set, as there may be several)
-    ignore_property_groups = {}
-    
-    # Willing to participate in trades
-    participates_in_trades = True
-    
-    # Only agree to trade if the value difference is within these limits
-    # (Absolute and relative)
-    trade_max_diff_abs = 200  # More expensive - less expensive
-    trade_max_diff_rel = 2  # More expensive / less expensive
+    is_willing_to_make_trades: bool = True
+    # agree to trades if the value difference is within these limits:
+    trade_max_diff_absolute: int = 200  # More expensive - less expensive
+    trade_max_diff_relative: float = 2.0  # More expensive / less expensive
 
 
-class HeroPlayerSettingsSettings(StandardPlayerSettings):
+@dataclass(frozen=True)
+class HeroPlayerSettings(StandardPlayerSettings):
     """ here you can change the settings of the hero (the Experimental Player) """
-    # ignore_property_groups = {GREEN}
+    ignore_property_groups: frozenset[str] = frozenset({"GREEN"})
 
 
+@dataclass(frozen=True)
 class GameSettings:
     """ Setting for the game (rules and player list) """
+    mechanics: GameMechanics = GameMechanics()  # the rules of the game
+    
     # Players and their behavior settings
     players_list = [
-        (HERO, HeroPlayerSettingsSettings),
-        (player2, StandardPlayerSettings),
-        (player3, StandardPlayerSettings),
-        (player4, StandardPlayerSettings),
+        (HERO, HeroPlayerSettings),
+        (PLAYER_2, StandardPlayerSettings),
+        (PLAYER_3, StandardPlayerSettings),
+        (PLAYER_4, StandardPlayerSettings),
     ]
     
     # Randomly shuffle the order of players each game
@@ -66,50 +77,17 @@ class GameSettings:
     # for example, either starting_money = 1500 or a dictionary with player names as keys and int values
     starting_money = {
         HERO: 1500,
-        player2: 1500,
-        player3: 1500,
-        player4: 1500
+        PLAYER_2: 1500,
+        PLAYER_3: 1500,
+        PLAYER_4: 1500
     }
     
     # Initial properties (a dictionary with player names as keys and a list of property numbers as values)
     # Property numbers correspond to indices in `board.cells`
     starting_properties = {
         HERO: [],
-        player2: [],
-        player3: [],
-        player4: []
+        PLAYER_2: [],
+        PLAYER_3: [],
+        PLAYER_4: []
     }
     
-    # Game mechanics settings:
-    
-    # Houses and hotel available for development
-    available_houses = 36
-    available_hotels = 12
-    
-    # Passing Go salary
-    salary = 200
-    
-    # Luxury tax
-    luxury_tax = 100
-    
-    # Income tax (cash or share of net worth)
-    income_tax = 200
-    income_tax_percentage = .1
-    
-    # Mortgage value: how much cash a player gets for mortgaging a property
-    # Default is 0.5
-    mortgage_value = 0.5
-    # The Mortgage fee is an extra they need to pay to unmortgage
-    # Default is 0.1
-    mortgage_fee = 0.1
-    
-    # Fine to get out of jail without rolling doubles
-    exit_jail_fine = 50
-    
-    # Controversial house rule to collect fines on
-    # Free Parking and give to whoever lands there
-    free_parking_money = False
-    
-    # Dice settings
-    dice_count = 2
-    dice_sides = 6

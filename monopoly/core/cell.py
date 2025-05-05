@@ -1,3 +1,6 @@
+from monopoly.core.constants import UTILITIES
+
+
 class Cell:
     """Base class for all board cells."""
 
@@ -87,11 +90,11 @@ class Property(Cell):
         if self.has_houses:
             return self.rent_house[self.has_houses - 1]
 
-        if self.group != "Utilities":
+        if self.group != UTILITIES:
             # Undeveloped monopoly: double rent
             # Rails: multiply rent depending on how many owned
             return self.rent_base * self.monopoly_multiplier
 
         # Utilities: Dice roll * 4/10
-        _, dice_points, _ = dice.cast()
-        return dice_points * self.monopoly_multiplier
+        _, dice_sum, _ = dice.roll()
+        return dice_sum * self.monopoly_multiplier
