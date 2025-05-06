@@ -183,7 +183,7 @@ class Player:
     def handle_salary(self, board, log):
         """ Adding Salary to the player's money, according to the game's settings """
         self.money += board.settings.mechanics.salary
-        log.add(f"Player {self.name} receives salary ${board.settings.mechanics.salary}")
+        log.add(f" {self.name} receives salary ${board.settings.mechanics.salary}")
 
     def handle_going_to_jail(self, message, log):
         """ Start the jail time
@@ -486,7 +486,7 @@ class Player:
             if is_willing_to_buy_property(landed_property):
                 # Buy property
                 buy_property(landed_property)
-                log.add(f"Player {self.name} bought {landed_property} " +
+                log.add(f"{self.name} bought {landed_property} " +
                         f"for ${landed_property.cost_base}")
 
                 # Recalculate all monopolies / can build flags
@@ -498,7 +498,7 @@ class Player:
                     player.update_lists_of_properties_to_trade(board)
 
             else:
-                log.add(f"Player {self.name} landed on a {landed_property}, he refuses to buy it")
+                log.add(f"{self.name} landed on a {landed_property}, he refuses to buy it")
                 # TODO: Bank auctions the property
 
         # Property has an owner
@@ -511,7 +511,7 @@ class Player:
                 log.add("Own property, no rent")
             # Handle rent payments
             else:
-                log.add(f"Player {self.name} landed on a property, " +
+                log.add(f"{self.name} landed on a property, " +
                         f"owned by {landed_property.owner}")
                 rent_amount = landed_property.calculate_rent(dice)
                 if self.other_notes == "double rent":
