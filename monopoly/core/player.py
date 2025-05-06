@@ -493,7 +493,7 @@ class Player:
                 log.add(f"Player {self.name} bought {landed_property} " +
                         f"for ${landed_property.cost_base}")
                 
-                # Recalculate all monopoly / can build flags
+                # Recalculate all monopolies / can build flags
                 board.recalculate_monopoly_multipliers(landed_property)
                 
                 # Recalculate who wants to buy what
