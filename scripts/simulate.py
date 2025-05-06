@@ -1,14 +1,12 @@
 import random
-import concurrent.futures
 from typing import Type
 
-from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 
-from monopoly.core.game import monopoly_game
-from settings import SimulationSettings
-from monopoly.log_settings import LogSettings
 from monopoly.analytics import Analyzer
+from monopoly.core.game import monopoly_game
+from monopoly.log_settings import LogSettings
+from settings import SimulationSettings
 
 
 def run_simulation(config: Type[SimulationSettings]) -> None:
