@@ -5,10 +5,11 @@
 """
 from typing import Tuple
 
+from monopoly.core.move_result import MoveResult
 from monopoly.core.board import Board
 from monopoly.core.dice import Dice
 from monopoly.core.game_utils import assign_property, _check_end_conditions, log_players_and_board_state
-from monopoly.core.player import Player, BANKRUPT
+from monopoly.core.player import Player
 from monopoly.log import Log
 from monopoly.log_settings import LogSettings
 from settings import SimulationSettings, GameSettings, GameMechanics
@@ -42,8 +43,10 @@ def monopoly_game(game_number_and_seeds: Tuple[int,int]) -> None:
 
         # Players make their moves
         for player in players:
-            result = player.make_a_move(board, players, dice, events_log)
-            if result == BANKRUPT:
+            if player.is_bankrupt:
+                continue
+            move_result = player.make_a_move(board, players, dice, events_log)
+            if move_result == MoveResult.BANKRUPT:
                 bankruptcies_log.add(f"{game_number}\t{player}\t{turn_n}")
 
     # log the final game state
