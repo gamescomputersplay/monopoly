@@ -29,7 +29,7 @@ class GameMechanics:
 
 @dataclass(frozen=True)
 class SimulationSettings:
-    n_games: int = 1_000_000  # Number of games to simulate
+    n_games: int = 1_000  # Number of games to simulate
     n_moves: int = 1000  # Max Number of moves per game
     seed: int = 0  # Random seed to start simulation with
     multi_process: int = 4  # Number of parallel processes to use in the simulation
@@ -54,7 +54,7 @@ class StandardPlayerSettings:
 @dataclass(frozen=True)
 class HeroPlayerSettings(StandardPlayerSettings):
     """ here you can change the settings of the hero (the Experimental Player) """
-    ignore_property_groups: frozenset[str] = frozenset({"GREEN"})
+    ignore_property_groups: FrozenSet[str] = frozenset({"GREEN"})
 
 
 @dataclass(frozen=True)
