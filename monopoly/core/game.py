@@ -3,6 +3,8 @@
 2. Players
 3. Making moves by all players
 """
+from typing import List, Tuple
+
 from monopoly.core.game_utils import assign_property, _check_end_conditions, log_players_and_board_state
 from monopoly.log_settings import LogSettings
 from settings import SimulationSettings, GameSettings, GameMechanics
@@ -13,7 +15,7 @@ from monopoly.core.dice import Dice
 from monopoly.log import Log
 
 
-def monopoly_game(game_number_and_seeds):
+def monopoly_game(game_number_and_seeds: Tuple[int,int]) -> List[Tuple[int,str,int]]:
     """ Simulation of one game.
     For convenience to set up a multi-thread,
     parameters are packed into a tuple: (game_number, game_seed):

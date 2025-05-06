@@ -5,6 +5,8 @@ will not be in order, as the order games start is different from the order they 
 """
 
 import multiprocessing
+from os import PathLike
+from typing import Union
 
 
 class Log:
@@ -14,7 +16,7 @@ class Log:
     # so it would be shared among processes
     lock = multiprocessing.Lock()
 
-    def __init__(self, log_file_name: str = "log.txt", disabled: bool = False):
+    def __init__(self, log_file_name: Union[str, PathLike] = "log.txt", disabled: bool = False):
         self.log_file_name = log_file_name
         self.content = []
         self.disabled = disabled
