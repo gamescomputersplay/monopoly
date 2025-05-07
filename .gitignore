@@ -159,3 +159,7 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# results dir
+results/
+/results/

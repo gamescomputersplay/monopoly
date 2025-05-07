@@ -1,17 +1,15 @@
 """ Player Class
 """
-
-from classes.board import Property, GoToJail, LuxuryTax, IncomeTax
-from classes.board import FreeParking, Chance, CommunityChest
-from settings import GameSettings
-
-BANKRUPT = "bankrupt"
+from monopoly.core.cell import GoToJail, LuxuryTax, IncomeTax, FreeParking, Chance, CommunityChest, Property
+from monopoly.core.constants import INDIGO, BROWN, RAILROADS, UTILITIES
+from monopoly.core.move_result import MoveResult
+from settings import GameMechanics
 
 
 class Player:
     """ Class to contain player-related into and actions:
     - money, position, owned property
-    - actions to buy property of handle Chance cards etc
+    - actions to buy property of handle Chance cards etc.
     """
 
     def __init__(self, name, settings):
@@ -33,14 +31,14 @@ class Player:
         self.had_doubles = 0
         # number of days in jail each player spent so far
         self.days_in_jail = 0
-        # Does player have a GOOJF card
+        # is the player holding a GOOJF card(s)
         self.get_out_of_jail_chance = False
         self.get_out_of_jail_comm_chest = False
 
         # Owned properties
         self.owned = []
 
-        # List of properties player wants to sell / buy
+        # List of properties the player wants to sell / buy
         # through trading with other players
         self.wants_to_sell = set()
         self.wants_to_buy = set()
@@ -66,29 +64,31 @@ class Player:
 
             if cell.is_mortgaged and not count_mortgaged_as_full_value:
                 # Partially count mortgaged properties
-                net_worth += int(cell.cost_base * (1 - GameSettings.mortgage_value))
+                net_worth += int(cell.cost_base * (1 - GameMechanics.mortgage_value))
             else:
                 net_worth += cell.cost_base
                 net_worth += (cell.has_houses + cell.has_hotel) * cell.cost_house
 
         return net_worth
 
-    def make_a_move(self, board, players, dice, log):
+    def make_a_move(self, board, players, dice, log) -> MoveResult:
         """ Main function for a player to make a move
         Receives:
-        - a board, with all cells and other things
+        - the game state: board, cells, players' state
         - other players (in case we need to make transactions with them)
         - dice (to roll)
         - log handle
+        Returns:
+            MoveResult: CONTINUE, BANKRUPT, END_MOVE
         """
 
         # If the player bankrupt - do nothing
         if self.is_bankrupt:
-            return None
-        
+            return MoveResult.BANKRUPT  # check if this is needed or this will writes bankrupt twice
+
         log.add(f"=== {self.name} (${self.money}, " +
                 f"at {board.cells[self.position].name}) goes: ===")
-        
+
         # Before the throwing of the dice:
         # 1. Trade with other players. Keep trading until no trades are possible
         # 2. Unmortgage a property. Keep doing it until possible
@@ -101,18 +101,17 @@ class Player:
 
         # The move itself:
         # Player rolls the dice
-        _, dice_sum, is_double = dice.cast()
-        
-        # Get doubles for the third time: just go to jail
+        _, dice_sum, is_double = dice.roll()
+
+        # Get doubles for the third time: go to jail
         if is_double and self.had_doubles == 2:
             self.handle_going_to_jail("rolled 3 doubles in a row", log)
-            return
+            return MoveResult.END_MOVE
 
         # Player is currently in jail
         if self.in_jail:
-            # Will return True if player stays in jail and move ends
-            if self.handle_being_in_jail(is_double, board, log):
-                return
+            if self.is_player_stay_in_jail(is_double, board, log):
+                return MoveResult.END_MOVE
 
         # Player moves to a cell
         self.position += dice_sum
@@ -122,23 +121,21 @@ class Player:
         # Get the correct position if we passed GO
         self.position %= 40
         log.add(f"{self.name} goes to: {board.cells[self.position].name}")
-        
+
         # Handle special cells:
-        
+
         # Both Chance and Community Chest are processed first, as they may send the player to a property
         # Chance is before "Community Chest" as Chance can send to Community Chest
-        
+
         # Player lands on "Chance"
         if isinstance(board.cells[self.position], Chance):
-            # returning "move is over" means the move is over (even if it was a double)
-            if self.handle_chance(board, players, log) == "move is over":
-                return
+            if self.handle_chance(board, players, log) == MoveResult.END_MOVE:
+                return MoveResult.END_MOVE
 
         # Player lands on "Community Chest"
         if isinstance(board.cells[self.position], CommunityChest):
-            # returning "move is over" means the move is over (even if it was a double)
-            if self.handle_community_chest(board, players, log) == "move is over":
-                return
+            if self.handle_community_chest(board, players, log) == MoveResult.END_MOVE:
+                return MoveResult.END_MOVE
 
         # Player lands on a property
         if isinstance(board.cells[self.position], Property):
@@ -147,47 +144,46 @@ class Player:
         # Player lands on "Go To Jail"
         if isinstance(board.cells[self.position], GoToJail):
             self.handle_going_to_jail("landed on Go To Jail", log)
-            return
+            return MoveResult.END_MOVE
 
         # Player lands on "Free Parking"
         if isinstance(board.cells[self.position], FreeParking):
             # If Free Parking Money house rule is on: get the money
-            if GameSettings.free_parking_money:
+            if GameMechanics.free_parking_money:
                 log.add(f"{self} gets ${board.free_parking_money} from Free Parking")
                 self.money += board.free_parking_money
                 board.free_parking_money = 0
 
         # Player lands on "Luxury Tax"
         if isinstance(board.cells[self.position], LuxuryTax):
-            self.pay_money(GameSettings.luxury_tax, "bank", board, log)
+            self.pay_money(GameMechanics.luxury_tax, "bank", board, log)
             if not self.is_bankrupt:
-                log.add(f"{self} pays Luxury Tax ${GameSettings.luxury_tax}")
+                log.add(f"{self} pays Luxury Tax ${GameMechanics.luxury_tax}")
 
         # Player lands on "Income Tax"
         if isinstance(board.cells[self.position], IncomeTax):
             self.handle_income_tax(board, log)
 
-        # Reset Other notes flag
+        # Reset the other_notes flag
         self.other_notes = ""
 
-        # If player went bankrupt, this turn - return string "bankrupt"
+        # If the player went bankrupt -> return string "bankrupt"
         if self.is_bankrupt:
-            return BANKRUPT
+            return MoveResult.BANKRUPT
 
         if is_double:
             self.had_doubles += 1
             log.add(f"{self} rolled a double ({self.had_doubles} in a row) so they go again.")
-            is_bankrupt_on_double_move = self.make_a_move(board, players, dice, log)
-            if is_bankrupt_on_double_move:
-                return BANKRUPT
-        else:
-            self.had_doubles = 0  # Reset doubles count
-    
+            move_result_of_double_move = self.make_a_move(board, players, dice, log)
+            return move_result_of_double_move
+        # not a double: Reset doubles count
+        self.had_doubles = 0
+        return MoveResult.END_MOVE
+
     def handle_salary(self, board, log):
-        """ Adding Salary to the player's money, according to the game's settings
-        """
-        self.money += board.settings.salary
-        log.add(f"Player {self.name} receives salary ${board.settings.salary}")
+        """ Adding Salary to the player's money, according to the game's settings """
+        self.money += board.settings.mechanics.salary
+        log.add(f" {self.name} receives salary ${board.settings.mechanics.salary}")
 
     def handle_going_to_jail(self, message, log):
         """ Start the jail time
@@ -198,8 +194,8 @@ class Player:
         self.had_doubles = 0
         self.days_in_jail = 0
 
-    def handle_being_in_jail(self, dice_roll_is_double, board, log):
-        """ Handle player being in Jail
+    def is_player_stay_in_jail(self, dice_roll_is_double, board, log):
+        """ Handle a player being in Jail
         Return True if the player stays in jail (to end his turn)
         """
         # Get out of jail on rolling double
@@ -220,11 +216,11 @@ class Player:
             log.add(f"{self} rolled a double, a leaves jail for free")
             self.in_jail = False
             self.days_in_jail = 0
-        # Get out of jail and pay fine
+        # Get out of jail and pay a fine
         elif self.days_in_jail == 2:  # It's your third day
             log.add(f"{self} did not rolled a double for the third time, " +
-                    f"pays {GameSettings.exit_jail_fine} and leaves jail")
-            self.pay_money(GameSettings.exit_jail_fine, "bank", board, log)
+                    f"pays {GameMechanics.exit_jail_fine} and leaves jail")
+            self.pay_money(GameMechanics.exit_jail_fine, "bank", board, log)
             self.in_jail = False
             self.days_in_jail = 0
         # Stay in jail for another turn
@@ -291,7 +287,7 @@ class Player:
             self.other_notes = "double rent"
 
         elif card == "Advance token to nearest Utility. " + \
-             "If owned, throw dice and pay owner a total ten times amount thrown.":
+                "If owned, throw dice and pay owner a total ten times amount thrown.":
             nearest_utility = self.position
             while nearest_utility not in (12, 28):
                 nearest_utility += 1
@@ -312,7 +308,7 @@ class Player:
 
         elif card == "Go to Jail. Go directly to Jail, do not pass Go, do not collect $200":
             self.handle_going_to_jail("got GTJ Chance card", log)
-            return "move is over"
+            return MoveResult.END_MOVE
 
         # Receiving money
 
@@ -369,7 +365,7 @@ class Player:
 
         elif card == "Go to Jail. Go directly to Jail, do not pass Go, do not collect $200":
             self.handle_going_to_jail("got GTJ Community Chest card", log)
-            return "move is over"
+            return MoveResult.END_MOVE
 
         # Paying money
 
@@ -438,14 +434,14 @@ class Player:
         """
         # Choose smaller between fixed rate and percentage
         tax_to_pay = min(
-            GameSettings.income_tax,
-            int(GameSettings.income_tax_percentage *
-            self.net_worth(count_mortgaged_as_full_value=True)))
+            GameMechanics.income_tax,
+            int(GameMechanics.income_tax_percentage *
+                self.net_worth(count_mortgaged_as_full_value=True)))
 
-        if tax_to_pay == GameSettings.income_tax:
-            log.add(f"{self} pays fixed Income tax {GameSettings.income_tax}")
+        if tax_to_pay == GameMechanics.income_tax:
+            log.add(f"{self} pays fixed Income tax {GameMechanics.income_tax}")
         else:
-            log.add(f"{self} pays {GameSettings.income_tax_percentage * 100:.0f}% " +
+            log.add(f"{self} pays {GameMechanics.income_tax_percentage * 100:.0f}% " +
                     f"Income tax {tax_to_pay}")
         self.pay_money(tax_to_pay, "bank", board, log)
 
@@ -490,10 +486,10 @@ class Player:
             if is_willing_to_buy_property(landed_property):
                 # Buy property
                 buy_property(landed_property)
-                log.add(f"Player {self.name} bought {landed_property} " +
+                log.add(f"{self.name} bought {landed_property} " +
                         f"for ${landed_property.cost_base}")
 
-                # Recalculate all monopoly / can build flags
+                # Recalculate all monopolies / can build flags
                 board.recalculate_monopoly_multipliers(landed_property)
 
                 # Recalculate who wants to buy what
@@ -502,7 +498,7 @@ class Player:
                     player.update_lists_of_properties_to_trade(board)
 
             else:
-                log.add(f"Player {self.name} landed on a {landed_property}, he refuses to buy it")
+                log.add(f"{self.name} landed on a {landed_property}, he refuses to buy it")
                 # TODO: Bank auctions the property
 
         # Property has an owner
@@ -515,7 +511,7 @@ class Player:
                 log.add("Own property, no rent")
             # Handle rent payments
             else:
-                log.add(f"Player {self.name} landed on a property, " +
+                log.add(f"{self.name} landed on a property, " +
                         f"owned by {landed_property.owner}")
                 rent_amount = landed_property.calculate_rent(dice)
                 if self.other_notes == "double rent":
@@ -547,7 +543,12 @@ class Player:
                 # - not maxed out (no hotel)
                 # - not mortgaged
                 # - a part of monopoly, but not railway or utility (so the monopoly_multiplier is 2)
-                if cell.has_hotel == 0 and not cell.is_mortgaged and cell.monopoly_multiplier == 2:
+                if (
+                        cell.has_hotel == 0
+                        and not cell.is_mortgaged
+                        and cell.monopoly_multiplier == 2
+                        and cell.group not in (RAILROADS, UTILITIES)
+                ):
                     # Look at other cells in this group
                     # If they have fewer houses, this cell can not be improved
                     # If any cells in the group is mortgaged, this cell can not be improved
@@ -557,10 +558,10 @@ class Player:
                     else:
                         # Make sure there are available houses/hotel for this improvement
                         if cell.has_houses != 4 and board.available_houses > 0 or \
-                           cell.has_houses == 4 and board.available_hotels > 0:
+                                cell.has_houses == 4 and board.available_hotels > 0:
                             can_be_improved.append(cell)
             # Sort the list by the cost of house
-            can_be_improved.sort(key = lambda x: x.cost_house)
+            can_be_improved.sort(key=lambda x: x.cost_house)
 
             # Return first (the cheapest) property that can be improved
             if can_be_improved:
@@ -581,7 +582,7 @@ class Player:
                 break
 
             # Building a house
-            ordinal = {1: "1st", 2: "2nd", 3: "3rd", 4:"4th"}
+            ordinal = {1: "1st", 2: "2nd", 3: "3rd", 4: "4th"}
 
             if cell_to_improve.has_houses != 4:
                 cell_to_improve.has_houses += 1
@@ -610,8 +611,8 @@ class Player:
         for cell in self.owned:
             if cell.is_mortgaged:
                 cost_to_unmortgage = \
-                    cell.cost_base * GameSettings.mortgage_value + \
-                    cell.cost_base * GameSettings.mortgage_fee
+                    cell.cost_base * GameMechanics.mortgage_value + \
+                    cell.cost_base * GameMechanics.mortgage_fee
                 if self.money - cost_to_unmortgage >= self.settings.unspendable_cash:
                     log.add(f"{self} unmortgages {cell} for ${cost_to_unmortgage}")
                     self.money -= cost_to_unmortgage
@@ -622,8 +623,8 @@ class Player:
         return False
 
     def raise_money(self, required_amount, board, log):
-        """ Part of "Pay money" method. If there is not enough cash, player has to
-        sell houses, hotels, mortgage property until you get required_amount of money
+        """ Part of the "Pay money" method. If there is not enough cash, the player has to
+        sell houses, hotels, mortgage property until you get the `required_amount` of money
         """
 
         def get_next_property_to_downgrade(required_amount):
@@ -641,9 +642,10 @@ class Player:
                 if cell.has_houses > 0 or cell.has_hotel > 0:
                     # Look at other cells in this group
                     # Do they have more houses or hotels?
-                    # If so this property cannot be de-improved
+                    # If so, this property cannot be de-improved
                     for other_cell in board.groups[cell.group]:
-                        if cell.has_hotel == 0 and (other_cell.has_houses > cell.has_houses or other_cell.has_hotel > 0):
+                        if cell.has_hotel == 0 and (
+                                other_cell.has_houses > cell.has_houses or other_cell.has_hotel > 0):
                             break
                     else:
                         can_be_downgrade.append(cell)
@@ -661,15 +663,15 @@ class Player:
 
             # 3. Find one that's just above the required amount (or the most expensive one)
             # Sort potential de-improvements from cheap to expensive
-            can_be_downgrade.sort(key = lambda x: x.cost_house // 2)
+            can_be_downgrade.sort(key=lambda x: x.cost_house // 2)
             while True:
                 # Only one possible option left
                 if len(can_be_downgrade) == 1:
                     return can_be_downgrade[0]
-                # Second expensive option is not enough, sell most expensive
+                # The second expensive option is not enough, sell most expensive
                 if can_be_downgrade[-2].cost_house // 2 < required_amount:
                     return can_be_downgrade[-1]
-                # Remove most expensive option
+                # Remove the most expensive option
                 can_be_downgrade.pop()
 
         def get_list_of_properties_to_mortgage():
@@ -679,10 +681,10 @@ class Player:
             for cell in self.owned:
                 if not cell.is_mortgaged:
                     list_to_mortgage.append(
-                        (int(cell.cost_base * GameSettings.mortgage_value), cell))
+                        (int(cell.cost_base * GameMechanics.mortgage_value), cell))
 
             # It will be popped from the end, so first to sell should be last
-            list_to_mortgage.sort(key = lambda x: -x[0])
+            list_to_mortgage.sort(key=lambda x: -x[0])
             return list_to_mortgage
 
         # Cycle through all possible de-improvements until
@@ -720,7 +722,7 @@ class Player:
             else:
                 cell_to_deimprove.has_houses -= 1
                 board.available_houses += 1
-                ordinal = {1: "1st", 2: "2nd", 3: "3rd", 4:"4th"}
+                ordinal = {1: "1st", 2: "2nd", 3: "3rd", 4: "4th"}
                 log.add(f"{self} sells {ordinal[cell_to_deimprove.has_houses + 1]} " +
                         f"house on {cell_to_deimprove}, raising ${sell_price}")
                 self.money += sell_price
@@ -729,7 +731,7 @@ class Player:
         list_to_mortgage = get_list_of_properties_to_mortgage()
 
         while list_to_mortgage and self.money < required_amount:
-            # Pick property to mortgage from the list
+            # Pick a property to mortgage from the list
             mortgage_price, cell_to_mortgage = list_to_mortgage.pop()
 
             # Mortgage this property
@@ -743,9 +745,9 @@ class Player:
         """
 
         def count_max_raisable_money():
-            """ How much cash a plyer can produce?
+            """ How much cash can a player produce?
             Used to determine if they should go bankrupt or not.
-            Max raisable money are 1/2 of houses cost + 1/2 of unmortgaged properties cost
+            Max raisable money is 1/2 of houses cost + 1/2 of unmortgaged properties cost
             """
             max_raisable = self.money
             for cell in self.owned:
@@ -754,7 +756,7 @@ class Player:
                 if cell.has_hotel > 0:
                     max_raisable += cell.cost_house * 5 // 2
                 if not cell.is_mortgaged:
-                    max_raisable += int(cell.cost_base * GameSettings.mortgage_value)
+                    max_raisable += int(cell.cost_base * GameMechanics.mortgage_value)
             return max_raisable
 
         def transfer_all_properties(payee, board, log):
@@ -783,7 +785,7 @@ class Player:
             self.money -= amount
             if payee != "bank":
                 payee.money += amount
-            elif payee == "bank" and GameSettings.free_parking_money:
+            elif payee == "bank" and GameMechanics.free_parking_money:
                 board.free_parking_money += amount
             return
 
@@ -796,7 +798,7 @@ class Player:
             self.money -= amount
             if payee != "bank":
                 payee.money += amount
-            elif payee == "bank" and GameSettings.free_parking_money:
+            elif payee == "bank" and GameMechanics.free_parking_money:
                 board.free_parking_money += amount
 
         # Bankruptcy (can't pay even after selling and mortgaging all)
@@ -810,7 +812,7 @@ class Player:
             log.add(f"{self} gave {payee} all their remaining money (${self.money})")
             if payee != "bank":
                 payee.money += self.money
-            elif payee == "bank" and GameSettings.free_parking_money:
+            elif payee == "bank" and GameMechanics.free_parking_money:
                 board.free_parking_money += amount
 
             self.money = 0
@@ -829,7 +831,7 @@ class Player:
         # If player is not willing to trade, he would
         # have not declared his offered and desired properties,
         # thus stopping any trade with them
-        if not self.settings.participates_in_trades:
+        if not self.settings.is_willing_to_make_trades:
             return
 
         # Reset the lists
@@ -869,7 +871,7 @@ class Player:
         def get_price_difference(gives, receives):
             """ Calculate price difference between items player
             is about to give minus what he is about to receive.
-            >0 means player gives away more
+            >0 means a player gives away more
             Return both absolute (in $), relative for a giver, relative for a receiver
             """
 
@@ -900,15 +902,15 @@ class Player:
 
             # If there are only properties from size-2 groups, no trade
             both_colors = set(color_receives + color_gives)
-            if both_colors.issubset({"Utilities", "Indigo", "Brown"}):
+            if both_colors.issubset({UTILITIES, INDIGO, BROWN}):
                 return [], []
 
             # Look at "Indigo", "Brown", "Utilities". These have 2 properties,
             # so both players would want to receive them
-            # If they are present, remove it from the guy who has longer list
-            # If list has the same length, remove both questionable items
+            # If they are present, remove it from the guy who has the longer list
+            # If a list has the same length, remove both questionable items
 
-            for questionable_color in ["Utilities", "Indigo", "Brown"]:
+            for questionable_color in [UTILITIES, INDIGO, BROWN]:
                 if questionable_color in color_receives and questionable_color in color_gives:
                     if len(player_receives) > len(player_gives):
                         player_receives = remove_by_color(player_receives, questionable_color)
@@ -929,13 +931,13 @@ class Player:
                     get_price_difference(player_gives, player_receives)
 
                 # This player gives too much
-                if diff_abs > self.settings.trade_max_diff_abs or \
-                diff_giver > self.settings.trade_max_diff_rel:
+                if diff_abs > self.settings.trade_max_diff_absolute or \
+                        diff_giver > self.settings.trade_max_diff_relative:
                     player_gives.pop()
                     continue
-                # Other player gives too much
-                if -diff_abs > other_player.settings.trade_max_diff_abs or \
-                diff_receiver > other_player.settings.trade_max_diff_rel:
+                # The Other player gives too much
+                if -diff_abs > other_player.settings.trade_max_diff_absolute or \
+                        diff_receiver > other_player.settings.trade_max_diff_relative:
                     player_receives.pop()
                     continue
                 break
@@ -945,11 +947,11 @@ class Player:
         for other_player in players:
             # Selling/buying thing matches
             if self.wants_to_buy.intersection(other_player.wants_to_sell) and \
-               self.wants_to_sell.intersection(other_player.wants_to_buy):
+                    self.wants_to_sell.intersection(other_player.wants_to_buy):
                 player_receives = list(self.wants_to_buy.intersection(other_player.wants_to_sell))
                 player_gives = list(self.wants_to_sell.intersection(other_player.wants_to_buy))
 
-                # Work out a fair deal (don't trade same color,
+                # Work out a fair deal (don't trade the same color,
                 # get value difference within the limit)
                 player_gives, player_receives = \
                     fair_deal(player_gives, player_receives, other_player)
@@ -965,7 +967,7 @@ class Player:
                     if price_difference > 0:
                         # Other guy can't pay
                         if other_player.money - price_difference < \
-                           other_player.settings.unspendable_cash:
+                                other_player.settings.unspendable_cash:
                             return False
                         other_player.money -= price_difference
                         self.money += price_difference
@@ -974,7 +976,7 @@ class Player:
                     if price_difference < 0:
                         # This player can't pay
                         if self.money - abs(price_difference) < \
-                           self.settings.unspendable_cash:
+                                self.settings.unspendable_cash:
                             return False
                         other_player.money += abs(price_difference)
                         self.money -= abs(price_difference)
@@ -1012,7 +1014,7 @@ class Player:
                     for player in players:
                         player.update_lists_of_properties_to_trade(board)
 
-                    # Return True, to run trading function again
+                    # Return True to run a trading function again
                     return True
 
         return False

@@ -1,0 +1,11 @@
+# properties groups:
+INDIGO = "Indigo"
+GREEN = "Green"
+YELLOW = "Yellow"
+RED = "Red"
+ORANGE = "Orange"
+PINK = "Pink"
+LIGHTBLUE = "Lightblue"
+BROWN = "Brown"
+RAILROADS = "Railroads"
+UTILITIES = "Utilities"
