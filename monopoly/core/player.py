@@ -549,14 +549,14 @@ class Player:
                         and cell.monopoly_multiplier == 2
                         and cell.group not in (RAILROADS, UTILITIES)
                 ):
-                    # Look at other cells in this group
-                    # If they have fewer houses, this cell can not be improved
-                    # If any cells in the group is mortgaged, this cell can not be improved
+                    # In order for this cell to be able to be improved, it needs that all cells in the group:
+                    # 1. have at least as many houses as this cell (or a hotel)
+                    # 2. not be mortgaged
+                    # 3. available houses/hotel in the bank
                     for other_cell in board.groups[cell.group]:
-                        if other_cell.has_houses < cell.has_houses or other_cell.is_mortgaged:
+                        if (other_cell.has_houses < cell.has_houses and not other_cell.has_hotel) or other_cell.is_mortgaged:
                             break
                     else:
-                        # Make sure there are available houses/hotel for this improvement
                         if cell.has_houses != 4 and board.available_houses > 0 or \
                                 cell.has_houses == 4 and board.available_hotels > 0:
                             can_be_improved.append(cell)

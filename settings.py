@@ -54,7 +54,7 @@ class StandardPlayerSettings:
 @dataclass(frozen=True)
 class HeroPlayerSettings(StandardPlayerSettings):
     """ here you can change the settings of the hero (the Experimental Player) """
-    ignore_property_groups: FrozenSet[str] = frozenset({"GREEN"})
+    # ignore_property_groups: FrozenSet[str] = frozenset({"GREEN"})
 
 
 @dataclass(frozen=True)
